@@ -4,7 +4,7 @@
 ///
 /// $n : Number of bottles.
 /// $return : Pretty string.
-fun toBottles(Int n) : String {
+fun toBottles(val n: Int) : String {
     // When for pattern matching.
     val prefix = when (n) {
       0 -> "No more bottles"
@@ -18,13 +18,13 @@ fun toBottles(Int n) : String {
 // Short functions need no body.
 
 /// Returns the full verse for the number of bottles of beer.
-fun toVerse(Int n) =
+fun toVerse(val n: Int) =
     when (n) {
       0 -> "${toBottles(0)} Go to the store and buy some more. ${toBottles(99)}"
       else -> "${toBottles(n)} Take one down and pass it around. ${toBottles(n-1)}" 
     }
 
 // Variadic number of arguments.
-fun main(String args...) {
+fun main(val args: String...) {
     listOf(99..0).map(::toVerse).apply(::println);
 }
