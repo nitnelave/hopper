@@ -1,0 +1,30 @@
+// Comments with //, documentation with ///
+
+/// Returns the string for $n number of bottles on the wall.
+///
+/// $n : Number of bottles.
+/// $return : Pretty string.
+fun toBottles(Int n) : String {
+    // When for pattern matching.
+    val prefix = when (n) {
+      0 -> "No more bottles"
+      1 -> "One bottle"
+      else -> "${n} bottles"
+    }
+    return prefix + " of beer on the wall.";
+}
+
+// Return type optional.
+// Short functions need no body.
+
+/// Returns the full verse for the number of bottles of beer.
+fun toVerse(Int n) =
+    when (n) {
+      0 -> "${toBottles(0)} Go to the store and buy some more. ${toBottles(99)}"
+      else -> "${toBottles(n)} Take one down and pass it around. ${toBottles(n-1)}" 
+    }
+
+// Variadic number of arguments.
+fun main(String args...) {
+    listOf(99..0).map(::toVerse).apply(::println);
+}
