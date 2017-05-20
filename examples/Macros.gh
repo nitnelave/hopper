@@ -1,0 +1,57 @@
+import exception
+
+// "public" keyword marks exported symbols.
+// "pure" functions are automatically marked as such and can be used for constexpr or macros
+fun getCamlCase(val prefix: String, val suffix: String) {
+  val p = if (prefix[0] in a..z) prefix else (prefix[0] - 'A'.toInt() + 'a'.toInt()) + prefix[1..];
+  val s = if (suffix[0] in A..Z) suffix else (suffix[0] - 'a'.toInt() + 'A'.toInt()) + suffix[1..];
+  return p + s;
+}
+
+// constant for compile-time constant
+constant getter_function = """
+  public ${getCamlCase("get", id)}() : ${type} {
+    return ${id};
+  }""";
+constant setter_function = """
+  public ${getCamlCase("set", id)}(val ${id}: ${type}) {
+    this.${id} = ${id};
+  }""";
+
+/// Create a getter and a setter for a field.
+public macro WITH_GET_SET(val d: FieldDeclaration) : List<MemberDeclaration> {
+  if (!d.isMutable())
+    raise exception.IllegalArgument("WITH_GET_SET can only be called on mutable variables, " +
+                                    "but ${d.parent().name()}::${d.name()} is immutable.");
+  val t = d.type();
+  val id = d.name();
+  var result : List<Declaration> = [];
+  result.append(d);
+  val getter = MemberFunctionDeclaration.parseFrom(getter_function.format(id=id, type=t));
+  val setter = MemberFunctionDeclaration.parseFrom(setter_function.format(id=id, type=t));
+  result.append(getter, setter);
+  return result
+}
+
+/// Create a constructor with the fields of the class as arguments.
+public macro DATA_CLASS(var d: ClassDeclaration) : ClassDeclaration {
+  if (d.hasConstructor())
+    raise exception.IllegalArgument("DATA_CLASS can only be called on classes with no constructors, " +
+                                    "but ${d.name()} has a constructor");
+  var c = Constructor();
+  for (f in d.getFields()) {
+    val arg = c.arguments().append(Argument(f.name(), f.type(), f.defaultValue());
+    c.body().append(Assignment(f, arg));
+  }
+  d.setConstructor(c);
+}
+
+/// ExampleDataClass has two private fields with getters and setters, and a constructor:
+/// fun init(val superField: Int32, val otherField: String = "test") {
+///   this.superField = superField;
+///   this.otherField = otherField;
+/// }
+DATA_CLASS(class ExampleDataClass {
+  WITH_GET_SET(var superField: Int32);
+  WITH_GET_SET(var otherField: String = "test");
+});
