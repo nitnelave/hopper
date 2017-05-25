@@ -36,6 +36,14 @@ fun main(val args : String...) {
   // Now, len is an Option, so we can't just use it as an int. We can give it a
   // default value.
   println(len ?: -1);
+
+  // Additionnaly, to reflect algorithmic knowledge that the compiler cannot
+  // deduce, you can give information as to the state of the Option with
+  // assert. This will crash the program when running in debug or test mode, but
+  // the assert will be removed in release/optimized mode. This allows to have a
+  // good measure of safety (with the debug mode checking it), and yet have the
+  // maximum performance in release mode.
+  assertNotNone(maybeInt);
 }
 
 
