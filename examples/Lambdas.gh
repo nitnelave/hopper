@@ -1,0 +1,19 @@
+// Example of functional programming: apply takes a function as parameter.
+// That function takes a T and returns a V (both template parameters).
+// We can then call that function as we would a normal function
+fun <T, V> apply(val lambda : (val T) -> V, val value : T) : V = lambda(value);
+
+fun main(val args: String...) {
+  // Here we declare a lambda, with the (optional) signature.
+  val myLambda : (val Int32) -> Bool = {i -> i % 2 == 0};
+  // Create a list.
+  val evenList = listOf(1, 2, 3)
+                    // Call a new lambda on each element.
+                    // This new lambda captures myLambda from the environment.
+                    // This is equivalent to writing
+                    // map(myLambda)
+                    .map({e -> apply(myLambda, e)})
+                    // Apply the function ::println to each element, and ignore
+                    // the return.
+                    .foreach(::println);
+}
