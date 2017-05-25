@@ -1,0 +1,41 @@
+// Option types are useful when you might return a value or not. For instance,
+// if you want to signify an invalid case, you could return None.
+// Option types are statically checked, meaning that you can't misuse the type
+// and call a function on None. Instead, before using the value inside the
+// Option, you have to check for None.
+// The Option type syntax is simply given by a "?" at the end of the type.
+
+// This function takes an int, and returns an Option of an Int. If the input is
+// greater than 3, it returns the value of the input (wrapped in an Option), and
+// otherwise, it returns None (the Option value for nothing).
+fun getInt(val in : Int32) : Int32? = if (in > 3) in else None;
+
+fun main(val args : String...) {
+  val maybeInt : Int32? = getInt(4);
+  // Here, we don't know if maybeInt is None or a number, so we can't use it
+  // directly. This won't compile:
+  // val x = 3 + maybeInt;
+
+  // We must first check for validity.
+  if (maybeInt != None) {
+    // Inside this block, we know that maybeInt is not None, so it isdirectly
+    // interpreted as an Int32.
+    val x = 3 + maybeInt;
+    println(x);
+  }
+
+  // However, when we are back outside, we still have no idea whether maybeInt
+  // is None or not. We can give it a default value in case of None:
+  val y = 3 + maybeInt ?: 2; // If maybeInt is None, then y is 5.
+
+  // If we have an object, we can call a method of the object if the Option is
+  // valid, or get None if the original object is None.
+  var vec : Vector<Int32>? = if (y == 3) Vector<Int32>() else None;
+  // len is the vector length if the vector exists, and None otherwise.
+  val len : Int32? = vec?.length();
+  // Now, len is an Option, so we can't just use it as an int. We can give it a
+  // default value.
+  println(len ?: -1);
+}
+
+
