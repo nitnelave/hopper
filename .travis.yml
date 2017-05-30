@@ -6,6 +6,7 @@ env:
     - CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=Debug"
     - CC="clang-3.8"
     - CXX="clang++-3.8"
+    - CXXFLAGS="-stdlib=libc++"
 
 
 script:
