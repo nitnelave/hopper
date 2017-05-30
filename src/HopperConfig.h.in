@@ -1,0 +1,3 @@
+// the configured options and settings for Hopper
+#define Hopper_VERSION_MAJOR @Hopper_VERSION_MAJOR@
+#define Hopper_VERSION_MINOR @Hopper_VERSION_MINOR@
