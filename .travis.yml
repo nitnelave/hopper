@@ -4,6 +4,8 @@ compiler: clang++
 env:
   global:
     - CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=Debug"
+    - CC="clang-3.8"
+    - CXX="clang++-3.8"
 
 
 script:
@@ -18,11 +20,14 @@ addons:
     sources:
       - george-edison55-precise-backports
       - boost-latest
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.8
     packages:
       - cmake-data
       - cmake
       - libboost-program-options1.55-dev
       - lcov
+      - clang-3.8
 
 notifications:
     slack: hoppergh:nlwIRc3VKMx48N1WtKfk24Pu
