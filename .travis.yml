@@ -1,21 +1,28 @@
 language: cpp
-compiler: clang
+compiler: clang++
 
-install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y -qq lcov curl
+env:
+  global:
+    - CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=Debug"
+
 
 script:
-  - mkdir build && cd build && cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . && cmake --build . --target coveralls
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_OPTIONS} ..
+  - make -j4
 
 # Install Cmake 3.2.3
 addons:
   apt:
     sources:
       - george-edison55-precise-backports
+      - boost-latest
     packages:
       - cmake-data
       - cmake
+      - libboost-program-options1.55-dev
+      - lcov
 
 notifications:
     slack: hoppergh:nlwIRc3VKMx48N1WtKfk24Pu
