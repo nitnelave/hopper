@@ -14,13 +14,10 @@ env:
 
 script:
   - |
-    env
-    echo "ls -R ${LLVM_ROOT}"
-    ls -R "${LLVM_ROOT}"
     mkdir -p "${BUILD_DIR}"
     cd "${BUILD_DIR}"
     cmake ${CMAKE_OPTIONS} ..
-    make -j4
+    make -j${JOBS} VERBOSE=1
 
 addons:
   apt:
