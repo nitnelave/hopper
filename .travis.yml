@@ -13,10 +13,8 @@ env:
 
 script:
   - |
-    makdir -p "${BUILD_DIR}"
+    mkdir -p "${BUILD_DIR}"
     cd "${BUILD_DIR}"
-    echo "${BUILD_DIR}"
-    echo "${CMAKE_OPTIONS}"
     cmake ${CMAKE_OPTIONS} ..
     make -j4
 
