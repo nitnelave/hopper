@@ -1,4 +1,5 @@
 language: cpp
+dist: trusty
 
 env:
   global:
@@ -40,10 +41,18 @@ cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
 
+before_install:
+  # C++14
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update -qq
+
 install:
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir -p "${DEPS_DIR}" && cd "${DEPS_DIR}"
+  # C++14
+  - sudo apt-get install -qq g++-6
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 90
+  - mkdir -p "${DEPS_DIR}"
   - . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
 
 
