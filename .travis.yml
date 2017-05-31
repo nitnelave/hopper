@@ -7,13 +7,18 @@ env:
     - CXXFLAGS="-stdlib=libc++"
     - LIBCXX_BUILD=1
     - BUILD_TYPE=Debug
+    - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
     - CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX}"
 
 
 script:
-  - cd "${TRAVIS_BUILD_DIR}"
-  - cmake ${CMAKE_OPTIONS} ..
-  - make -j4
+  - |
+    makdir -p "${BUILD_DIR}"
+    cd "${BUILD_DIR}"
+    echo "${BUILD_DIR}"
+    echo "${CMAKE_OPTIONS}"
+    cmake ${CMAKE_OPTIONS} ..
+    make -j4
 
 addons:
   apt:
