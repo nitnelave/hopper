@@ -4,7 +4,7 @@ env:
   global:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
-    - CXXFLAGS="-stdlib=libc++"
+    - CXXFLAGS="${CXXFLAGS} -stdlib=libc++"
     - LIBCXX_BUILD=1
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
@@ -55,7 +55,7 @@ install:
       (cd "${LLVM_ROOT}/build/projects/libcxx" && make install -j$JOBS)
       (cd "${LLVM_ROOT}/build/projects/libcxxabi" && make install -j$JOBS)
     fi
-    export CXXFLAGS="-I ${LLVM_ROOT}/install/include/c++/v1"
+    export CXXFLAGS="${CXXFLAGS} -I ${LLVM_ROOT}/install/include/c++/v1"
     export LDFLAGS="-L ${LLVM_ROOT}/install/lib -lc++ -lc++abi"
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_ROOT}/install/lib"
 
