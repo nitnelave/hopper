@@ -23,13 +23,13 @@ script:
 addons:
   apt:
     sources:
-      - george-edison55-precise-backports
+      - george-edison55-cmake-3.x
       - boost-latest
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-4.0
     packages:
       - cmake-data
-      - cmake
+      - cmake-3.5.2
       - libboost-program-options1.55-dev
       - lcov
       - clang-4.0
