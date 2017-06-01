@@ -2,8 +2,8 @@ language: cpp
 
 env:
   global:
-    - CC="clang-3.9"
-    - CXX="clang++-3.9"
+    - CC="clang-3.8"
+    - CXX="clang++-3.8"
     - CXXFLAGS="${CXXFLAGS} -stdlib=libc++"
     - LIBCXX_BUILD=1
     - USE_LIBCXX=1
@@ -26,7 +26,7 @@ addons:
       - george-edison55-precise-backports
       - boost-latest
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.9
+      - llvm-toolchain-precise-3.8
     packages:
       - cmake-data
       - cmake
@@ -34,7 +34,7 @@ addons:
       - lcov
       - libc++1
       - libc++abi1
-      - clang-3.9
+      - clang-3.8
       - g++-5
       - gcc-5
 
