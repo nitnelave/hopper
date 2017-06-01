@@ -46,7 +46,7 @@ install:
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p "${DEPS_DIR}"
- #- . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
+  - . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
 
 
 notifications:
