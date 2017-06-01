@@ -31,8 +31,6 @@ addons:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-4.0
     packages:
-      - cmake-data
-      - cmake-3.5.2
       - libboost-program-options1.55-dev
       - lcov
       - clang-4.0
@@ -44,6 +42,7 @@ cache:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
 
 install:
+  - sudo apt-get install -qq cmake cmake-data
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p "${DEPS_DIR}"
