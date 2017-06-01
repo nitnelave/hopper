@@ -1,7 +1,7 @@
 #! /bin/sh
 
 
-LLVM_VERSION="4.0.0"
+LLVM_VERSION="3.9.1"
 LLVM_ROOT="${DEPS_DIR}/llvm-${LLVM_VERSION}"
 LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
 LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
