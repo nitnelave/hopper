@@ -7,6 +7,7 @@ env:
     - CXX="clang++-3.9"
     - CXXFLAGS="${CXXFLAGS} -stdlib=libc++"
     - LIBCXX_BUILD=1
+    - USE_LIBCXX=1
     - JOBS=2
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
