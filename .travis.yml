@@ -25,7 +25,7 @@ addons:
       - george-edison55-precise-backports
       - boost-latest
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.8
+      - llvm-toolchain-precise-4.0
     packages:
       - cmake-data
       - cmake
