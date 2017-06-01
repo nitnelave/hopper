@@ -30,7 +30,7 @@ addons:
     packages:
       - cmake-data
       - cmake
-      - libboost-program-options1.55-dev
+      - libboost-program-options1.40-dev
       - lcov
       - clang-3.8
       - g++-5
