@@ -27,8 +27,8 @@ configure_file (
 # so that we will find HopperConfig.h
 include_directories("${PROJECT_BINARY_DIR}")
 
-FIND_PACKAGE( Boost 1.40 COMPONENTS program_options REQUIRED )
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+FIND_PACKAGE(Boost 1.40 COMPONENTS program_options REQUIRED)
+INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIR})
 
 include(cmake/Libraries.cmake)
 

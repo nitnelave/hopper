@@ -2,8 +2,8 @@ language: cpp
 
 env:
   global:
-    - CC="clang-3.8"
-    - CXX="clang++-3.8"
+    - CC="clang-4.0"
+    - CXX="clang++-4.0"
     - CXXFLAGS="${CXXFLAGS} -stdlib=libc++"
     - LIBCXX_BUILD=1
     - JOBS=2
@@ -31,7 +31,7 @@ addons:
       - cmake
       - libboost-program-options1.55-dev
       - lcov
-      - clang-3.8
+      - clang-4.0
       - g++-5
       - gcc-5
 
