@@ -1,5 +1,4 @@
 language: cpp
-dist: trusty
 
 env:
   global:
@@ -27,7 +26,7 @@ addons:
       - george-edison55-precise-backports
       - boost-latest
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-3.9
+      - llvm-toolchain-precise-3.9
     packages:
       - cmake-data
       - cmake
