@@ -4,6 +4,7 @@ env:
   global:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
+    - BOOST_VERSION="1.50.0"
     - CXXFLAGS="${CXXFLAGS} -stdlib=libc++"
     - LIBCXX_BUILD=1
     - USE_LIBCXX=1
@@ -24,13 +25,11 @@ addons:
   apt:
     sources:
       - george-edison55-precise-backports
-      - boost-latest
       - ubuntu-toolchain-r-test
       - llvm-toolchain-precise-3.8
     packages:
       - cmake-data
       - cmake
-      - libboost-program-options1.40-dev
       - lcov
       - clang-3.8
       - g++-5
@@ -45,6 +44,7 @@ install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p "${DEPS_DIR}"
   - . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
+  - . ${TRAVIS_BUILD_DIR}/travis/install_boost.sh
 
 
 notifications:
