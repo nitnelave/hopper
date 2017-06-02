@@ -4,9 +4,12 @@
 # Install Boost headers
 #####################################################################
 
+# Verbose
+set -x
+
 if [[ "${BOOST_VERSION}" != "" ]]; then
   BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
-  if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
+  if [[ -z "$(ls -A ${BOOST_DIR} 2>/dev/null)" ]]; then
     if [[ "${BOOST_VERSION}" == "trunk" ]]; then
       BOOST_URL="http://github.com/boostorg/boost.git"
       travis_retry git clone --depth 1 --recursive --quiet ${BOOST_URL} ${BOOST_DIR} || exit 1
@@ -18,7 +21,7 @@ if [[ "${BOOST_VERSION}" != "" ]]; then
     fi
   fi
   CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
-  (cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
-  (cd ${BOOST_DIR} && ./bootstrap.sh --prefix=${DEPS_DIR}/b2 && ./b2 install --prefix=${DEPS_DIR}/b2)
+  #(cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
+  (cd ${BOOST_DIR} && ./bootstrap.sh --prefix=${DEPS_DIR}/b2 && ./b2 install -q -d0 --prefix=${DEPS_DIR}/b2 --with-program_options -j${JOBS})
   export PATH=${DEPS_DIR}/b2/bin:${PATH}
 fi
