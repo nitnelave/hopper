@@ -19,6 +19,6 @@ if [[ "${BOOST_VERSION}" != "" ]]; then
   fi
   CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
   (cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
-  (cd ${BOOST_DIR} && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
+  (cd ${BOOST_DIR} && ./bootstrap.sh --prefix=${DEPS_DIR}/b2 && ./b2 install --prefix=${DEPS_DIR}/b2)
   export PATH=${DEPS_DIR}/b2/bin:${PATH}
 fi
