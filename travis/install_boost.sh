@@ -16,10 +16,9 @@ if [[ "${BOOST_VERSION}" != "" ]]; then
       mkdir -p ${BOOST_DIR}
       { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
     fi
-    # Make sure we don't conflict with the Hana shipped with Boost
-    rm -rf ${BOOST_ROOT}/include/boost/{hana,hana.hpp}
   fi
   CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
   (cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
+  (cd ${BOOST_DIR} && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
   export PATH=${DEPS_DIR}/b2/bin:${PATH}
 fi
