@@ -4,9 +4,6 @@
 # Install Boost headers
 #####################################################################
 
-# Verbose
-set -x
-
 if [[ "${BOOST_VERSION}" != "" ]]; then
   BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
   INSTALL_DIR=${DEPS_DIR}/b2
