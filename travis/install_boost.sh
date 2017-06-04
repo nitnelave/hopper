@@ -9,6 +9,7 @@ set -x
 
 if [[ "${BOOST_VERSION}" != "" ]]; then
   BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
+  INSTALL_DIR=${DEPS_DIR}/b2
   if [[ -z "$(ls -A ${BOOST_DIR} 2>/dev/null)" ]]; then
     if [[ "${BOOST_VERSION}" == "trunk" ]]; then
       BOOST_URL="http://github.com/boostorg/boost.git"
@@ -20,8 +21,7 @@ if [[ "${BOOST_VERSION}" != "" ]]; then
       { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
     fi
   fi
-  CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
-  #(cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
-  (cd ${BOOST_DIR} && ./bootstrap.sh --prefix=${DEPS_DIR}/b2 && ./b2 install -q -d0 --prefix=${DEPS_DIR}/b2 --with-program_options -j${JOBS})
+  (cd ${BOOST_DIR} && ./bootstrap.sh --prefix=${INSTALL_DIR} && ./b2 install -q -d0 --prefix=${INSTALL_DIR} --with-program_options -j${JOBS})
+  CMAKE_OPTIONS+=" -DCMAKE_INCLUDE_PATH=${INSTALL_DIR} -DCMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib"
   export PATH=${DEPS_DIR}/b2/bin:${PATH}
 fi
