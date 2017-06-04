@@ -20,5 +20,5 @@ if [[ -z "$(ls -A ${LLVM_ROOT}/install/include)" ]]; then
 fi
 export LLVM_ROOT
 export CXXFLAGS="${CXXFLAGS} -I ${LLVM_ROOT}/install/include/c++/v1 -stdlib=libc++"
-export LDFLAGS="-L ${LLVM_ROOT}/install/lib -lc++ -lc++abi"
+export LDFLAGS="-L${LLVM_ROOT}/install/lib -lc++ -lc++abi"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_ROOT}/install/lib"
