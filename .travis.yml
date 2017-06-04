@@ -57,5 +57,9 @@ script:
     VERBOSE=1 make -j${JOBS}
 
 notifications:
-    slack: hoppergh:nlwIRc3VKMx48N1WtKfk24Pu
+    slack:
+      rooms:
+        - hoppergh:nlwIRc3VKMx48N1WtKfk24Pu
+      on_failure: always
+      on_success: change
     email: false
