@@ -11,4 +11,5 @@ TARGET_LINK_LIBRARIES(gracc
         ${Boost_LIBRARIES}
     PRIVATE
         gracc_parse
+        gracc_lex
     )

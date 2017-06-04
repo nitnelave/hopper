@@ -1,12 +1,18 @@
 #include "parser/parser.h"
 
-#include <iostream>
-
 namespace parser {
+using lexer::Token;
+using lexer::TokenType;
 
-int parse(const std::string& file) {
-    std::cout << "Parsing " << file << "\n";
-    return 0;
+Parser::Parser(lexer::Lexer* lexer)
+  : lexer_(lexer) {}
+
+ParseError Parser::parse() {
+  Token t = lexer_->get_next_token();
+  if (t.type != TokenType::END_OF_FILE)
+    return ParseErrorCode::VALID;
+  else
+    return ParseErrorCode::SYNTAX_ERROR;
 }
 
-} // parser
+}  // namespace parser
