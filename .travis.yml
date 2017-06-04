@@ -4,7 +4,7 @@ env:
   global:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
-    - BOOST_VERSION="1.50.0"
+    - BOOST_VERSION="1.60.0"
     - BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
     - INSTALL_DIR=${DEPS_DIR}/b2
     - CXXFLAGS="${CXXFLAGS}"
