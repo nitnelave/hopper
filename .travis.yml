@@ -1,5 +1,9 @@
 language: cpp
 
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
+
 env:
   global:
     - CC="clang-3.8"
@@ -13,6 +17,27 @@ env:
     - JOBS=2
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
+
+addons:
+  apt:
+    sources:
+      - george-edison55-precise-backports
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.8
+    packages:
+      - cmake-data
+      - cmake
+      - lcov
+      - clang-3.8
+      - g++-5
+      - gcc-5
+
+install:
+  - JOBS=2
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p "${DEPS_DIR}"
+  - . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
+  - . ${TRAVIS_BUILD_DIR}/travis/install_boost.sh
 
 script:
   - |
@@ -30,32 +55,6 @@ script:
     echo "CMAKE_OPTIONS: " ${CMAKE_OPTIONS}
     cmake ${CMAKE_OPTIONS} ..
     VERBOSE=1 make -j${JOBS}
-
-addons:
-  apt:
-    sources:
-      - george-edison55-precise-backports
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.8
-    packages:
-      - cmake-data
-      - cmake
-      - lcov
-      - clang-3.8
-      - g++-5
-      - gcc-5
-
-cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
-
-install:
-  - JOBS=2
-  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir -p "${DEPS_DIR}"
-  - . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
-  - . ${TRAVIS_BUILD_DIR}/travis/install_boost.sh
-
 
 notifications:
     slack: hoppergh:nlwIRc3VKMx48N1WtKfk24Pu
