@@ -24,7 +24,7 @@ if [[ "${BOOST_VERSION}" != "" ]]; then
   (cd ${BOOST_DIR} \
     && ./bootstrap.sh --prefix=${INSTALL_DIR} \
     && ./b2 install --toolset=clang \
-      cxxflags="-stdlib=libc++ -std=c++14 -I${LLVM_ROOT}/install/include/c++/v1 -stdlib=libc++" \
+      cxxflags="-stdlib=libc++ -std=c++11 -I${LLVM_ROOT}/install/include/c++/v1 -stdlib=libc++" \
       linkflags="-stdlib=libc++ -L${LLVM_ROOT}/install/lib" \
       -q -d0 --prefix=${INSTALL_DIR} \
       --with-program_options \
