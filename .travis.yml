@@ -5,13 +5,21 @@ env:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
     - BOOST_VERSION="1.50.0"
+    - BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
+    - INSTALL_DIR=${DEPS_DIR}/b2
     - CXXFLAGS="${CXXFLAGS}"
     - LIBCXX_BUILD=1
     - USE_LIBCXX=1
     - JOBS=2
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
-    - CMAKE_OPTIONS+="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_LINKER=${CXX}"
+    - CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+                     -DCMAKE_C_COMPILER=${CC} \
+                     -DCMAKE_CXX_COMPILER=${CXX} \
+                     -DCMAKE_LINKER=${CXX} \
+                     -DCMAKE_INCLUDE_PATH=${INSTALL_DIR} \
+                     -DCMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib \
+                     -DBOOST_ROOT=${INSTALL_DIR}"
 
 
 script:

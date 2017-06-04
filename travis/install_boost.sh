@@ -22,6 +22,5 @@ if [[ "${BOOST_VERSION}" != "" ]]; then
     fi
   fi
   (cd ${BOOST_DIR} && ./bootstrap.sh --prefix=${INSTALL_DIR} && ./b2 install -q -d0 --prefix=${INSTALL_DIR} --with-program_options -j${JOBS})
-  CMAKE_OPTIONS+=" -DCMAKE_INCLUDE_PATH=${INSTALL_DIR} -DCMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib -DBOOST_ROOT=${INSTALL_DIR}"
   export PATH=${DEPS_DIR}/b2/bin:${PATH}
 fi
