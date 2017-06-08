@@ -10,43 +10,45 @@
 namespace po = boost::program_options;
 
 std::string version_number() {
-    std::stringstream ss;
-    ss << Hopper_VERSION_MAJOR << '.' << Hopper_VERSION_MINOR;
-    return ss.str();
+  std::stringstream ss;
+  ss << Hopper_VERSION_MAJOR << '.' << Hopper_VERSION_MINOR;
+  return ss.str();
 }
 
 po::variables_map parse_input(int argc, char *argv[]) {
-    // Declare the supported options.
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help", "produce help message")
-        ("input-files", po::value<std::vector<std::string>>(), "Input files")
-        ;
-    po::positional_options_description p;
-    p.add("input-files", -1);
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce help message")
+    ("input-files", po::value<std::vector<std::string>>(), "Input files")
+    ;
+  po::positional_options_description p;
+  p.add("input-files", -1);
 
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).
-              options(desc).positional(p).run(), vm);
-    po::notify(vm);
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).
+            options(desc).positional(p).run(), vm);
+  po::notify(vm);
 
-    if (vm.count("help") || !vm.count("input-files")) {
-        std::cout << "gracc Hopper version " << version_number() << "\n"
-                  << desc << "\n";
-        exit(1);
-    }
-    return vm;
+  if (vm.count("help") > 0 || vm.count("input-files") == 0) {
+    std::cout << "gracc Hopper version " << version_number() << "\n"
+      << desc << "\n";
+    exit(0);
+  }
+  return vm;
 }
 
 int main(int argc, char *argv[])
 {
-    auto vm = parse_input(argc, argv);
-    auto inputs = vm["input-files"].as<std::vector<std::string>>();
+  auto vm = parse_input(argc, argv);
+  auto inputs = vm["input-files"].as<std::vector<std::string>>();
 
-    for (const std::string& input : inputs) {
-        int result = parser::parse(input);
-        if (result) exit(result);
-    }
+  for (const std::string& input : inputs) {
+    auto lexer = lexer::Lexer::from_file(input);
+    auto parser = parser::Parser(&lexer);
+    const auto result = parser.parse();
+    if (result != parser::ParseErrorCode::VALID) exit(1);
+  }
 
-    return 0;
+  return 0;
 }
