@@ -62,4 +62,5 @@ notifications:
         - hoppergh:nlwIRc3VKMx48N1WtKfk24Pu
       on_failure: always
       on_success: change
+      on_pull_requests: false
     email: false
