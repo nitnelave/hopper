@@ -18,61 +18,6 @@ class Error {
   const std::string message_;
 };
 
-// Either an error or a positive result.
-// This class is immutable.
-template <typename Err>
-class MaybeError {
- public:
-  // Constructor for no error.
-  MaybeError() : is_ok_(true) {}
-
-  // Represent an error.
-  // Not explicit on purpose.
-  MaybeError(Err&& error) {
-    // Placement new.
-    new (&as_Err()) Err(std::move(error));
-  }
-
-  // Represent an error.
-  // Not explicit on purpose.
-  MaybeError(const Err& error) {
-    // Placement new.
-    new (&as_Err()) Err(error);
-  }
-
-  ~MaybeError() {
-    if (!ok())
-      as_Err().~Err();
-  }
-
-  // Check if it's an error or a value.
-  bool ok() const { return is_ok_; }
-
-  // Return the error if it is one, fail otherwise.
-  const Err& error_or_die() const {
-    if (ok())
-      throw std::domain_error("ErrorOr was value, asked for error");
-    return as_Err();
-  }
-
-  // Return the error if it is one, otherwise return "Ok".
-  std::string toString() const {
-    if (ok())
-      return "Ok";
-    else
-      return error_or_die().toString();
-  }
-
- private:
-  Err& as_Err() {
-    return *reinterpret_cast<Err*>(&error_memory_);
-  }
-  const Err& as_Err() const {
-    return *reinterpret_cast<const Err*>(&error_memory_);
-  }
-  const bool is_ok_ = false;
-  std::array<char, sizeof (Err)> error_memory_;
-};
 
 // Either an error or a T.
 // This class is immutable (but the T can be mutable).
@@ -101,6 +46,37 @@ class ErrorOr {
   ErrorOr(T&& value) : is_ok_(true) {
     // Placement new.
     new (&union_.value) T(std::move(value));
+  }
+
+  ErrorOr(const ErrorOr& other) : is_ok_(other.is_ok_) {
+    if (is_ok_)
+      union_.value = other.union_.value;
+    else
+      union_.error = other.union_.error;
+  }
+
+  ErrorOr(ErrorOr&& other) : is_ok_(other.is_ok_) {
+    if (is_ok_)
+      new (&union_.value) T(std::move(other.union_.value));
+    else
+      new (&union_.error) Err(std::move(other.union_.error));
+  }
+
+  ErrorOr& operator=(const ErrorOr& other) {
+    ~ErrorOr();
+    is_ok_ = other.is_ok_;
+    if (is_ok_)
+      union_.value = other.union_.value;
+    else
+      union_.error = other.union_.error;
+  }
+
+  ErrorOr& operator=(ErrorOr&& other) {
+    std::swap(is_ok_, other.is_ok_);
+    if (is_ok_)
+      std::swap(union_.value, other.union_.value);
+    else
+      std::swap(union_.error, other.union_.error);
   }
 
   // Check if it's an error or a value.
@@ -153,10 +129,30 @@ class ErrorOr {
   } union_;
 };
 
+namespace internals {
+  struct Dummy{};
+}
+
+// Either an error or a positive result.
+// This class is immutable.
+template <typename Err>
+class MaybeError : public ErrorOr<internals::Dummy, Err> {
+ public:
+  using Base = ErrorOr<internals::Dummy, Err>;
+  // Constructor for no error.
+  MaybeError() : Base(internals::Dummy()) {}
+  using Base::Base;
+};
+
 #define RETURN_IF_ERROR(CALL)      \
   do {                             \
-    auto res = CALL;               \
+    const auto& res = CALL;        \
     if (!res.ok())                 \
       return {res.error_or_die()}; \
   } while (0)
 
+#define RETURN_OR_ASSIGN(DECL, CALL) \
+  const auto& res = CALL;            \
+  if (!res.ok())                     \
+    return {res.error_or_die()};     \
+  DECL = res.value_or_die();
