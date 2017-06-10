@@ -11,6 +11,8 @@ else
   BUILD_FILE=${BUILD_FOLDER}/Makefile
 endif
 
+CMAKE_FLAGS+="-DCMAKE_BUILD_TYPE=Debug"
+
 all: ${TARGET}
 
 ${TARGET}: cmake
