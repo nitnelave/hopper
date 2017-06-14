@@ -1,0 +1,2 @@
+export "CXX_FLAGS=@CMAKE_CXX_FLAGS"
+eval "$*"

@@ -1,6 +1,4 @@
-add_hopper_library(gracc_parse)
-
-target_sources(gracc_parse
+target_sources(${MAIN_TARGET_NAME}
     PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/parser.cc"
     PUBLIC

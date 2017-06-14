@@ -1,15 +1,11 @@
+add_executable(${MAIN_TARGET_NAME} main.cc)
 include(lexer/CMakeLists.txt)
 include(parser/CMakeLists.txt)
 
-add_executable(gracc main.cc)
-set_property(TARGET gracc PROPERTY CXX_STANDARD 14)
-set_property(TARGET gracc PROPERTY CXX_STANDARD_REQUIRED ON)
-include_directories(".")
+set_property(TARGET ${MAIN_TARGET_NAME} PROPERTY CXX_STANDARD 14)
+set_property(TARGET ${MAIN_TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
-TARGET_LINK_LIBRARIES(gracc
+TARGET_LINK_LIBRARIES(${MAIN_TARGET_NAME}
     PUBLIC
         ${Boost_LIBRARIES}
-    PRIVATE
-        gracc_parse
-        gracc_lex
     )
