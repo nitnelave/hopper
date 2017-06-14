@@ -24,4 +24,7 @@ ${BUILD_FILE}: ${BUILD_FOLDER}
 ${BUILD_FOLDER}:
 	mkdir -p $@
 
-.PHONY: all ${TARGET} cmake
+test: cmake
+	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} test
+
+.PHONY: all ${TARGET} cmake test

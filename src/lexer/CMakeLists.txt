@@ -1,6 +1,4 @@
-add_hopper_library(gracc_lex)
-
-target_sources(gracc_lex
+target_sources(${MAIN_TARGET_NAME}
     PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/lexer.cc"
     PUBLIC

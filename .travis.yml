@@ -3,6 +3,8 @@ language: cpp
 cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
+    - ${TRAVIS_BUILD_DIR}/deps/boost-1.60.0
+    - ${TRAVIS_BUILD_DIR}/gtest
 
 env:
   global:
@@ -14,7 +16,7 @@ env:
     - CXXFLAGS="${CXXFLAGS}"
     - LIBCXX_BUILD=1
     - USE_LIBCXX=1
-    - JOBS=2
+    - JOBS=3
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
 
@@ -31,16 +33,17 @@ addons:
       - clang-3.8
       - g++-5
       - gcc-5
+      - valgrind
+      - libboost-program-options-dev
 
 install:
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p "${DEPS_DIR}"
-  - . ${TRAVIS_BUILD_DIR}/travis/install_libc++.sh
-  - . ${TRAVIS_BUILD_DIR}/travis/install_boost.sh
 
 script:
   - |
+    set -e
     mkdir -p "${BUILD_DIR}"
     cd "${BUILD_DIR}"
     export CC="clang-3.8"
@@ -51,10 +54,11 @@ script:
                           -DCMAKE_LINKER=${CXX} \
                           -DCMAKE_INCLUDE_PATH=${INSTALL_DIR} \
                           -DCMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib \
-                          -DBOOST_ROOT=${INSTALL_DIR}"
-    echo "CMAKE_OPTIONS: " ${CMAKE_OPTIONS}
+                          -DBOOST_ROOT=${INSTALL_DIR}
+                          -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest"
     cmake ${CMAKE_OPTIONS} ..
-    VERBOSE=1 make -j${JOBS}
+    make -j${JOBS}
+    make -j${JOBS} test
 
 notifications:
     slack:
