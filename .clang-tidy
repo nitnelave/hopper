@@ -1,0 +1,26 @@
+Checks: '*,-readability-braces-around-statements,-google-readability-braces-around-statements,-llvm-header-guard,-cert-err60-cpp,-cppcoreguidelines-pro-type-vararg,google-readability-namespace-comments'
+CheckOptions:
+  - key:             readability-braces-around-statements.ShortStatementLines
+    value:           '1'
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.ClassMemberSuffix
+    value:           '_'
+  - key:             readability-identifier-naming.ClassMethodCase
+    value:           lower_case
+  - key:             readability-identifier-naming.ConstantCase
+    value:           lower_case
+  - key:             readability-identifier-naming.EnumConstantCase
+    value:           UPPER_CASE
+  - key:             readability-identifier-naming.FunctionCase
+    value:           lower_case
+  - key:             readability-identifier-naming.MemberCase
+    value:           lower_case
+  - key:             readability-identifier-naming.MethodCase
+    value:           lower_case
+  - key:             readability-identifier-naming.StructCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.TemplateParameterCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
