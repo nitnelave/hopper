@@ -7,18 +7,18 @@
 // Tests of GenericError.
 TEST(ErrorTest, ErrorMessage) {
   GenericError e("abc");
-  EXPECT_EQ("abc", e.toString());
+  EXPECT_EQ("abc", e.to_string());
 }
 
 // Tests of ErrorOr.
 TEST(ErrorTest, ToStringValue) {
   ErrorOr<std::string, GenericError> res("abc");
-  EXPECT_EQ("Ok", res.toString());
+  EXPECT_EQ("Ok", res.to_string());
 }
 
 TEST(ErrorTest, ToStringError) {
   ErrorOr<std::string, GenericError> res(GenericError("abc"));
-  EXPECT_EQ("abc", res.toString());
+  EXPECT_EQ("abc", res.to_string());
 }
 
 TEST(ErrorTest, ConstructorValueCopy) {
@@ -38,27 +38,29 @@ TEST(ErrorTest, ConstructorErrorCopy) {
   GenericError err("Error");
   ErrorOr<std::string, GenericError> res(err);
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("Error", res.error_or_die().toString());
+  EXPECT_EQ("Error", res.error_or_die().to_string());
 }
 
 TEST(ErrorTest, ConstructorErrorMove) {
   ErrorOr<std::string, GenericError> res(GenericError("Error"));
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("Error", res.error_or_die().toString());
+  EXPECT_EQ("Error", res.error_or_die().to_string());
 }
 
-TEST(ErrorTest, CopyConstructorValue) {
-  ErrorOr<std::string, GenericError> tmp("abc");
-  ErrorOr<std::string, GenericError> res(tmp);
-  EXPECT_TRUE(res.is_ok());
-  EXPECT_EQ(tmp.value_or_die(), res.value_or_die());
-}
+class SpecificError : public GenericError {
+ public:
+  SpecificError() : GenericError("test") {}
+  std::string to_string() const override { return m_; }
 
-TEST(ErrorTest, CopyConstructorError) {
-  ErrorOr<std::string, GenericError> tmp(GenericError("abc"));
-  ErrorOr<std::string, GenericError> res(tmp);
-  EXPECT_TRUE(!res.is_ok());
-  EXPECT_EQ(tmp.error_or_die().toString(), res.error_or_die().toString());
+ private:
+  std::string m_ = "success";
+};
+
+TEST(ErrorTest, TestObjectSlicing) {
+  ErrorOr<std::string, SpecificError> tmp(SpecificError{});
+  ErrorOr<std::string, GenericError> res(std::move(tmp));
+  ASSERT_FALSE(res.is_ok());
+  EXPECT_EQ("success", res.error_or_die().to_string());
 }
 
 TEST(ErrorTest, MoveConstructorValue) {
@@ -72,39 +74,7 @@ TEST(ErrorTest, MoveConstructorError) {
   ErrorOr<std::string, GenericError> tmp(GenericError("abc"));
   ErrorOr<std::string, GenericError> res(std::move(tmp));
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("abc", res.error_or_die().toString());
-}
-
-TEST(ErrorTest, CopyAssignmentValueToValue) {
-  ErrorOr<std::string, GenericError> tmp("abc");
-  ErrorOr<std::string, GenericError> res("def");
-  res = tmp;
-  EXPECT_TRUE(res.is_ok());
-  EXPECT_EQ(tmp.value_or_die(), res.value_or_die());
-}
-
-TEST(ErrorTest, CopyAssignmentValueToError) {
-  ErrorOr<std::string, GenericError> tmp(GenericError("abc"));
-  ErrorOr<std::string, GenericError> res("def");
-  res = tmp;
-  EXPECT_TRUE(!res.is_ok());
-  EXPECT_EQ(tmp.error_or_die().toString(), res.error_or_die().toString());
-}
-
-TEST(ErrorTest, CopyAssignmentErrorToValue) {
-  ErrorOr<std::string, GenericError> tmp("abc");
-  ErrorOr<std::string, GenericError> res(GenericError("def"));
-  res = tmp;
-  EXPECT_TRUE(res.is_ok());
-  EXPECT_EQ(tmp.value_or_die(), res.value_or_die());
-}
-
-TEST(ErrorTest, CopyAssignmentErrorToError) {
-  ErrorOr<std::string, GenericError> tmp(GenericError("abc"));
-  ErrorOr<std::string, GenericError> res(GenericError("def"));
-  res = tmp;
-  EXPECT_TRUE(!res.is_ok());
-  EXPECT_EQ(tmp.error_or_die().toString(), res.error_or_die().toString());
+  EXPECT_EQ("abc", res.error_or_die().to_string());
 }
 
 TEST(ErrorTest, MoveAssignmentValueToValue) {
@@ -120,7 +90,7 @@ TEST(ErrorTest, MoveAssignmentValueToError) {
   ErrorOr<std::string, GenericError> res("def");
   res = std::move(tmp);
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("abc", res.error_or_die().toString());
+  EXPECT_EQ("abc", res.error_or_die().to_string());
 }
 
 TEST(ErrorTest, MoveAssignmentErrorToValue) {
@@ -136,49 +106,47 @@ TEST(ErrorTest, MoveAssignmentErrorToError) {
   ErrorOr<std::string, GenericError> res(GenericError("def"));
   res = std::move(tmp);
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("abc", res.error_or_die().toString());
+  EXPECT_EQ("abc", res.error_or_die().to_string());
 }
 
 // Tests of macros (RETURN_IF_ERROR and RETURN_OR_ASSIGN).
 
-ErrorOr<int> maybeReturnInt(bool error) {
-  if (error)
-    return GenericError("No int");
-  else
-    return 1;
+ErrorOr<int> maybe_return_int(bool error) {
+  if (error) return GenericError("No int");
+  return 1;
 }
 
-ErrorOr<bool> maybeHandleIntAssign(bool error) {
-  RETURN_OR_ASSIGN(int i, maybeReturnInt(false));
-  RETURN_OR_ASSIGN(int j, maybeReturnInt(error));
+ErrorOr<bool> maybe_handle_int_assign(bool error) {
+  RETURN_OR_ASSIGN(int i, maybe_return_int(false));
+  RETURN_OR_ASSIGN(int j, maybe_return_int(error));
   return i == j;
 }
 
-MaybeError<> maybeHandleIntReturn(bool error) {
-  RETURN_IF_ERROR(maybeReturnInt(false));
-  RETURN_IF_ERROR(maybeReturnInt(error));
+MaybeError<> maybe_handle_int_return(bool error) {
+  RETURN_IF_ERROR(maybe_return_int(false));
+  RETURN_IF_ERROR(maybe_return_int(error));
   return {};
 }
 
 TEST(ErrorTest, ReturnOrAssignReturn) {
-  auto res = maybeHandleIntAssign(false);
+  auto res = maybe_handle_int_assign(false);
   ASSERT_TRUE(res.is_ok());
   EXPECT_EQ(true, res.value_or_die());
 }
 
 TEST(ErrorTest, ReturnOrAssignAssign) {
-  auto res = maybeHandleIntAssign(true);
+  auto res = maybe_handle_int_assign(true);
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("No int", res.error_or_die().toString());
+  EXPECT_EQ("No int", res.error_or_die().to_string());
 }
 
 TEST(ErrorTest, ReturnIfErrorNoError) {
-  auto res = maybeHandleIntReturn(false);
+  auto res = maybe_handle_int_return(false);
   ASSERT_TRUE(res.is_ok());
 }
 
 TEST(ErrorTest, ReturnIfErrorError) {
-  auto res = maybeHandleIntReturn(true);
+  auto res = maybe_handle_int_return(true);
   ASSERT_FALSE(res.is_ok());
-  EXPECT_EQ("No int", res.error_or_die().toString());
+  EXPECT_EQ("No int", res.error_or_die().to_string());
 }

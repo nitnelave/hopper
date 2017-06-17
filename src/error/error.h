@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <memory>
 #include <stdexcept>
+#include <string>
 
 // Error utilities.
 
@@ -10,28 +11,30 @@
 class Error {
  public:
   /// Conversion to a string for display.
-  virtual std::string toString() const = 0;
-  virtual ~Error() {}
+  virtual std::string to_string() const = 0;
+  virtual ~Error() = default;
 };
 
 /// Basic error, with an error message.
 class GenericError : public Error {
  public:
   /// Build a new generic error, with an error message.
-  explicit GenericError(const std::string& message) : Error(), message_(message) {}
+  explicit GenericError(std::string message)
+      : Error(), message_(std::move(message)) {}
 
   /// Return the error message it was constructed with.
-  std::string toString() const override { return message(); }
+  std::string to_string() const override { return message(); }
 
-  ~GenericError() override {}
+  ~GenericError() override = default;
+
  protected:
   /// Access to the field containing the error message passed to the
   /// constructor.
   std::string message() const { return message_; }
+
  private:
   const std::string message_;
 };
-
 
 /// Represents either an error or a T.
 /// This class is immutable (but the T can be mutable).
@@ -39,93 +42,76 @@ template <typename T, typename Err = GenericError>
 class ErrorOr {
   static_assert(std::is_base_of<Error, Err>::value,
                 "Error type must be a subclass of Error");
+  template <typename E>
+  using enable_if_error = typename std::enable_if<std::is_base_of<
+      typename std::decay<Err>::type, typename std::decay<E>::type>::value>;
+
  public:
   // Constructors from value or errors.
 
   // Not explicit on purpose.
-  ErrorOr(const Err& error) : union_(error), is_ok_(false) {}
+  template <typename E>
+  ErrorOr(E error,  // NOLINT: explicit
+          typename enable_if_error<E>::type* /*unused*/ = nullptr)
+      : union_(std::move(error)), is_ok_(false) {}
 
   // Not explicit on purpose.
-  ErrorOr(Err&& error) : union_(std::move(error)), is_ok_(false) {}
-
-  // Not explicit on purpose.
-  ErrorOr(const T& value) : union_(value), is_ok_(true) {}
-
-  // Not explicit on purpose.
-  ErrorOr(T&& value) : union_(std::move(value)), is_ok_(true) {}
-
-  // Copy constructor.
-  ErrorOr(const ErrorOr& other)
-      : is_ok_(other.is_ok_)
-  {
-    if (is_ok_)
-      new (&union_.value) T(other.union_.value);
-    else
-      new (&union_.error) Err(other.union_.error);
-  }
+  ErrorOr(T value)  // NOLINT: explicit
+      : union_(std::move(value)),
+        is_ok_(true) {}
 
   // Move constructor.
-  ErrorOr(ErrorOr&& other)
-      : is_ok_(other.is_ok_)
-  {
+  template <typename E>
+  ErrorOr(ErrorOr<T, E>&& other)  // NOLINT: explicit
+      : is_ok_(other.is_ok_) {
     if (is_ok_)
       new (&union_.value) T(std::move(other.union_.value));
     else
-      new (&union_.error) Err(std::move(other.union_.error));
-  }
-
-  // Copy assignment.
-  ErrorOr& operator=(const ErrorOr& other) {
-    this->~ErrorOr();
-    is_ok_ = other.is_ok_;
-    if (is_ok_)
-      new (&union_.value) T(other.union_.value);
-    else
-      new (&union_.error) Err(other.union_.error);
-    return *this;
+      new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
   }
 
   // Move assignment.
-  ErrorOr& operator=(ErrorOr&& other) {
+  template <typename E>
+  ErrorOr& operator=(ErrorOr<T, E>&& other) {
     this->~ErrorOr();
     is_ok_ = other.is_ok_;
     if (is_ok_)
       new (&union_.value) T(std::move(other.union_.value));
     else
-      new (&union_.error) Err(std::move(other.union_.error));
+      new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
     return *this;
   }
+
+  // Copy constructor.
+  ErrorOr(const ErrorOr& other) = delete;
+  // Copy assignment.
+  ErrorOr& operator=(const ErrorOr& other) = delete;
 
   /// Check whether it is an error or a value.
   bool is_ok() const { return is_ok_; }
 
   /// Return the value if it is one, fail otherwise.
   T& value_or_die() {
-    if (!is_ok_)
-      throw std::domain_error("ErrorOr was error, asked for value");
+    if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
     return union_.value;
   }
 
   /// Return the value if it is one, fail otherwise.
   const T& value_or_die() const {
-    if (!is_ok_)
-      throw std::domain_error("ErrorOr was error, asked for value");
+    if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
     return union_.value;
   }
 
   /// Return the error if it is one, fail otherwise.
   const Err& error_or_die() const {
-    if (is_ok_)
-      throw std::domain_error("ErrorOr was value, asked for error");
-    return union_.error;
+    if (is_ok_) throw std::domain_error("ErrorOr was value, asked for error");
+    return *union_.error;
   }
 
   /// Return the error if it is one, otherwise return "Ok".
-  std::string toString() const {
-    if (is_ok_)
-      return "Ok";
-    else
-      return error_or_die().toString();
+  std::string to_string() const {
+    if (is_ok_) return "Ok";
+    return error_or_die().to_string();
   }
 
   ~ErrorOr() {
@@ -133,33 +119,37 @@ class ErrorOr {
     if (is_ok_)
       union_.value.~T();
     else
-      union_.error.~Err();
+      union_.error.~unique_ptr<Err>();
   }
 
  private:
   // Contain either an error or a value, with the appropriate constructors.
   union Union {
-    Err error;
+    std::unique_ptr<Err> error;
     T value;
 
-    Union(Err&& e) : error(std::move(e)) {}
-    Union(const Err& e) : error(e) {}
-    Union(T&& v) : value(std::move(v)) {}
-    Union(const T& v) : value(v) {}
+    template <typename E>
+    explicit Union(E e) : error(new E(std::move(e))) {}
+    explicit Union(T v) : value(std::move(v)) {}
     // Default constructor leaves the memory uninitialized, make to to
     // initialize it after.
-    Union() {}
+    Union() {}  // NOLINT: modernize suggests =default
     // Destructor does not destroy (not enough information).
-    ~Union() {}
+    ~Union() {}  // NOLINT: modernize suggests =default
   } union_;
   // true: value, false: error.
   bool is_ok_;
+
+  // Friend other implementations of that class, for the move
+  // constructor/assignment.
+  template <typename Value, typename E>
+  friend class ErrorOr;
 };
 
 namespace internals {
-  // Empty struct to act as placeholder of a value.
-  struct Dummy{};
-}
+// Empty struct to act as placeholder of a value.
+struct Dummy {};
+}  // namespace internals
 
 /// Either an error or a positive result.
 /// This class is immutable.
@@ -168,21 +158,21 @@ class MaybeError : private ErrorOr<internals::Dummy, Err> {
  public:
   using Base = ErrorOr<internals::Dummy, Err>;
   // Constructor for no error.
-  MaybeError() : Base(internals::Dummy()) {}
-  // Inherit constructors.
-  using Base::Base;
+  MaybeError() : Base(internals::Dummy()) {}  // NOLINT: explicit
+
+  // Inherit the constructors.
+  template <typename T>
+  MaybeError(T&& value) : Base(std::forward<T>(value)) {}  // NOLINT: explicit
   // Inherit methods.
   using Base::error_or_die;
   using Base::is_ok;
 };
 
-
 // Macro to propagate the error from the method called, if it failed.
-#define RETURN_IF_ERROR(CALL)      \
-  do {                             \
-    const auto& res = (CALL);      \
-    if (!res.is_ok())              \
-      return {res.error_or_die()}; \
+#define RETURN_IF_ERROR(CALL)                      \
+  do {                                             \
+    const auto& res = (CALL);                      \
+    if (!res.is_ok()) return {res.error_or_die()}; \
   } while (0)
 
 // These macros are needed because we can't just use res##__LINE__, because
@@ -192,8 +182,8 @@ class MaybeError : private ErrorOr<internals::Dummy, Err> {
 
 // Macro to either propagate the error from the method called, or assign it to
 // a local variable if it succeeded.
-#define RETURN_OR_ASSIGN(DECL, CALL)                         \
-  const auto& __ERROR_MACRO_VAR(__LINE__) = CALL;            \
-  if (!__ERROR_MACRO_VAR(__LINE__).is_ok())                  \
-    return {__ERROR_MACRO_VAR(__LINE__).error_or_die()};     \
-  DECL = __ERROR_MACRO_VAR(__LINE__).value_or_die();
+#define RETURN_OR_ASSIGN(DECL, CALL)                     \
+  const auto& __ERROR_MACRO_VAR(__LINE__) = CALL;        \
+  if (!__ERROR_MACRO_VAR(__LINE__).is_ok())              \
+    return {__ERROR_MACRO_VAR(__LINE__).error_or_die()}; \
+  DECL = __ERROR_MACRO_VAR(__LINE__).value_or_die();  // NOLINT (parenthesis)
