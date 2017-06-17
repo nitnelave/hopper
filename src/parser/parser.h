@@ -17,7 +17,7 @@ class Parser {
  public:
   // Initialize the parser with a Lexer.
   // The lexer is not owned by the Parser, it must be deleted.
-  Parser(lexer::Lexer* lexer);
+  explicit Parser(lexer::Lexer* lexer);
 
   // Parse the input from the stream.
   ParseError parse();
@@ -27,4 +27,3 @@ class Parser {
 };
 
 }  // namespace parser
-

@@ -3,6 +3,9 @@ project (Hopper)
 
 set (MAIN_TARGET_NAME "gracc")
 
+option(EXPORT_COMPILE_COMMANDS "EXPORT_COMPILE_COMMANDS" ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ${EXPORT_COMPILE_COMMANDS})
+
 # The version number.
 set (Hopper_VERSION_MAJOR 0)
 set (Hopper_VERSION_MINOR 1)
@@ -34,9 +37,6 @@ configure_file (
 # add the binary tree to the search path for include files
 # so that we will find HopperConfig.h
 include_directories("${PROJECT_BINARY_DIR}")
-
-FIND_PACKAGE(Boost 1.40 COMPONENTS program_options REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIR})
 
 # Setup GTest
 add_subdirectory(${EXT_PROJECTS_DIR}/gtest)

@@ -21,7 +21,7 @@ std::unique_ptr<std::istream> get_stream_from_source(const std::string& source,
 }  // namespace
 
 Lexer::Lexer(const std::string& source, SourceTag tag)
-  : stream_{get_stream_from_source(source, tag)} {}
+    : stream_{get_stream_from_source(source, tag)} {}
 
 Token Lexer::get_next_token() {
   return {TokenType::END_OF_FILE, "", location_, location_};

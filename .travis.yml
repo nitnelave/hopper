@@ -3,17 +3,13 @@ language: cpp
 cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
-    - ${TRAVIS_BUILD_DIR}/deps/boost-1.60.0
     - ${TRAVIS_BUILD_DIR}/gtest
 
 env:
   global:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
-    - BOOST_VERSION="1.60.0"
-    - BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
     - INSTALL_DIR=${DEPS_DIR}/b2
-    - CXXFLAGS="${CXXFLAGS}"
     - LIBCXX_BUILD=1
     - USE_LIBCXX=1
     - JOBS=3
@@ -27,38 +23,47 @@ addons:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-precise-3.8
     packages:
-      - cmake-data
-      - cmake
-      - lcov
       - clang-3.8
+      - clang-tidy-3.8
+      - cmake
+      - cmake-data
       - g++-5
       - gcc-5
+      - lcov
+      - python
       - valgrind
-      - libboost-program-options-dev
 
 install:
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir -p "${DEPS_DIR}"
 
-script:
-  - |
-    set -e
-    mkdir -p "${BUILD_DIR}"
-    cd "${BUILD_DIR}"
-    export CC="clang-3.8"
-    export CXX="clang++-3.8"
-    export CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-                          -DCMAKE_C_COMPILER=${CC} \
-                          -DCMAKE_CXX_COMPILER=${CXX} \
-                          -DCMAKE_LINKER=${CXX} \
-                          -DCMAKE_INCLUDE_PATH=${INSTALL_DIR} \
-                          -DCMAKE_LIBRARY_PATH=${INSTALL_DIR}/lib \
-                          -DBOOST_ROOT=${INSTALL_DIR}
-                          -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest"
-    cmake ${CMAKE_OPTIONS} ..
-    make -j${JOBS}
-    make -j${JOBS} test
+cmake_command: &cmake_command |
+      mkdir -p "${BUILD_DIR}"
+      cd "${BUILD_DIR}"
+      export CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+                            -DCMAKE_C_COMPILER=clang-3.8 \
+                            -DCMAKE_CXX_COMPILER=clang++-3.8 \
+                            -DCMAKE_LINKER=clang++-3.8 \
+                            -DCMAKE_CXX_FLAGS=${CXXFLAGS} \
+                            -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest"
+      echo "CMake_options: ${CMAKE_OPTIONS}"
+      cmake ${CMAKE_OPTIONS} ..
+
+matrix:
+  include:
+    - script:
+        - *cmake_command
+        - |
+          make -j${JOBS}
+          make -j${JOBS} test
+    - script:
+        - *cmake_command
+        - |
+          make -j${JOBS} googletest
+          python2 ${TRAVIS_BUILD_DIR}/tools/run-clang-tidy.py -p ${BUILD_DIR}  -header-filter="${TRAVIS_BUILD_DIR}/(src|test)" -j=${JOBS} -clang-tidy-binary=$(which clang-tidy-3.8)
+    - script:
+        - *cmake_command
+        - ${TRAVIS_BUILD_DIR}/tools/clang-format.sh --check
 
 notifications:
     slack:
