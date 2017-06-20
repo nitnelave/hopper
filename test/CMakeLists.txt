@@ -10,6 +10,7 @@ target_include_directories(${PROJECT_TEST_NAME} PRIVATE ".")
 target_link_libraries(${PROJECT_TEST_NAME}
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
+    ${GRACC_LIBRARY}
     )
 
 add_dependencies(${PROJECT_TEST_NAME} googletest)

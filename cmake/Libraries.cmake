@@ -1,5 +1,0 @@
-function(add_hopper_library NAME)
-    add_library(${NAME} "")
-    set_property(TARGET ${NAME} PROPERTY CXX_STANDARD 14)
-    set_property(TARGET ${NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
-endfunction(add_hopper_library)

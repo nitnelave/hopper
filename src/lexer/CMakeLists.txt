@@ -1,4 +1,4 @@
-target_sources(${MAIN_TARGET_NAME}
+target_sources(${GRACC_LIBRARY}
     PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/lexer.cc"
     PUBLIC
