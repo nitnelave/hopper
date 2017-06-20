@@ -6,12 +6,17 @@ then
   exit 0
 fi
 
+CURRENT_DIR=$(dirname $0)
+PROJECT_DIR=$(readlink -f ${CURRENT_DIR}/..)
+
 FORMAT_CMD="clang-format -style=Google"
+
+FIND_CMD="find ${PROJECT_DIR}/src/ ${PROJECT_DIR}/test/ -regex '.*\.\(h\|cc\)' -type f"
 
 if [ $# -eq 1 ]
 then
   EXIT=0
-  for f in $(find src/ test/ -regex '.*\.\(h\|cc\)' -type f)
+  for f in $(eval "${FIND_CMD}")
   do
     DIFF=$($FORMAT_CMD "$f" | diff --color=always --context=3 "$f" -)
     if [ "$DIFF" != "" ]
@@ -23,7 +28,7 @@ then
   done
   exit $EXIT
 else
-  find src/ test/ -regex '.*\.\(h\|cc\)' -type f -exec $FORMAT_CMD -i {} \;
+  eval "${FIND_CMD} -exec $FORMAT_CMD -i {} \;"
 fi
 
 
