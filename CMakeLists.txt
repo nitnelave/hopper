@@ -41,13 +41,22 @@ include_directories("${PROJECT_BINARY_DIR}")
 # Setup GTest
 add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 
-include(cmake/Libraries.cmake)
+include(cmake/Sources.cmake)
 include(cmake/Tests.cmake)
+
+set(GRACC_LIBRARY grasshopper)
+
+add_library(${GRACC_LIBRARY} STATIC "")
+set_property(TARGET ${GRACC_LIBRARY} PROPERTY CXX_STANDARD 14)
+set_property(TARGET ${GRACC_LIBRARY} PROPERTY CXX_STANDARD_REQUIRED ON)
+TARGET_LINK_LIBRARIES(${GRACC_LIBRARY}
+    PUBLIC
+        ${Boost_LIBRARIES}
+    )
 
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_subdirectory(${PROJECT_SOURCE_DIR})
-
 
 enable_testing()
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})

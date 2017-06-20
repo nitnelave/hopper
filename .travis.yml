@@ -10,8 +10,6 @@ env:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
     - INSTALL_DIR=${DEPS_DIR}/b2
-    - LIBCXX_BUILD=1
-    - USE_LIBCXX=1
     - JOBS=3
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
