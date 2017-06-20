@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 
@@ -35,6 +36,10 @@ class GenericError : public Error {
  private:
   const std::string message_;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const GenericError& error) {
+  return os << error.to_string();
+}
 
 /// Represents either an error or a T.
 /// This class is immutable (but the T can be mutable).
@@ -172,6 +177,7 @@ class MaybeError : private ErrorOr<internals::Dummy, Err> {
   // Inherit methods.
   using Base::error_or_die;
   using Base::is_ok;
+  using Base::to_string;
 };
 
 // Macro to propagate the error from the method called, if it failed.
