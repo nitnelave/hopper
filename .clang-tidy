@@ -1,4 +1,4 @@
-Checks: '*,-readability-braces-around-statements,-google-readability-braces-around-statements,-llvm-header-guard,-cert-err60-cpp,-cppcoreguidelines-pro-type-vararg,google-readability-namespace-comments,-google-readability-todo,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index'
+Checks: '*,-readability-braces-around-statements,-google-readability-braces-around-statements,-llvm-header-guard,-cert-err60-cpp,-cppcoreguidelines-pro-type-vararg,google-readability-namespace-comments,-google-readability-todo,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cert-err58-cpp'
 CheckOptions:
   - key:             readability-braces-around-statements.ShortStatementLines
     value:           '1'
