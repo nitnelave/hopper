@@ -1,7 +1,10 @@
 find_package(Threads REQUIRED)
 
 add_executable(${PROJECT_TEST_NAME} "main.cc")
+
+
 include(error/CMakeLists.txt)
+include(test_utils/CMakeLists.txt)
 
 set_property(TARGET ${PROJECT_TEST_NAME} PROPERTY CXX_STANDARD 14)
 set_property(TARGET ${PROJECT_TEST_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
