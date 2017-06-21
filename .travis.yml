@@ -4,6 +4,7 @@ cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
     - ${TRAVIS_BUILD_DIR}/gtest
+    - ${TRAVIS_BUILD_DIR}/gflags
 
 env:
   global:
@@ -14,26 +15,34 @@ env:
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
 
-addons:
-  apt:
-    sources:
-      - george-edison55-precise-backports
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.8
-    packages:
-      - clang-3.8
-      - clang-tidy-3.8
+apt_sources: &apt_sources
+  sources:
+    - george-edison55-precise-backports
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.8
+apt_base_packages: &apt_base_packages
       - cmake
       - cmake-data
+      - clang-3.8
       - g++-5
       - gcc-5
-      - lcov
-      - python
-      - valgrind
 
 install:
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - |
+    if [ ! -d ${TRAVIS_BUILD_DIR}/gflags/gflags-master ]
+    then
+      cd ${TRAVIS_BUILD_DIR}/gflags
+      wget https://github.com/schuhschuh/gflags/archive/master.zip -O gflags-master.zip
+      unzip gflags-master.zip
+      cd gflags-master
+      mkdir build
+      cd build
+      export CXXFLAGS="-fPIC"
+      cmake ..
+      make
+    fi
 
 cmake_command: &cmake_command |
       mkdir -p "${BUILD_DIR}"
@@ -43,23 +52,46 @@ cmake_command: &cmake_command |
                             -DCMAKE_CXX_COMPILER=clang++-3.8 \
                             -DCMAKE_LINKER=clang++-3.8 \
                             -DCMAKE_CXX_FLAGS=${CXXFLAGS} \
-                            -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest"
+                            -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest
+                            -Dgflags_DIR=${TRAVIS_BUILD_DIR}/gflags/gflags-master/build"
       echo "CMake_options: ${CMAKE_OPTIONS}"
       cmake ${CMAKE_OPTIONS} ..
 
 matrix:
   include:
-    - script:
+    # Job #1, build and test
+    - addons:
+        apt:
+          <<: *apt_sources
+          packages:
+            - *apt_base_packages
+            - valgrind
+      script:
         - *cmake_command
         - |
           make -j${JOBS}
           make -j${JOBS} test
-    - script:
+    # Job #2, clang-tidy
+    - addons:
+        apt:
+          <<: *apt_sources
+          packages:
+            - *apt_base_packages
+            - clang-tidy-3.8
+            - python
+      script:
         - *cmake_command
         - |
           make -j${JOBS} googletest
           python2 ${TRAVIS_BUILD_DIR}/tools/run-clang-tidy.py -p ${BUILD_DIR}  -header-filter="${TRAVIS_BUILD_DIR}/(src|test)" -j=${JOBS} -clang-tidy-binary=$(which clang-tidy-3.8)
-    - script:
+    # Job #3, clang-format
+    - addons:
+        apt:
+          <<: *apt_sources
+          packages:
+            - *apt_base_packages
+            - clang-tidy-3.8
+      script:
         - *cmake_command
         - ${TRAVIS_BUILD_DIR}/tools/clang-format.sh --check
 

@@ -2,10 +2,19 @@
 #include <sstream>
 #include <string>
 
+#include <gflags/gflags.h>
+
 #include "HopperConfig.h"
 #include "parser/parser.h"
 
+DEFINE_bool(success, false, "Whether we successfully added a flag");
+
 int main(int argc, char* argv[]) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  if (FLAGS_success)
+    std::cout << "Success!\n";
+
   for (int i = 1; i < argc; ++i) {
     const auto* input = argv[i];  // NOLINT: "pointer arithmetics"
     auto lexer = lexer::from_file(input);

@@ -25,6 +25,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Werror \
     ")
 
+find_package(gflags REQUIRED)
 
 
 # configure a header file to pass some of the CMake settings
@@ -51,7 +52,7 @@ set_property(TARGET ${GRACC_LIBRARY} PROPERTY CXX_STANDARD 14)
 set_property(TARGET ${GRACC_LIBRARY} PROPERTY CXX_STANDARD_REQUIRED ON)
 TARGET_LINK_LIBRARIES(${GRACC_LIBRARY}
     PUBLIC
-        ${Boost_LIBRARIES}
+        gflags
     )
 
 include_directories(${PROJECT_SOURCE_DIR})
