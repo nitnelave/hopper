@@ -8,10 +8,13 @@
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     const auto* input = argv[i];  // NOLINT: "pointer arithmetics"
-    auto lexer = lexer::Lexer::from_file(input);
+    auto lexer = lexer::from_file(input);
     auto parser = parser::Parser(&lexer);
     const auto result = parser.parse();
-    if (result != parser::ParseErrorCode::VALID) exit(1);
+    if (!result.is_ok()) {
+      std::cerr << result.to_string() << '\n';
+      exit(1);
+    }
   }
 
   return 0;

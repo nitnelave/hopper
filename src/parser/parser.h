@@ -1,16 +1,22 @@
 #pragma once
 
+#include "error/error.h"
 #include "lexer/lexer.h"
 
 namespace parser {
-// Different error types that can be returned from parsing.
-enum class ParseErrorCode {
-  VALID,
-  SYNTAX_ERROR,
-};
 
-// Error produced while parsing (TODO: make it more than an enum)
-using ParseError = ParseErrorCode;
+class ParseError : public GenericError {
+ public:
+  explicit ParseError(const std::string& message, const lexer::Token& t)
+      : GenericError(location_line(message, t)) {}
+
+  static std::string location_line(const std::string& message,
+                                   const lexer::Token& t) {
+    std::stringstream ss;
+    ss << message << "\n At " << t.begin.to_string();
+    return ss.str();
+  }
+};
 
 // Parser class allows to parse any input.
 class Parser {
@@ -20,7 +26,7 @@ class Parser {
   explicit Parser(lexer::Lexer* lexer);
 
   // Parse the input from the stream.
-  ParseError parse();
+  MaybeError<GenericError> parse();
 
  private:
   lexer::Lexer* lexer_;

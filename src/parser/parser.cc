@@ -6,10 +6,10 @@ using lexer::TokenType;
 
 Parser::Parser(lexer::Lexer* lexer) : lexer_(lexer) {}
 
-ParseError Parser::parse() {
-  Token t = lexer_->get_next_token();
-  if (t.type != TokenType::END_OF_FILE) return ParseErrorCode::VALID;
-  return ParseErrorCode::SYNTAX_ERROR;
+MaybeError<GenericError> Parser::parse() {
+  RETURN_OR_ASSIGN(const Token& t, lexer_->get_next_token());
+  if (t.type != TokenType::END_OF_FILE) return {};
+  return ParseError{"Unexpected EOF", t};
 }
 
 }  // namespace parser
