@@ -235,6 +235,7 @@ ErrorOr<Token, LexError> Lexer::read_comment(const Location& beginning) {
     ss << next_char_;
     get_next_char();
   }
+  unget_char();
   return Token{TokenType::COMMENT, ss.str(), beginning, get_location()};
 }
 
