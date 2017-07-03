@@ -232,6 +232,7 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
 
 void Lexer::get_next_char() {
   if (was_not_consumed_) {
+    std::swap(next_char_, previous_char_);
     was_not_consumed_ = false;
     return;
   }
@@ -244,6 +245,7 @@ void Lexer::get_next_char() {
     location_.column = 0;
   }
   ++location_.column;
+  previous_char_ = next_char_;
   if (!stream_->get(next_char_)) next_char_ = EOF;
 }
 
@@ -252,6 +254,7 @@ void Lexer::unget_char() {
     throw std::domain_error(
         "Next char was already unget_char(), "
         "cannot unget two chars");
+  std::swap(next_char_, previous_char_);
   was_not_consumed_ = true;
 }
 

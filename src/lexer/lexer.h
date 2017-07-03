@@ -44,6 +44,7 @@ class Lexer {
   void unget_char();
 
   char next_char_ = 0;
+  char previous_char_ = 0;
   bool was_not_consumed_ = false;
   std::unique_ptr<std::istream> stream_;
   Location location_;
