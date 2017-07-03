@@ -135,6 +135,56 @@ TEST(LexerTest, Comments) {
       {"1", "+", "1", "// Test: 4 5", "2"}));
 }
 
+// Tests of keywords.
+TEST(LexerTest, Keywords) {
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "as do enum data class private public from for forward fun if import is "
+      "mut return val when while",
+      {TokenType::AS, TokenType::DO, TokenType::ENUM, TokenType::DATA,
+       TokenType::CLASS, TokenType::PRIVATE, TokenType::PUBLIC, TokenType::FROM,
+       TokenType::FOR, TokenType::FORWARD, TokenType::FUN, TokenType::IF,
+       TokenType::IMPORT, TokenType::IS, TokenType::MUT, TokenType::RETURN,
+       TokenType::VAL, TokenType::WHEN, TokenType::WHILE}));
+}
+
+// Tests of identifiers.
+TEST(LexerTest, Identifiers) {
+  EXPECT_TRUE(compare_token_types(
+      "a A ab Ab a_b A_b ABC",
+      {TokenType::LOWER_CASE_IDENT, TokenType::UPPER_CASE_IDENT,
+       TokenType::LOWER_CASE_IDENT, TokenType::UPPER_CASE_IDENT,
+       TokenType::LOWER_CASE_IDENT, TokenType::UPPER_CASE_IDENT,
+       TokenType::UPPER_CASE_IDENT}));
+}
+
+TEST(LexerTest, FunctionDeclaration) {
+  EXPECT_TRUE(compare_token_types(
+      "fun test(mut a : Int, val b : Char*) : Int { return 4; }",
+      {TokenType::FUN,
+       TokenType::LOWER_CASE_IDENT,
+       TokenType::OPEN_PAREN,
+       TokenType::MUT,
+       TokenType::LOWER_CASE_IDENT,
+       TokenType::COLON,
+       TokenType::UPPER_CASE_IDENT,
+       TokenType::COMMA,
+       TokenType::VAL,
+       TokenType::LOWER_CASE_IDENT,
+       TokenType::COLON,
+       TokenType::UPPER_CASE_IDENT,
+       TokenType::STAR,
+       TokenType::CLOSE_PAREN,
+       TokenType::COLON,
+       TokenType::UPPER_CASE_IDENT,
+       TokenType::OPEN_BRACE,
+       TokenType::RETURN,
+       TokenType::INT,
+       TokenType::SEMICOLON,
+       TokenType::CLOSE_BRACE},
+      {"fun",  "test", "(", "mut", "a",   ":", "Int",    ",", "val", "b", ":",
+       "Char", "*",    ")", ":",   "Int", "{", "return", "4", ";",   "}"}));
+}
+
 // Test of location.
 TEST(LexerTest, Location) {
   auto tokens_or = string_to_tokens("1 12 123 1234 1+1 1++1\n2");
