@@ -51,7 +51,7 @@ testing::AssertionResult compare_token_types(
 
 /// Lex a string, then compare the tokens with the expected types and the
 /// canonical representation of the types.
-testing::AssertionResult compare_operators(
+testing::AssertionResult compare_tokens_types_and_symbols(
     const std::string& input, const std::vector<TokenType>& types) {
   auto tokens_or = string_to_tokens(input);
   if (!tokens_or.is_ok())
@@ -64,19 +64,19 @@ testing::AssertionResult compare_operators(
 
 // Tests of binary operators.
 TEST(LexerTest, BinaryOperators) {
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "+ - / *",
       {TokenType::PLUS, TokenType::MINUS, TokenType::DIVIDE, TokenType::STAR}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "|| && > < >= <=",
       {TokenType::OR, TokenType::AND, TokenType::GREATER, TokenType::LESS,
        TokenType::GREATER_OR_EQUAL, TokenType::LESS_OR_EQUAL}));
-  EXPECT_TRUE(
-      compare_operators("== !=", {TokenType::EQUAL, TokenType::DIFFERENT}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "== !=", {TokenType::EQUAL, TokenType::DIFFERENT}));
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "|> <| | ^", {TokenType::BITSHIFT_RIGHT, TokenType::BITSHIFT_LEFT,
                     TokenType::BITOR, TokenType::BITXOR}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "= += -= *= /= |= ^= &=",
       {TokenType::ASSIGN, TokenType::PLUS_ASSIGN, TokenType::MINUS_ASSIGN,
        TokenType::TIMES_ASSIGN, TokenType::DIVIDE_ASSIGN, TokenType::OR_ASSIGN,
@@ -84,18 +84,19 @@ TEST(LexerTest, BinaryOperators) {
 }
 
 TEST(LexerTest, BinaryOperatorsNoSpace) {
-  EXPECT_TRUE(compare_operators("+-/*", {TokenType::PLUS, TokenType::MINUS,
-                                         TokenType::DIVIDE, TokenType::STAR}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "+-/*",
+      {TokenType::PLUS, TokenType::MINUS, TokenType::DIVIDE, TokenType::STAR}));
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "||&&><>=<=",
       {TokenType::OR, TokenType::AND, TokenType::GREATER, TokenType::LESS,
        TokenType::GREATER_OR_EQUAL, TokenType::LESS_OR_EQUAL}));
-  EXPECT_TRUE(
-      compare_operators("==!=", {TokenType::EQUAL, TokenType::DIFFERENT}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "==!=", {TokenType::EQUAL, TokenType::DIFFERENT}));
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "|><||^", {TokenType::BITSHIFT_RIGHT, TokenType::BITSHIFT_LEFT,
                  TokenType::BITOR, TokenType::BITXOR}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "=+=-=*=/=|=^=&=",
       {TokenType::ASSIGN, TokenType::PLUS_ASSIGN, TokenType::MINUS_ASSIGN,
        TokenType::TIMES_ASSIGN, TokenType::DIVIDE_ASSIGN, TokenType::OR_ASSIGN,
@@ -104,15 +105,15 @@ TEST(LexerTest, BinaryOperatorsNoSpace) {
 
 // Tests of unary operators.
 TEST(LexerTest, UnaryOperators) {
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "& ! ~ ++ --", {TokenType::AMPERSAND, TokenType::BANG, TokenType::TILDE,
                       TokenType::INCREMENT, TokenType::DECREMENT}));
-  EXPECT_TRUE(compare_operators(
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
       "&!~++--", {TokenType::AMPERSAND, TokenType::BANG, TokenType::TILDE,
                   TokenType::INCREMENT, TokenType::DECREMENT}));
-  EXPECT_TRUE(
-      compare_operators("& = ! =", {TokenType::AMPERSAND, TokenType::ASSIGN,
-                                    TokenType::BANG, TokenType::ASSIGN}));
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "& = ! =", {TokenType::AMPERSAND, TokenType::ASSIGN, TokenType::BANG,
+                  TokenType::ASSIGN}));
 }
 
 // Tests of numbers.
