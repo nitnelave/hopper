@@ -6,94 +6,96 @@
 
 namespace lexer {
 
-#define TOKEN_ENUM(DO)                                 \
-  DO(END_OF_FILE, "EOF")                               \
-  /* Identifiers. */                                   \
-  DO(LOWER_CASE_IDENT, "identifier")                   \
-  DO(MACRO_IDENT, "#macro")                            \
-  DO(UPPER_CASE_IDENT, "Identifier")                   \
-  /* Literals. */                                      \
-  DO(INT, "int_literal")                               \
-  DO(HEX, "hex_literal")                               \
-  DO(OCT, "oct_literal")                               \
-  DO(BINARY_NUMBER, "bin_literal")                     \
-  DO(FLOAT, "float_literal")                           \
-  DO(STRING, "string")                                 \
-  DO(RAWSTRING, "rawstring")                           \
-  DO(CODESTRING, "codestring")                         \
-  DO(RAWCODESTRING, "rawcodestring")                   \
-  /* Binary operators. */                              \
-  DO(PLUS, "+")                                        \
-  DO(MINUS, "-")                                       \
-  DO(DIVIDE, "/")                                      \
-  DO(STAR, "*")                                        \
-  DO(OR, "||")                                         \
-  DO(AND, "&&")                                        \
-  DO(GREATER, ">")                                     \
-  DO(LESS, "<")                                        \
-  DO(GREATER_OR_EQUAL, ">=")                           \
-  DO(LESS_OR_EQUAL, "<=")                              \
-  DO(EQUAL, "==")                                      \
-  DO(DIFFERENT, "!=")                                  \
-  DO(BITSHIFT_RIGHT, "|>")                             \
-  DO(BITSHIFT_LEFT, "<|")                              \
-  DO(BITOR, "|")                                       \
-  DO(BITXOR, "^")                                      \
-  DO(ASSIGN, "=")                                      \
-  DO(PLUS_ASSIGN, "+=")                                \
-  DO(MINUS_ASSIGN, "-=")                               \
-  DO(TIMES_ASSIGN, "*=")                               \
-  DO(DIVIDE_ASSIGN, "/=")                              \
-  DO(OR_ASSIGN, "|=")                                  \
-  DO(XOR_ASSIGN, "^=")                                 \
-  DO(AND_ASSIGN, "&=")                                 \
-  /* Unary operators. */                               \
-  DO(AMPERSAND, "&")                                   \
-  DO(BANG, "!")                                        \
-  DO(TILDE, "~")                                       \
-  DO(INCREMENT, "++")                                  \
-  DO(DECREMENT, "--")                                  \
-  /* Delimiters. */                                    \
-  DO(OPEN_PAREN, "(")                                  \
-  DO(CLOSE_PAREN, ")")                                 \
-  DO(OPEN_BRACKET, "[")                                \
-  DO(CLOSE_BRACKET, "]")                               \
-  DO(OPEN_BRACE, "{")                                  \
-  DO(CLOSE_BRACE, "}")                                 \
-  DO(SEMICOLON, ";")                                   \
-  DO(COLON, ":")                                       \
-  DO(COMMA, ",")                                       \
-  DO(ARROW, "->")                                      \
-  /* Keywords (alphabetical order). */                 \
-  DO(AS, "as")                                         \
-  DO(DO, "do")                                         \
-  DO(ENUM, "enum")                                     \
-  DO(DATA, "data")                                     \
-  DO(CLASS, "class")                                   \
-  DO(PRIVATE, "private")                               \
-  DO(PUBLIC, "public")                                 \
-  DO(FROM, "from")                                     \
-  DO(FOR, "for")                                       \
-  DO(FORWARD, "forward") /* for forward-references. */ \
-  DO(FUN, "fun")                                       \
-  DO(IF, "if")                                         \
-  DO(IMPORT, "import")                                 \
-  DO(IS, "is")                                         \
-  DO(MUT, "mut")                                       \
-  DO(RETURN, "return")                                 \
-  DO(VAL, "val")                                       \
-  DO(WHEN, "when")                                     \
-  DO(WHILE, "while")                                   \
-  /* Mics. */                                          \
-  DO(ANNOTATION, "@annotation")                        \
-  DO(COMMENT, "// comment")                            \
-  DO(MACRO_CALL, "#macro(arguments)")
+#define TOKEN_ENUM(X)                                 \
+  X(END_OF_FILE, "EOF")                               \
+  /* Identifiers. */                                  \
+  X(LOWER_CASE_IDENT, "identifier")                   \
+  X(MACRO_IDENT, "#macro")                            \
+  X(UPPER_CASE_IDENT, "Identifier")                   \
+  /* Literals. */                                     \
+  X(INT, "int_literal")                               \
+  X(HEX, "hex_literal")                               \
+  X(OCT, "oct_literal")                               \
+  X(BINARY_NUMBER, "bin_literal")                     \
+  X(FLOAT, "float_literal")                           \
+  X(STRING, "string")                                 \
+  X(RAWSTRING, "rawstring")                           \
+  X(CODESTRING, "codestring")                         \
+  X(RAWCODESTRING, "rawcodestring")                   \
+  /* Binary operators. */                             \
+  X(PLUS, "+")                                        \
+  X(MINUS, "-")                                       \
+  X(DIVIDE, "/")                                      \
+  X(STAR, "*")                                        \
+  X(OR, "||")                                         \
+  X(AND, "&&")                                        \
+  X(GREATER, ">")                                     \
+  X(LESS, "<")                                        \
+  X(GREATER_OR_EQUAL, ">=")                           \
+  X(LESS_OR_EQUAL, "<=")                              \
+  X(EQUAL, "==")                                      \
+  X(DIFFERENT, "!=")                                  \
+  X(BITSHIFT_RIGHT, "|>")                             \
+  X(BITSHIFT_LEFT, "<|")                              \
+  X(BITOR, "|")                                       \
+  X(BITXOR, "^")                                      \
+  X(ASSIGN, "=")                                      \
+  X(PLUS_ASSIGN, "+=")                                \
+  X(MINUS_ASSIGN, "-=")                               \
+  X(TIMES_ASSIGN, "*=")                               \
+  X(DIVIDE_ASSIGN, "/=")                              \
+  X(OR_ASSIGN, "|=")                                  \
+  X(XOR_ASSIGN, "^=")                                 \
+  X(AND_ASSIGN, "&=")                                 \
+  /* Unary operators. */                              \
+  X(AMPERSAND, "&")                                   \
+  X(BANG, "!")                                        \
+  X(TILDE, "~")                                       \
+  X(INCREMENT, "++")                                  \
+  X(DECREMENT, "--")                                  \
+  /* Delimiters. */                                   \
+  X(OPEN_PAREN, "(")                                  \
+  X(CLOSE_PAREN, ")")                                 \
+  X(OPEN_BRACKET, "[")                                \
+  X(CLOSE_BRACKET, "]")                               \
+  X(OPEN_BRACE, "{")                                  \
+  X(CLOSE_BRACE, "}")                                 \
+  X(SEMICOLON, ";")                                   \
+  X(COLON, ":")                                       \
+  X(COMMA, ",")                                       \
+  X(ARROW, "->")                                      \
+  /* Keywords (alphabetical order). */                \
+  X(__KEYWORDS_START__, "") /* Not a token */         \
+  X(AS, "as")                                         \
+  X(DO, "do")                                         \
+  X(ENUM, "enum")                                     \
+  X(DATA, "data")                                     \
+  X(CLASS, "class")                                   \
+  X(PRIVATE, "private")                               \
+  X(PUBLIC, "public")                                 \
+  X(FROM, "from")                                     \
+  X(FOR, "for")                                       \
+  X(FORWARD, "forward") /* for forward-references. */ \
+  X(FUN, "fun")                                       \
+  X(IF, "if")                                         \
+  X(IMPORT, "import")                                 \
+  X(IS, "is")                                         \
+  X(MUT, "mut")                                       \
+  X(RETURN, "return")                                 \
+  X(VAL, "val")                                       \
+  X(WHEN, "when")                                     \
+  X(WHILE, "while")                                   \
+  X(__KEYWORDS_END__, "") /* Not a token */           \
+  /* Misc. */                                         \
+  X(ANNOTATION, "@annotation")                        \
+  X(COMMENT, "// comment")                            \
+  X(MACRO_CALL, "#macro(arguments)")
 
 enum class TokenType : int {
 #define MAKE_ENUM(VAR, TEXT) VAR,
   TOKEN_ENUM(MAKE_ENUM)
 #undef MAKE_ENUM
-      __NUMBER_TOKENS
+      __NUMBER_TOKENS__
 };
 
 namespace internals {
@@ -114,7 +116,9 @@ const char* const token_type_symbols[] = {
 namespace internals {
 inline int token_type_to_index(TokenType t) {
   int index = static_cast<int>(t);
-  assert(index >= 0 && index < static_cast<int>(TokenType::__NUMBER_TOKENS));
+  assert(index >= 0 && index < static_cast<int>(TokenType::__NUMBER_TOKENS__) &&
+         t != TokenType::__KEYWORDS_START__ &&
+         t != TokenType::__KEYWORDS_END__);
   return index;
 }
 }  // namespace internals
