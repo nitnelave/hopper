@@ -187,12 +187,13 @@ TEST(LexerTest, FunctionDeclaration) {
 
 // Test of location.
 TEST(LexerTest, Location) {
-  auto tokens_or = string_to_tokens("1 12 123 1234 1+1 1++1\n2");
+  auto tokens_or =
+      string_to_tokens("1 12 123 1234 1+1 1++1 abc 0b110 // comment\n2");
   ASSERT_TRUE(tokens_or.is_ok());
   const auto& tokens = tokens_or.value_or_die();
   std::vector<std::pair<int, int>> expected_columns = {
-      {1, 1},   {3, 4},   {6, 8},   {10, 13}, {15, 15}, {16, 16},
-      {17, 17}, {19, 19}, {20, 21}, {22, 22}, {1, 1},
+      {1, 1},   {3, 4},   {6, 8},   {10, 13}, {15, 15}, {16, 16}, {17, 17},
+      {19, 19}, {20, 21}, {22, 22}, {24, 26}, {28, 32}, {34, 43}, {1, 1},
   };
   ASSERT_EQ(expected_columns.size(), tokens.size());
   for (unsigned int i = 0; i < expected_columns.size() - 1; ++i) {
