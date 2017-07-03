@@ -47,6 +47,15 @@ class Lexer {
   // the decimal value of the number in the text.
   ErrorOr<Token, LexError> read_base(const Location& beginning, TokenType tt,
                                      int base);
+
+  // Consume a valid identifier, stopping at the first non-alphanumeric (or
+  // '_') character, and returns a token of type tt (should be LOWER_CASE_IDENT
+  // or UPPER_CASE_IDENT).
+  ErrorOr<Token, LexError> read_identifier(TokenType tt);
+  // Consume a valid lowercase identifier using read_identifier, and checks
+  // against keywords. Returns either a LOWER_CASE_IDENT or the corresponding
+  // keyword token.
+  ErrorOr<Token, LexError> read_lowercase_identifier();
   // Puts the value of the next char into next_char_, and updates the location.
   void get_next_char();
   // Setup the lexer such that the next call to get_next_char() returns the
