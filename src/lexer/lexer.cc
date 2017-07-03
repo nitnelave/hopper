@@ -37,9 +37,13 @@ int value_of_char(char c, int base) {
   return -1;
 }
 
+bool is_lowercase(char c) { return (c >= 'a' && c <= 'z'); }
+
+bool is_uppercase(char c) { return (c >= 'A' && c <= 'Z'); }
+
 bool is_alpha_num(char c, bool underscore = true) {
-  return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
-         (c >= 'a' && c <= 'z') || (underscore && c == '_');
+  return (c >= '0' && c <= '9') || is_uppercase(c) || is_lowercase(c) ||
+         (underscore && c == '_');
 }
 }  // namespace
 
@@ -48,6 +52,29 @@ Lexer::Lexer(const std::string& source, SourceTag tag,
     : stream_{get_stream_from_source(source, tag)},
       location_{filename, 1, 0},
       previous_location_(location_) {}
+
+ErrorOr<Token, LexError> Lexer::read_lowercase_identifier() {
+  RETURN_OR_ASSIGN(Token tok, read_identifier(TokenType::LOWER_CASE_IDENT));
+  // Check for keywords.
+  for (int i = static_cast<int>(TokenType::__KEYWORDS_START__) + 1;
+       i < static_cast<int>(TokenType::__KEYWORDS_END__); ++i) {
+    TokenType tt = static_cast<TokenType>(i);
+    if (tok.text == to_symbol(tt))
+      return Token{tt, tok.text, tok.begin, tok.end};
+  }
+  return tok;
+}
+
+ErrorOr<Token, LexError> Lexer::read_identifier(TokenType tt) {
+  Location beginning = get_location();
+  std::stringstream ss;
+  while (is_alpha_num(next_char_)) {
+    ss << next_char_;
+    get_next_char();
+  }
+  unget_char();
+  return Token{tt, ss.str(), beginning, get_location()};
+}
 
 ErrorOr<Token, LexError> Lexer::get_next_token() {
   get_next_char();
@@ -193,6 +220,9 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
     case EOF:
       return make_single_token(TokenType::END_OF_FILE);
   }
+  if (is_lowercase(next_char_)) return read_lowercase_identifier();
+  if (is_uppercase(next_char_))
+    return read_identifier(TokenType::UPPER_CASE_IDENT);
   return LexError(
       std::string("Unrecognized character: '").append(1, next_char_) + "' ",
       beginning);
