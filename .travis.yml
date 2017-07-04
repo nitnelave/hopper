@@ -5,16 +5,20 @@ cache:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
     - ${TRAVIS_BUILD_DIR}/gtest
     - ${TRAVIS_BUILD_DIR}/gflags
+    - ${TRAVIS_BUILD_DIR}/lcov
 
 env:
   global:
     - CC="clang-3.8"
     - CXX="clang++-3.8"
+    - LCOV_VERSION="1.13"
     - INSTALL_DIR=${DEPS_DIR}/b2
     - JOBS=3
     - BUILD_TYPE=Debug
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/build
     - COVERAGE=OFF
+    - PATH="${PATH}:${TRAVIS_BUILD_DIR}/lcov/bin"
+    - CODECOV_TOKEN="71561ee1-2cd7-44a8-934b-ff2fe0be6318"
 
 apt_sources: &apt_sources
   sources:
@@ -27,7 +31,6 @@ apt_base_packages: &apt_base_packages
       - clang-3.8
       - g++-5
       - gcc-5
-      - lcov
 
 install:
   - JOBS=2
@@ -45,6 +48,16 @@ install:
       cmake ..
       make
     fi
+  - |
+    if [ ! -d "${TRAVIS_BUILD_DIR}/lcov/bin/lcov" ]
+    then
+      cd ${TRAVIS_BUILD_DIR}/lcov
+      wget "http://downloads.sourceforge.net/ltp/lcov-${LCOV_VERSION}.tar.gz"
+      tar xf lcov-${LCOV_VERSION}.tar.gz
+      cd lcov-${LCOV_VERSION}
+      make install PREFIX=${TRAVIS_BUILD_DIR}/lcov
+    fi
+
 
 cmake_command: &cmake_command |
       mkdir -p "${BUILD_DIR}"
@@ -65,18 +78,22 @@ matrix:
     # Job #1, build and test
     - env:
         - COVERAGE=ON
+        # Make llvm-cov-3.8 the default
+        - PATH="/usr/lib/llvm-3.8/bin/:$PATH"
       addons:
         apt:
           <<: *apt_sources
           packages:
             - *apt_base_packages
+            - llvm-3.8
             - valgrind
       script:
         - *cmake_command
-        - |
-          make -j${JOBS}
-          make -j${JOBS} test
-          make -j${JOBS} gracc_coverage
+        - make -j${JOBS}
+        - make -j${JOBS} test
+        - make -j${JOBS} gracc_coverage
+        - bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
+
     # Job #2, clang-tidy
     - addons:
         apt:
@@ -90,6 +107,7 @@ matrix:
         - |
           make -j${JOBS} googletest
           python2 ${TRAVIS_BUILD_DIR}/tools/run-clang-tidy.py -p ${BUILD_DIR}  -header-filter="${TRAVIS_BUILD_DIR}/(src|test)" -j=${JOBS} -clang-tidy-binary=$(which clang-tidy-3.8)
+
     # Job #3, clang-format
     - addons:
         apt:
