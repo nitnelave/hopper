@@ -9,3 +9,7 @@ TARGET_LINK_LIBRARIES(${MAIN_TARGET_NAME}
     PUBLIC
         ${GRACC_LIBRARY}
     )
+
+if (ENABLE_COVERAGE)
+  target_compile_options(${MAIN_TARGET_NAME} PUBLIC -g -O0 -fprofile-arcs -ftest-coverage)
+endif(ENABLE_COVERAGE)
