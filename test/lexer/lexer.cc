@@ -4,16 +4,13 @@
 #include "lexer/lexer.h"
 #include "test_utils/utils.h"
 
-using lexer::Token;
-using lexer::TokenType;
-using lexer::Lexer;
-using lexer::LexError;
-using lexer::Location;
+using namespace lexer;
 
 namespace {
 
-Location make_loc(int line, int col, const std::string& file = "<string>") {
-  return {file, line, col};
+Range make_range(int line1, int col1, int line2, int col2,
+                 const std::string& file = "<string>") {
+  return {file, line1, col1, line2, col2};
 }
 
 /// Read all the tokens from the lexer until EOF into a vector.
@@ -137,7 +134,8 @@ TEST(LexerTest, Numbers) {
 TEST(LexerTest, NumbersFail) {
   const auto& res = string_to_tokens("0f3");
   EXPECT_FALSE(res.is_ok());
-  EXPECT_EQ(LexError("Invalid number literal", make_loc(1, 1), make_loc(1, 3)), res.error_or_die());
+  EXPECT_EQ(LexError("Invalid number literal", make_range(1, 1, 1, 3)),
+            res.error_or_die());
 }
 
 // Tests of comments.
@@ -210,14 +208,13 @@ TEST(LexerTest, Location) {
   };
   ASSERT_EQ(expected_columns.size(), tokens.size());
   for (unsigned int i = 0; i < expected_columns.size() - 1; ++i) {
-    EXPECT_EQ("<string>", tokens[i].begin.file);
-    EXPECT_EQ("<string>", tokens[i].end.file);
-    EXPECT_EQ(1, tokens[i].begin.line);
-    EXPECT_EQ(1, tokens[i].end.line);
+    EXPECT_EQ("<string>", tokens[i].location.file);
+    EXPECT_EQ(1, tokens[i].location.begin.line);
+    EXPECT_EQ(1, tokens[i].location.end.line);
   }
-  EXPECT_EQ(2, tokens.back().begin.line);
-  EXPECT_EQ(2, tokens.back().end.line);
+  EXPECT_EQ(2, tokens.back().location.begin.line);
+  EXPECT_EQ(2, tokens.back().location.end.line);
   auto actual_columns = MAP_VEC(
-      tokens, (std::pair<int, int>{__ARG__.begin.column, __ARG__.end.column}));
+      tokens, (std::pair<int, int>{__ARG__.location.begin.column, __ARG__.location.end.column}));
   EXPECT_EQ(expected_columns, actual_columns);
 }

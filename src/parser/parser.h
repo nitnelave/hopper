@@ -13,7 +13,7 @@ class ParseError : public GenericError {
   static std::string location_line(const std::string& message,
                                    const lexer::Token& t) {
     std::stringstream ss;
-    ss << message << "\n At " << t.begin.to_string();
+    ss << message << "\n At " << t.location.to_string();
     return ss.str();
   }
 };
