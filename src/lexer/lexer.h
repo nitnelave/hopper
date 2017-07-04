@@ -20,6 +20,10 @@ class LexError : public GenericError {
                      std::to_string(end.column)) {}
 };
 
+inline std::ostream& operator<<(std::ostream& os, const LexError& error) {
+  return os << error.to_string();
+}
+
 class Lexer {
  public:
   // What type of input is given to the constructor.
