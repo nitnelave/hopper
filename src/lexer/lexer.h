@@ -10,14 +10,10 @@
 namespace lexer {
 class LexError : public GenericError {
  public:
-  explicit LexError(const std::string& message, Location l)
-      : GenericError(message + "at " + l.to_string()) {}
-  explicit LexError(const std::string& message, Location begin, Location end)
-      : GenericError(message + " in " + begin.file + " from " +
-                     std::to_string(begin.line) + ":" +
-                     std::to_string(begin.column) + " to " +
-                     std::to_string(end.line) + ":" +
-                     std::to_string(end.column)) {}
+  explicit LexError(const std::string& message, const Location& l)
+      : GenericError(message + " at " + l.to_string()) {}
+  explicit LexError(const std::string& message, const Range& r)
+      : GenericError(message + " in " + r.to_string()) {}
 };
 
 inline std::ostream& operator<<(std::ostream& os, const LexError& error) {

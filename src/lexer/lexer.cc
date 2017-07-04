@@ -60,7 +60,7 @@ ErrorOr<Token, LexError> Lexer::read_lowercase_identifier() {
        i < static_cast<int>(TokenType::__KEYWORDS_END__); ++i) {
     TokenType tt = static_cast<TokenType>(i);
     if (tok.text == to_symbol(tt))
-      return Token{tt, tok.text, tok.begin, tok.end};
+      return Token{tt, tok.text, tok.location};
   }
   return tok;
 }
@@ -73,7 +73,7 @@ ErrorOr<Token, LexError> Lexer::read_identifier(TokenType tt) {
     get_next_char();
   }
   unget_char();
-  return Token{tt, ss.str(), beginning, get_location()};
+  return Token{tt, ss.str(), {beginning, get_location()}};
 }
 
 ErrorOr<Token, LexError> Lexer::get_next_token() {
@@ -88,13 +88,13 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
 
   // Construct a token with the last character.
   auto make_single_token = [&, this](TokenType tt) {
-    return ErrorOr<Token, LexError>{Token{tt, {current}, beginning, beginning}};
+    return ErrorOr<Token, LexError>{Token{tt, {current}, {beginning, beginning}}};
   };
 
   // Construct a token with the last 2 characters.
   auto make_double_token = [&, this](TokenType tt) {
     return ErrorOr<Token, LexError>{
-        Token{tt, {current, this->next_char_}, beginning, get_location()}};
+        Token{tt, {current, this->next_char_}, {beginning, get_location()}}};
   };
 
   // Test the next character for each of the mappings and return the
@@ -132,7 +132,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
         get_next_char();
       } while (is_alpha_num(next_char_));
       unget_char();
-      return LexError("Invalid number literal", beginning, get_location());
+      return LexError("Invalid number literal", {beginning, get_location()});
     case '1':
     case '2':
     case '3':
@@ -236,7 +236,7 @@ ErrorOr<Token, LexError> Lexer::read_comment(const Location& beginning) {
     get_next_char();
   }
   unget_char();
-  return Token{TokenType::COMMENT, ss.str(), beginning, get_location()};
+  return Token{TokenType::COMMENT, ss.str(), {beginning, get_location()}};
 }
 
 ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
@@ -257,7 +257,7 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
     return LexError("Invalid number literal", beginning);
   unget_char();
   auto result_token =
-      Token{tt, std::to_string(result), beginning, get_location()};
+      Token{tt, std::to_string(result), {beginning, get_location()}};
   return std::move(result_token);
 }
 

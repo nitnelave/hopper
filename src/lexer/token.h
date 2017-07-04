@@ -147,6 +147,36 @@ struct Location {
   }
 };
 
+struct Range {
+  const std::string file;
+  struct Position {
+    int line;
+    int column;
+  };
+  Position begin;
+  Position end;
+
+  Range(const std::string& file, int line1, int col1, int line2, int col2)
+      : file(file), begin{line1, col1}, end{line2, col2} {}
+
+  Range(const std::string& file, Position pos1, Position pos2)
+      : file(file), begin(pos1), end(pos2) {}
+
+  Range(const Location& loc_begin, const Location& loc_end)
+      : file(loc_begin.file),
+        begin{loc_begin.line, loc_begin.column},
+        end{loc_end.line, loc_end.column} {
+    assert(loc_begin.file == loc_end.file);
+  }
+
+  std::string to_string() const {
+    std::stringstream ss;
+    ss << file << " from " << begin.line << ':' << begin.column << " to "
+       << end.line << ':' << end.column;
+    return ss.str();
+  }
+};
+
 inline std::ostream& operator<<(std::ostream& os, const Location& loc) {
   return os << loc.to_string();
 }
@@ -154,14 +184,13 @@ inline std::ostream& operator<<(std::ostream& os, const Location& loc) {
 struct Token {
   const TokenType type;
   const std::string text;
-  const Location begin;
-  const Location end;
+  const Range location;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Token& tok) {
   os << "{" << tok.type;
   if (!tok.text.empty()) os << ": " << tok.text;
-  os << "at " << tok.begin << " to " << tok.end.line << ":" << tok.end.column;
+  os << "at " << tok.location.to_string();
   return os;
 }
 
