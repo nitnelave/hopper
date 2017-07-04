@@ -4,16 +4,18 @@ project (Hopper)
 set (MAIN_TARGET_NAME "gracc")
 
 option(EXPORT_COMPILE_COMMANDS "EXPORT_COMPILE_COMMANDS" ON)
+option(ENABLE_COVERAGE "ENABLE_COVERAGE" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ${EXPORT_COMPILE_COMMANDS})
 
 # The version number.
-set (Hopper_VERSION_MAJOR 0)
-set (Hopper_VERSION_MINOR 1)
+set(Hopper_VERSION_MAJOR 0)
+set(Hopper_VERSION_MINOR 1)
 
-set (PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
-set (PROJECT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/test)
+set(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
+set(PROJECT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/test)
 
-set (EXT_PROJECTS_DIR ${CMAKE_SOURCE_DIR}/ext)
+set(EXT_PROJECTS_DIR ${CMAKE_SOURCE_DIR}/ext)
+set(TOOLS_DIR ${CMAKE_SOURCE_DIR}/tools)
 
 set(PROJECT_TEST_NAME ${MAIN_TARGET_NAME}_test)
 
@@ -24,6 +26,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -pedantic \
     -Werror \
     ")
+
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(gflags REQUIRED)
 
@@ -42,8 +46,10 @@ include_directories("${PROJECT_BINARY_DIR}")
 # Setup GTest
 add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 
-include(cmake/Sources.cmake)
-include(cmake/Tests.cmake)
+
+include(CodeCoverage)
+include(Sources)
+include(Tests)
 
 set(GRACC_LIBRARY grasshopper)
 
@@ -64,3 +70,14 @@ include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 
 add_subdirectory(${PROJECT_TEST_SOURCE_DIR})
 
+if (ENABLE_COVERAGE)
+  set(GCOV_PATH ${TOOLS_DIR}/llvm-gcov)
+  set(LCOV_PATH ${TOOLS_DIR}/lcov.sh)
+  set(COVERAGE_EXCLUDES
+    "${CMAKE_SOURCE_DIR}\/test/*"
+    "${CMAKE_SOURCE_DIR}\/test/*/*"
+    "*gtest/*")
+  setup_target_for_coverage(NAME ${MAIN_TARGET_NAME}_coverage EXECUTABLE
+    ${PROJECT_TEST_NAME}
+    DEPENDENCIES ${PROJECT_TEST_NAME})
+endif(ENABLE_COVERAGE)
