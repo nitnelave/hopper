@@ -7,8 +7,14 @@
 using lexer::Token;
 using lexer::TokenType;
 using lexer::Lexer;
+using lexer::LexError;
+using lexer::Location;
 
 namespace {
+
+Location make_loc(int line, int col, const std::string& file = "<string>") {
+  return {file, line, col};
+}
 
 /// Read all the tokens from the lexer until EOF into a vector.
 /// Returns an error if one was generated at any time.
@@ -125,6 +131,13 @@ TEST(LexerTest, Numbers) {
        TokenType::INT, TokenType::PLUS, TokenType::INT},
       // Value in base 10 of the literals.
       {"1", "435", "427", "485", "37", "-", "3", "1", "+", "1"}));
+}
+
+// Tests of numbers.
+TEST(LexerTest, NumbersFail) {
+  const auto& res = string_to_tokens("0f3");
+  EXPECT_FALSE(res.is_ok());
+  EXPECT_EQ(LexError("Invalid number literal", make_loc(1, 1), make_loc(1, 3)), res.error_or_die());
 }
 
 // Tests of comments.
