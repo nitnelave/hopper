@@ -1,19 +1,19 @@
 #! /bin/sh
 
-if [ $# -gt 1 ] || ([ $# -eq 1 ] && [ $1 != "--check" ])
+if [ "$#" -gt 1 ] || ([ "$#" -eq 1 ] && [ "$1" != "--check" ])
 then
   echo "Usage: $0 [--check]"
   exit 0
 fi
 
-CURRENT_DIR=$(dirname $0)
-PROJECT_DIR=$(readlink -f ${CURRENT_DIR}/..)
+CURRENT_DIR=$(dirname "$0")
+PROJECT_DIR=$(readlink -f "${CURRENT_DIR}/..")
 
 FORMAT_CMD="clang-format -style=Google"
 
 FIND_CMD="find ${PROJECT_DIR}/src/ ${PROJECT_DIR}/test/ -regex '.*\.\(h\|cc\)' -type f"
 
-if [ $# -eq 1 ]
+if [ "$#" -eq 1 ]
 then
   EXIT=0
   for f in $(eval "${FIND_CMD}")
