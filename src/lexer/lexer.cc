@@ -254,7 +254,7 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
     result += value;
   }
   if (!saw_digit || is_alpha_num(next_char_))
-    return LexError("Invalid number literal", beginning);
+    return LexError("Invalid number literal", {beginning, get_location()});
   unget_char();
   auto result_token =
       Token{tt, std::to_string(result), {beginning, get_location()}};

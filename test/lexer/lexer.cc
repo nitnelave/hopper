@@ -107,14 +107,6 @@ TEST(LexerTest, Numbers) {
       {"1", "435", "427", "485", "37", "-", "3", "1", "+", "1"}));
 }
 
-// Tests of numbers.
-TEST(LexerTest, NumbersFail) {
-  const auto& res = string_to_tokens("0f3");
-  EXPECT_FALSE(res.is_ok());
-  EXPECT_EQ(LexError("Invalid number literal", make_range(1, 1, 1, 3)),
-            res.error_or_die());
-}
-
 // Tests of comments.
 TEST(LexerTest, Comments) {
   EXPECT_TRUE(compare_token_types(
