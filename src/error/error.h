@@ -78,12 +78,12 @@ class ErrorOr {
   ErrorOr(ErrorOr<T, E>&& other)  // NOLINT: explicit
       : is_ok_(other.is_ok_) {
     if (is_ok_)
-      new (&union_.value)                    // NOLINT: union access
-          T(std::move(other.union_.value));  // NOLINT: union access
+      new (&union_.value)
+          T(std::move(other.union_.value));
     else
-      new (&union_.error)  // NOLINT: union access
+      new (&union_.error)
           std::unique_ptr<Err>(
-              std::move(other.union_.error));  // NOLINT: union access
+              std::move(other.union_.error));
   }
 
   // Move assignment.
@@ -92,12 +92,12 @@ class ErrorOr {
     this->~ErrorOr();
     is_ok_ = other.is_ok_;
     if (is_ok_)
-      new (&union_.value)                    // NOLINT: union access
-          T(std::move(other.union_.value));  // NOLINT: union access
+      new (&union_.value)
+          T(std::move(other.union_.value));
     else
-      new (&union_.error)  // NOLINT: union access
+      new (&union_.error)
           std::unique_ptr<Err>(
-              std::move(other.union_.error));  // NOLINT: union access
+              std::move(other.union_.error));
     return *this;
   }
 
@@ -112,19 +112,19 @@ class ErrorOr {
   /// Return the value if it is one, fail otherwise.
   T& value_or_die() {
     if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
-    return union_.value;  // NOLINT: union access
+    return union_.value;
   }
 
   /// Return the value if it is one, fail otherwise.
   const T& value_or_die() const {
     if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
-    return union_.value;  // NOLINT: union access
+    return union_.value;
   }
 
   /// Return the error if it is one, fail otherwise.
   const Err& error_or_die() const {
     if (is_ok_) throw std::domain_error("ErrorOr was value, asked for error");
-    return *union_.error;  // NOLINT: union access
+    return *union_.error;
   }
 
   /// Return the error if it is one, otherwise return "Ok".
@@ -136,9 +136,9 @@ class ErrorOr {
   ~ErrorOr() {
     // Make sure to delete the right value.
     if (is_ok_)
-      union_.value.~T();  // NOLINT: union access
+      union_.value.~T();
     else
-      union_.error.~unique_ptr<Err>();  // NOLINT: union access
+      union_.error.~unique_ptr<Err>();
   }
 
  private:
