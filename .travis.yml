@@ -19,7 +19,6 @@ env:
     - COVERAGE=OFF
     - PATH="${PATH}:${TRAVIS_BUILD_DIR}/lcov/bin"
     - CODECOV_TOKEN="71561ee1-2cd7-44a8-934b-ff2fe0be6318"
-    - CTEST_OUTPUT_ON_FAILURE=1
 
 apt_sources: &apt_sources
   sources:
@@ -92,8 +91,8 @@ matrix:
             - valgrind
       script:
         - *cmake_command
-        - make -j${JOBS}
-        - make -j${JOBS} test
+        - make -j${JOBS} gracc
+        - make -j${JOBS} check
         - make -j${JOBS} gracc_coverage
         - bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
 
