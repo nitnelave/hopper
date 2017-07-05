@@ -8,12 +8,10 @@ if (ENABLE_TESTS_WITH_VALGRIND)
 endif()
 
 function(add_memcheck_test name binary)
-  add_test(NAME ${name} COMMAND ${binary} ${ARGN}
-    "--test_resource_folder=${PROJECT_TEST_RESOURCE_DIR}")
+  add_test(NAME ${name} COMMAND ${binary} ${ARGN} ${TEST_FLAGS})
   if (DEFINED MEMORYCHECK_COMMAND)
     add_test(NAME memcheck_${name} COMMAND ${MEMCHECK_COMMAND}
-      $<TARGET_FILE:${binary}> ${ARGN}
-      "--test_resource_folder=${PROJECT_TEST_RESOURCE_DIR}")
+      $<TARGET_FILE:${binary}> ${ARGN} ${TEST_FLAGS})
   endif(DEFINED MEMORYCHECK_COMMAND)
 endfunction(add_memcheck_test)
 
