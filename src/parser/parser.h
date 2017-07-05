@@ -16,6 +16,7 @@ class ParseError : public GenericError {
     ss << message << "\n At " << t.location.to_string();
     return ss.str();
   }
+  ~ParseError() override = default;
 };
 
 // Parser class allows to parse any input.
