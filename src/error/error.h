@@ -80,12 +80,9 @@ class ErrorOr {
   ErrorOr(ErrorOr<T, E>&& other)  // NOLINT: explicit
       : is_ok_(other.is_ok_) {
     if (is_ok_)
-      new (&union_.value)
-          T(std::move(other.union_.value));
+      new (&union_.value) T(std::move(other.union_.value));
     else
-      new (&union_.error)
-          std::unique_ptr<Err>(
-              std::move(other.union_.error));
+      new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
   }
 
   // Move assignment.
@@ -94,12 +91,9 @@ class ErrorOr {
     this->~ErrorOr();
     is_ok_ = other.is_ok_;
     if (is_ok_)
-      new (&union_.value)
-          T(std::move(other.union_.value));
+      new (&union_.value) T(std::move(other.union_.value));
     else
-      new (&union_.error)
-          std::unique_ptr<Err>(
-              std::move(other.union_.error));
+      new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
     return *this;
   }
 

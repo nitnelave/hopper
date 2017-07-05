@@ -255,8 +255,7 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
   }
   // Eat the extra characters at the end of the literal.
   if (!saw_digit || is_alpha_num(next_char_)) {
-    while (is_alpha_num(next_char_))
-      get_next_char();
+    while (is_alpha_num(next_char_)) get_next_char();
     unget_char();
     return LexError("Invalid number literal", {beginning, get_location()});
   }
