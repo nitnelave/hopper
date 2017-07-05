@@ -119,11 +119,17 @@ TEST(LexerTest, UnaryOperators) {
 // Tests of delimiters.
 TEST(LexerTest, Delimiters) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
-      "( ) [ ] { } ; : , ->", {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
-                      TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE, TokenType::SEMICOLON, TokenType::COLON, TokenType::COMMA, TokenType::ARROW}));
+      "( ) [ ] { } ; : , ->",
+      {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
+       TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE,
+       TokenType::SEMICOLON, TokenType::COLON, TokenType::COMMA,
+       TokenType::ARROW}));
   EXPECT_TRUE(compare_tokens_types_and_symbols(
-      "()[]{};:->,", {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
-                      TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE, TokenType::SEMICOLON, TokenType::COLON, TokenType::ARROW, TokenType::COMMA}));
+      "()[]{};:->,",
+      {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
+       TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE,
+       TokenType::SEMICOLON, TokenType::COLON, TokenType::ARROW,
+       TokenType::COMMA}));
 }
 
 // Tests of numbers.
