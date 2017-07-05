@@ -183,7 +183,8 @@ TEST(LexerTest, Location) {
   }
   EXPECT_EQ(2, tokens.back().location.begin.line);
   EXPECT_EQ(2, tokens.back().location.end.line);
-  auto actual_columns = MAP_VEC(
-      tokens, (std::pair<int, int>{__ARG__.location.begin.column, __ARG__.location.end.column}));
+  auto actual_columns =
+      MAP_VEC(tokens, (std::pair<int, int>{__ARG__.location.begin.column,
+                                           __ARG__.location.end.column}));
   EXPECT_EQ(expected_columns, actual_columns);
 }
