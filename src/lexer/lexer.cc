@@ -117,7 +117,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
   switch (next_char_) {
     case '#':
       // TODO: macro
-      return LexError("Macros are unimplemented", beginning);
+      return LexError("Macros are unimplemented", {beginning, beginning});
     case '0':
       get_next_char();
       switch (next_char_) {
@@ -147,11 +147,11 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
       return read_base(beginning, TokenType::INT, 10);
     case '"':
       // TODO: string
-      return LexError("String is unimplemented", beginning);
+      return LexError("String is unimplemented", {beginning, beginning});
     case 'r':
       get_next_char();
       if (next_char_ == '"')
-        return LexError("String is unimplemented", beginning);
+        return LexError("String is unimplemented", {beginning, beginning});
       unget_char();
       break;  // Normal identifier, defer to after switch.
     case '+':
@@ -224,8 +224,8 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
   if (is_uppercase(next_char_))
     return read_identifier(TokenType::UPPER_CASE_IDENT);
   return LexError(
-      std::string("Unrecognized character: '").append(1, next_char_) + "' ",
-      beginning);
+      std::string("Unrecognized character: '").append(1, next_char_) + '\'',
+      {beginning, beginning});
 }
 
 ErrorOr<Token, LexError> Lexer::read_comment(const Location& beginning) {
