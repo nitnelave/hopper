@@ -30,6 +30,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Werror \
     ")
 
+set(TEST_FLAGS "--test_resource_folder=${PROJECT_TEST_RESOURCE_DIR}")
+
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(gflags REQUIRED)
@@ -81,6 +83,6 @@ if (ENABLE_COVERAGE)
     "${CMAKE_SOURCE_DIR}\/test/*/*"
     "*gtest/*")
   setup_target_for_coverage(NAME ${MAIN_TARGET_NAME}_coverage EXECUTABLE
-    ${PROJECT_TEST_NAME}
+    ${PROJECT_TEST_NAME} ${TEST_FLAGS}
     DEPENDENCIES ${PROJECT_TEST_NAME})
 endif(ENABLE_COVERAGE)
