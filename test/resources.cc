@@ -76,7 +76,7 @@ testing::AssertionResult test_lexer_resource(const std::string& filename) {
     throw std::runtime_error(ss.str().c_str());
   }
   const lexer::LexError& expected_error = expected_errors[0];
-  auto result = file_to_tokens(filename);
+  auto result = lexer::file_to_tokens(filename);
   if (result.is_ok())
     return testing::AssertionFailure() << "Expected error:\n"
                                        << expected_error << "\nGot success";

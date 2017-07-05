@@ -13,12 +13,12 @@ testing::AssertionResult walk_directory(
     const std::function<testing::AssertionResult(const std::string&)>& tester) {
   DIR* dir;
   struct dirent* ent;
-  if ((dir = opendir(folder)) == NULL) {
+  if ((dir = opendir(folder)) == nullptr) {
     perror("opendir");
     exit(1);
   }
   /* print all the files and directories within directory */
-  while ((ent = readdir(dir)) != NULL) {
+  while ((ent = readdir(dir)) != nullptr) {
     if (ent->d_name[0] == '.') continue;
     std::string full_name = ent->d_name;
     full_name = folder + ("/" + full_name);

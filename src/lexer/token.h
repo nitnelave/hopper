@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+
 #include <sstream>
 #include <string>
 
@@ -156,11 +157,14 @@ struct Range {
   Position begin;
   Position end;
 
-  Range(const std::string& file, int line1, int col1, int line2, int col2)
-      : file(file), begin{line1, col1}, end{line2, col2} {}
+  Range(std::string file, int line1, int col1, int line2, int col2)
+      : file(std::move(file)), begin{line1, col1}, end{line2, col2} {}
 
-  Range(const std::string& file, Position pos1, Position pos2)
-      : file(file), begin(pos1), end(pos2) {}
+  Range(std::string file, Position pos1,
+        Position pos2)  // NOLINT: pass by value
+      : file(std::move(file)),
+        begin(pos1),
+        end(pos2) {}
 
   Range(const Location& loc_begin, const Location& loc_end)
       : file(loc_begin.file),
