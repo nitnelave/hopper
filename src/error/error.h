@@ -13,7 +13,9 @@ class Error {
  public:
   /// Conversion to a string for display.
   virtual std::string to_string() const = 0;
+  // LCOV_EXCL_START: never called
   virtual ~Error() = default;
+  // LCOV_EXCL_STOP
 };
 
 /// Basic error, with an error message.
