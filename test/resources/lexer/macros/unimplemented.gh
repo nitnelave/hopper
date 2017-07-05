@@ -1,0 +1,3 @@
+val a = #test;
+//      ^
+// ERROR: Macros are unimplemented

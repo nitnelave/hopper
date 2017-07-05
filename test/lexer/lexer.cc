@@ -41,6 +41,27 @@ testing::AssertionResult compare_tokens_types_and_symbols(
 
 }  // namespace
 
+// Misc.
+TEST(LexerTest, LexErrorToStream) {
+  Range r{"file", 1, 2, 3, 4};
+  LexError error{"test", r};
+  std::stringstream ss;
+  ss << error;
+  EXPECT_EQ("test in " + r.to_string(), ss.str());
+}
+
+TEST(LexerTest, InvalidSourceTag) {
+  auto fake_tag = static_cast<Lexer::SourceTag>(-1);
+  EXPECT_THROW(Lexer("test", fake_tag), std::domain_error);
+}
+
+TEST(LexerTest, TokenTypeToStream) {
+  auto tt = TokenType::PLUS;
+  std::stringstream ss;
+  ss << tt;
+  EXPECT_EQ("PLUS", ss.str());
+}
+
 // Tests of binary operators.
 TEST(LexerTest, BinaryOperators) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
@@ -93,6 +114,16 @@ TEST(LexerTest, UnaryOperators) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
       "& = ! =", {TokenType::AMPERSAND, TokenType::ASSIGN, TokenType::BANG,
                   TokenType::ASSIGN}));
+}
+
+// Tests of delimiters.
+TEST(LexerTest, Delimiters) {
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "( ) [ ] { } ; : , ->", {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
+                      TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE, TokenType::SEMICOLON, TokenType::COLON, TokenType::COMMA, TokenType::ARROW}));
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "()[]{};:->,", {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
+                      TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE, TokenType::SEMICOLON, TokenType::COLON, TokenType::ARROW, TokenType::COMMA}));
 }
 
 // Tests of numbers.
