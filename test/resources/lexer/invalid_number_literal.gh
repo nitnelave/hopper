@@ -1,0 +1,3 @@
+val a = 0f3;
+//      ^^^
+// ERROR: Invalid number literal
