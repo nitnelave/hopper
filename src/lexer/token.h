@@ -160,8 +160,7 @@ struct Range {
   Range(std::string file, int line1, int col1, int line2, int col2)
       : file(std::move(file)), begin{line1, col1}, end{line2, col2} {}
 
-  Range(std::string file, Position pos1,
-        Position pos2)  // NOLINT: pass by value
+  Range(std::string file, Position pos1, Position pos2)  // NOLINT: move
       : file(std::move(file)),
         begin(pos1),
         end(pos2) {}
