@@ -62,11 +62,11 @@ install:
 cmake_command: &cmake_command |
       mkdir -p "${BUILD_DIR}"
       cd "${BUILD_DIR}"
-      export CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-                            -DCMAKE_C_COMPILER=clang-3.8 \
-                            -DCMAKE_CXX_COMPILER=clang++-3.8 \
-                            -DCMAKE_LINKER=clang++-3.8 \
-                            -DCMAKE_CXX_FLAGS=${CXXFLAGS} \
+      export CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+                            -DCMAKE_C_COMPILER=clang-3.8
+                            -DCMAKE_CXX_COMPILER=clang++-3.8
+                            -DCMAKE_LINKER=clang++-3.8
+                            -DCMAKE_CXX_FLAGS=${CXXFLAGS}
                             -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest
                             -Dgflags_DIR=${TRAVIS_BUILD_DIR}/gflags/gflags-master/build
                             -DENABLE_COVERAGE=${COVERAGE}"
@@ -80,6 +80,7 @@ matrix:
         - COVERAGE=ON
         # Make llvm-cov-3.8 the default
         - PATH="/usr/lib/llvm-3.8/bin/:$PATH"
+        - CMAKE_OPTIONS="${CMAKE_OPTIONS} -DENABLE_TESTS_WITH_VALGRIND=ON"
       addons:
         apt:
           <<: *apt_sources
