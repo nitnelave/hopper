@@ -2,35 +2,12 @@
 
 #include "error/error.h"
 #include "lexer/lexer.h"
+#include "test_utils/lexing.h"
 #include "test_utils/utils.h"
 
 using namespace lexer;
 
 namespace {
-
-Range make_range(int line1, int col1, int line2, int col2,
-                 const std::string& file = "<string>") {
-  return {file, line1, col1, line2, col2};
-}
-
-/// Read all the tokens from the lexer until EOF into a vector.
-/// Returns an error if one was generated at any time.
-ErrorOr<std::vector<Token>> consume_tokens(Lexer& lexer) {
-  std::vector<Token> result;
-  while (true) {
-    RETURN_OR_ASSIGN(Token tok, lexer.get_next_token());
-    if (tok.type == TokenType::END_OF_FILE) return result;
-    result.emplace_back(std::move(tok));
-  }
-  return result;
-}
-
-/// Lex a string and return the tokens.
-/// Returns an error if one was generated at any time.
-ErrorOr<std::vector<Token>> string_to_tokens(const std::string& input) {
-  Lexer lex = lexer::from_string(input);
-  return consume_tokens(lex);
-}
 
 /// Compare a list of tokens with expected types, and expected text if given.
 testing::AssertionResult compare_token_types(
