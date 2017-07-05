@@ -29,4 +29,7 @@ ${BUILD_FOLDER}:
 test: cmake
 	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} test
 
-.PHONY: all ${TARGET} cmake test
+check: cmake
+	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} check
+
+.PHONY: all ${TARGET} cmake test check
