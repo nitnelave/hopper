@@ -18,7 +18,7 @@ then
   EXIT=0
   for f in $(eval "${FIND_CMD}")
   do
-    DIFF=$($FORMAT_CMD "$f" | diff --color=always --context=3 "$f" -)
+    DIFF=$($FORMAT_CMD "$f" | diff --context=3 "$f" -)
     if [ "$DIFF" != "" ]
     then
       echo "File $f is not correctly formatted:"
