@@ -25,7 +25,10 @@ ExternalProject_Add(googletest
     # Disable install step
     INSTALL_COMMAND ""
     CONFIGURE_COMMAND mkdir -p ${GTEST_INSTALL_PATH}/src/googletest-build && cd ${GTEST_INSTALL_PATH}/src/googletest-build && ${CMAKE_CURRENT_BINARY_DIR}/wrapper.sh cmake ... ${GTEST_INSTALL_PATH}/src/googletest
-    BUILD_COMMAND /bin/sh ${CMAKE_CURRENT_BINARY_DIR}/wrapper.sh $(MAKE)
+    BUILD_COMMAND /bin/sh ${CMAKE_CURRENT_BINARY_DIR}/wrapper.sh make
+    BUILD_BYPRODUCTS
+      ${GTEST_INSTALL_PATH}/src/googletest-build/googlemock/gtest/libgtest.a
+      ${GTEST_INSTALL_PATH}/src/googletest-build/googlemock/gtest/libgtest_main.a
     )
 
 # Specify include dir
