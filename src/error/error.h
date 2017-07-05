@@ -41,6 +41,10 @@ inline bool operator==(const GenericError& lhs, const GenericError& rhs) {
   return lhs.to_string() == rhs.to_string();
 }
 
+inline bool operator!=(const GenericError& lhs, const GenericError& rhs) {
+  return !(lhs == rhs);
+}
+
 inline std::ostream& operator<<(std::ostream& os, const GenericError& error) {
   return os << error.to_string();
 }
