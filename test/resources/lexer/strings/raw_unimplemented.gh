@@ -1,0 +1,3 @@
+val a = r"test";
+//      ^^
+// ERROR: String is unimplemented

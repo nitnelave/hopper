@@ -69,6 +69,22 @@ TEST(ErrorTest, ConstructorErrorMove) {
   EXPECT_EQ("Error", res.error_or_die().to_string());
 }
 
+TEST(ErrorTest, InvalidAccessToError) {
+  ErrorOr<std::string, GenericError> res("abc");
+  ASSERT_TRUE(res.is_ok());
+  EXPECT_THROW(res.error_or_die(), std::domain_error);
+  const auto& res2 = res;
+  EXPECT_THROW(res2.error_or_die(), std::domain_error);
+}
+
+TEST(ErrorTest, InvalidAccessToValue) {
+  ErrorOr<std::string, GenericError> res(GenericError("Error"));
+  ASSERT_FALSE(res.is_ok());
+  EXPECT_THROW(res.value_or_die(), std::domain_error);
+  const auto& res2 = res;
+  EXPECT_THROW(res2.value_or_die(), std::domain_error);
+}
+
 class SpecificError : public GenericError {
  public:
   SpecificError() : GenericError("test") {}
