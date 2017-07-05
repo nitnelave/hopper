@@ -1,8 +1,7 @@
 if (ENABLE_TESTS_WITH_VALGRIND)
   find_program(MEMORYCHECK_COMMAND valgrind)
   set(MEMORYCHECK_COMMAND_OPTIONS
-    "--trace-children=yes --leak-check=full --error-exitcode=1 "
-    "--show-leak-kinds=all" )
+    "--trace-children=yes --leak-check=full --error-exitcode=1")
   set(MEMCHECK_COMMAND "${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS}")
   separate_arguments(MEMCHECK_COMMAND)
 endif()
