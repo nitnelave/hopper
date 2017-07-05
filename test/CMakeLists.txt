@@ -1,6 +1,6 @@
 find_package(Threads REQUIRED)
 
-add_executable(${PROJECT_TEST_NAME} "main.cc")
+add_executable(${PROJECT_TEST_NAME} "main.cc" "resources.cc")
 
 
 include(error/CMakeLists.txt)
