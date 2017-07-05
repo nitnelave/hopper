@@ -10,8 +10,6 @@
 namespace lexer {
 class LexError : public GenericError {
  public:
-  explicit LexError(const std::string& message, const Location& l)
-      : GenericError(message + " at " + l.to_string()) {}
   explicit LexError(const std::string& message, const Range& r)
       : GenericError(message + " in " + r.to_string()) {}
 };
