@@ -15,6 +15,7 @@ std::unique_ptr<std::istream> get_stream_from_source(const std::string& source,
     case Lexer::SourceTag::STRING:
       return std::make_unique<std::stringstream>(source);
     default:
+      // unreachable
       throw std::domain_error("Invalid tag when building the lexer");
   }
 }
@@ -31,8 +32,7 @@ int value_of_char(char c, int base) {
       start = 'a';
     else
       return -1;
-    char normalized = c - start;
-    if (0 <= normalized && normalized < base - 10) return normalized + 10;
+    return c - start + 10;
   }
   return -1;
 }
@@ -253,8 +253,13 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
     result *= base;
     result += value;
   }
-  if (!saw_digit || is_alpha_num(next_char_))
+  // Eat the extra characters at the end of the literal.
+  if (!saw_digit || is_alpha_num(next_char_)) {
+    while (is_alpha_num(next_char_))
+      get_next_char();
+    unget_char();
     return LexError("Invalid number literal", {beginning, get_location()});
+  }
   unget_char();
   auto result_token =
       Token{tt, std::to_string(result), {beginning, get_location()}};
