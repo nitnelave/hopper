@@ -5,8 +5,7 @@
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
 
-using namespace lexer;
-
+namespace lexer {
 namespace {
 
 /// Compare a list of tokens with expected types, and expected text if given.
@@ -188,3 +187,4 @@ TEST(LexerTest, Location) {
                                            __ARG__.location.end.column}));
   EXPECT_EQ(expected_columns, actual_columns);
 }
+}  // namespace lexer

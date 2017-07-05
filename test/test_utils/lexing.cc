@@ -1,6 +1,6 @@
 #include "test_utils/lexing.h"
 
-using namespace lexer;
+namespace lexer {
 
 Range make_range(int line1, int col1, int line2, int col2,
                  const std::string& file) {
@@ -26,3 +26,4 @@ ErrorOr<std::vector<Token>> file_to_tokens(const std::string& filename) {
   Lexer lex = lexer::from_file(filename);
   return consume_tokens(lex);
 }
+}  // namespace lexer
