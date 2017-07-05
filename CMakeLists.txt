@@ -81,7 +81,8 @@ if (ENABLE_COVERAGE)
   set(COVERAGE_EXCLUDES
     "${CMAKE_SOURCE_DIR}\/test/*"
     "${CMAKE_SOURCE_DIR}\/test/*/*"
-    "*gtest/*")
+    "*gtest/*"
+    "*gflags/*")
   setup_target_for_coverage(NAME ${MAIN_TARGET_NAME}_coverage EXECUTABLE
     ${PROJECT_TEST_NAME} ${TEST_FLAGS}
     DEPENDENCIES ${PROJECT_TEST_NAME})
