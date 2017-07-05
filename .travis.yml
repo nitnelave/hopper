@@ -19,6 +19,7 @@ env:
     - COVERAGE=OFF
     - PATH="${PATH}:${TRAVIS_BUILD_DIR}/lcov/bin"
     - CODECOV_TOKEN="71561ee1-2cd7-44a8-934b-ff2fe0be6318"
+    - CTEST_OUTPUT_ON_FAILURE=1
 
 apt_sources: &apt_sources
   sources:
@@ -62,7 +63,8 @@ install:
 cmake_command: &cmake_command |
       mkdir -p "${BUILD_DIR}"
       cd "${BUILD_DIR}"
-      export CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+      export CMAKE_OPTIONS="${CMAKE_OPTIONS}
+                            -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
                             -DCMAKE_C_COMPILER=clang-3.8
                             -DCMAKE_CXX_COMPILER=clang++-3.8
                             -DCMAKE_LINKER=clang++-3.8
