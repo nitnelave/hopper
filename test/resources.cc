@@ -67,6 +67,7 @@ std::vector<lexer::LexError> parse_expected_errors(
 }
 
 testing::AssertionResult test_lexer_resource(const std::string& filename) {
+  std::cout << "Opening test file " << filename << '\n';
   auto expected_errors = parse_expected_errors(filename);
   if (expected_errors.size() != 1) {
     std::stringstream ss;

@@ -1,3 +1,4 @@
+#include <sstream>
 #include <string>
 
 #include "gtest/gtest.h"
@@ -8,6 +9,27 @@
 TEST(ErrorTest, ErrorMessage) {
   GenericError e("abc");
   EXPECT_EQ("abc", e.to_string());
+}
+
+TEST(ErrorTest, StreamOutputOperator) {
+  GenericError e1("abc");
+  std::stringstream ss;
+  ss << e1;
+  EXPECT_EQ("abc", ss.str());
+}
+
+TEST(ErrorTest, Equality) {
+  GenericError e1("abc");
+  GenericError e2("abc");
+  EXPECT_TRUE(e1 == e2);
+  EXPECT_FALSE(e1 != e2);
+}
+
+TEST(ErrorTest, Difference) {
+  GenericError e1("abc");
+  GenericError e2("abd");
+  EXPECT_FALSE(e1 == e2);
+  EXPECT_TRUE(e1 != e2);
 }
 
 // Tests of ErrorOr.
