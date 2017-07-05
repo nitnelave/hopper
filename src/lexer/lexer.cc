@@ -59,8 +59,7 @@ ErrorOr<Token, LexError> Lexer::read_lowercase_identifier() {
   for (int i = static_cast<int>(TokenType::__KEYWORDS_START__) + 1;
        i < static_cast<int>(TokenType::__KEYWORDS_END__); ++i) {
     TokenType tt = static_cast<TokenType>(i);
-    if (tok.text == to_symbol(tt))
-      return Token{tt, tok.text, tok.location};
+    if (tok.text == to_symbol(tt)) return Token{tt, tok.text, tok.location};
   }
   return tok;
 }
@@ -88,7 +87,8 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
 
   // Construct a token with the last character.
   auto make_single_token = [&, this](TokenType tt) {
-    return ErrorOr<Token, LexError>{Token{tt, {current}, {beginning, beginning}}};
+    return ErrorOr<Token, LexError>{
+        Token{tt, {current}, {beginning, beginning}}};
   };
 
   // Construct a token with the last 2 characters.
