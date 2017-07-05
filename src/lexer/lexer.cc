@@ -151,7 +151,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
     case 'r':
       get_next_char();
       if (next_char_ == '"')
-        return LexError("String is unimplemented", {beginning, beginning});
+        return LexError("String is unimplemented", {beginning, get_location()});
       unget_char();
       break;  // Normal identifier, defer to after switch.
     case '+':
@@ -160,7 +160,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
     case '-':
       return with_second_char(TokenType::MINUS, {{'-', TokenType::DECREMENT},
                                                  {'=', TokenType::MINUS_ASSIGN},
-                                                 {'=', TokenType::ARROW}});
+                                                 {'>', TokenType::ARROW}});
     case '/':
       get_next_char();
       switch (next_char_) {
@@ -286,10 +286,7 @@ void Lexer::get_next_char() {
 }
 
 void Lexer::unget_char() {
-  if (was_not_consumed_)
-    throw std::domain_error(
-        "Next char was already unget_char(), "
-        "cannot unget two chars");
+  assert(!was_not_consumed_);
   std::swap(next_char_, previous_char_);
   was_not_consumed_ = true;
 }
