@@ -51,47 +51,57 @@ inline std::ostream& operator<<(std::ostream& os, const GenericError& error) {
   return os << error.to_string();
 }
 
-/// Represents either an error or a T.
-/// This class is immutable (but the T can be mutable).
-template <typename T, typename Err = GenericError>
+/// Represents either an error or a Value.
+/// This class is immutable (but the Value can be mutable).
+template <typename Value, typename Err = GenericError>
 class ErrorOr {
   static_assert(std::is_base_of<Error, Err>::value,
                 "Error type must be a subclass of Error");
   template <typename E>
-  using enable_if_error = typename std::enable_if<std::is_base_of<
-      typename std::decay<Err>::type, typename std::decay<E>::type>::value>;
+  using enable_if_error = typename std::enable_if<
+      std::is_base_of<Err, typename std::decay<E>::type>::value>;
 
  public:
   // Constructors from value or errors.
 
-  // Not explicit on purpose.
+  /// Construct an error from a subtype of Err.
   template <typename E>
   ErrorOr(E error,  // NOLINT: explicit
           typename enable_if_error<E>::type* /*unused*/ = nullptr)
       : union_(std::move(error)), is_ok_(false) {}
 
-  // Not explicit on purpose.
-  ErrorOr(T value)  // NOLINT: explicit
-      : union_(std::move(value)),
-        is_ok_(true) {}
+  /// Construct a value directly.
+  template <typename T, typename = typename std::enable_if<
+                            std::is_convertible<T, Value>::value>::type>
+  ErrorOr(T value,  // NOLINT: explicit
+          typename std::enable_if<
+              std::is_convertible<T, Value>::value>::type* /*unused*/ = nullptr)
+      : union_(std::move(value)), is_ok_(true) {}
 
   // Move constructor.
-  template <typename E>
+  template <typename T, typename E,
+            typename = typename std::enable_if<
+                std::is_convertible<T, Value>::value>::type,
+            typename = typename enable_if_error<E>::type>
   ErrorOr(ErrorOr<T, E>&& other)  // NOLINT: explicit
       : is_ok_(other.is_ok_) {
     if (is_ok_)
-      new (&union_.value) T(std::move(other.union_.value));
+      new (&union_.value) Value(std::move(other.union_.value));
     else
       new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
   }
 
   // Move assignment.
-  template <typename E>
+  template <
+      typename T, typename E, typename = typename std::enable_if<
+                                  std::is_convertible<T, Value>::value>::type,
+      typename =
+          typename std::enable_if<std::is_convertible<E, Err>::value>::type>
   ErrorOr& operator=(ErrorOr<T, E>&& other) {
     this->~ErrorOr();
     is_ok_ = other.is_ok_;
     if (is_ok_)
-      new (&union_.value) T(std::move(other.union_.value));
+      new (&union_.value) Value(std::move(other.union_.value));
     else
       new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
     return *this;
@@ -106,13 +116,13 @@ class ErrorOr {
   bool is_ok() const { return is_ok_; }
 
   /// Return the value if it is one, fail otherwise.
-  T& value_or_die() {
+  Value& value_or_die() {
     if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
     return union_.value;
   }
 
   /// Return the value if it is one, fail otherwise.
-  const T& value_or_die() const {
+  const Value& value_or_die() const {
     if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
     return union_.value;
   }
@@ -132,7 +142,7 @@ class ErrorOr {
   ~ErrorOr() {
     // Make sure to delete the right value.
     if (is_ok_)
-      union_.value.~T();
+      union_.value.~Value();
     else
       union_.error.~unique_ptr<Err>();
   }
@@ -141,11 +151,12 @@ class ErrorOr {
   // Contain either an error or a value, with the appropriate constructors.
   union Union {
     std::unique_ptr<Err> error;
-    T value;
+    Value value;
 
     template <typename E>
-    explicit Union(E e) : error(new E(std::move(e))) {}
-    explicit Union(T v) : value(std::move(v)) {}
+    explicit Union(E e, typename enable_if_error<E>::type* /*unused*/ = nullptr)
+        : error(new E(std::move(e))) {}
+    explicit Union(Value v) : value(std::move(v)) {}
     // Default constructor leaves the memory uninitialized, make to to
     // initialize it after.
     Union() {}  // NOLINT: modernize suggests =default
@@ -157,7 +168,7 @@ class ErrorOr {
 
   // Friend other implementations of that class, for the move
   // constructor/assignment.
-  template <typename Value, typename E>
+  template <typename T, typename E>
   friend class ErrorOr;
 };
 
