@@ -37,7 +37,7 @@ class Lexer {
   ErrorOr<Token, LexError> get_next_token();
 
   // Get the current location, in the source, of the lexer.
-  const Location& get_location() const;
+  const Location& location() const;
 
  private:
   // Consume a line comment (after the '//') and returns it.
@@ -70,11 +70,11 @@ class Lexer {
   Location previous_location_;
 };
 
-// Return an instance of Lexer that will read from the file.
+/// Return an instance of Lexer that will read from the file.
 Lexer from_file(const std::string& file);
 
-// Return an instance of Lexer that will read from the given string.
-// The filename is set to "<string>".
+/// Return an instance of Lexer that will read from the given string.
+/// The filename is set to "<string>".
 Lexer from_string(const std::string& text);
 
 }  // namespace lexer

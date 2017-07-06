@@ -65,14 +65,14 @@ ErrorOr<Token, LexError> Lexer::read_lowercase_identifier() {
 }
 
 ErrorOr<Token, LexError> Lexer::read_identifier(TokenType tt) {
-  Location beginning = get_location();
+  Location beginning = location();
   std::stringstream ss;
   while (is_alpha_num(next_char_)) {
     ss << next_char_;
     get_next_char();
   }
   unget_char();
-  return Token{tt, ss.str(), {beginning, get_location()}};
+  return Token{tt, ss.str(), {beginning, location()}};
 }
 
 ErrorOr<Token, LexError> Lexer::get_next_token() {
@@ -81,7 +81,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
   while (next_char_ == ' ' || next_char_ == '\n') get_next_char();
 
   // Save initial location.
-  Location beginning = get_location();
+  Location beginning = location();
   // Save initial lookup character.
   char current = next_char_;
 
@@ -94,7 +94,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
   // Construct a token with the last 2 characters.
   auto make_double_token = [&, this](TokenType tt) {
     return ErrorOr<Token, LexError>{
-        Token{tt, {current, this->next_char_}, {beginning, get_location()}}};
+        Token{tt, {current, this->next_char_}, {beginning, location()}}};
   };
 
   // Test the next character for each of the mappings and return the
@@ -137,7 +137,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
         get_next_char();
       } while (is_alpha_num(next_char_));
       unget_char();
-      return LexError("Invalid number literal", {beginning, get_location()});
+      return LexError("Invalid number literal", {beginning, location()});
     case '1':
     case '2':
     case '3':
@@ -156,7 +156,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
     case 'r':
       get_next_char();
       if (next_char_ == '"')
-        return LexError("String is unimplemented", {beginning, get_location()});
+        return LexError("String is unimplemented", {beginning, location()});
       unget_char();
       break;  // Normal identifier, defer to after switch.
     case '+':
@@ -241,7 +241,7 @@ ErrorOr<Token, LexError> Lexer::read_comment(const Location& beginning) {
     get_next_char();
   }
   unget_char();
-  return Token{TokenType::COMMENT, ss.str(), {beginning, get_location()}};
+  return Token{TokenType::COMMENT, ss.str(), {beginning, location()}};
 }
 
 ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
@@ -262,11 +262,11 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
   if (!saw_digit || is_alpha_num(next_char_)) {
     while (is_alpha_num(next_char_)) get_next_char();
     unget_char();
-    return LexError("Invalid number literal", {beginning, get_location()});
+    return LexError("Invalid number literal", {beginning, location()});
   }
   unget_char();
   auto result_token =
-      Token{tt, std::to_string(result), {beginning, get_location()}};
+      Token{tt, std::to_string(result), {beginning, location()}};
   return std::move(result_token);
 }
 
@@ -295,7 +295,7 @@ void Lexer::unget_char() {
   was_not_consumed_ = true;
 }
 
-const Location& Lexer::get_location() const {
+const Location& Lexer::location() const {
   if (was_not_consumed_) return previous_location_;
   return location_;
 }
