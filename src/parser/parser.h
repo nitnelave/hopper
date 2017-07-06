@@ -1,5 +1,10 @@
 #pragma once
 
+#include <deque>
+#include <memory>
+#include <vector>
+
+#include "ast/ast.h"
 #include "error/error.h"
 #include "lexer/lexer.h"
 
@@ -27,9 +32,24 @@ class Parser {
   explicit Parser(lexer::Lexer* lexer);
 
   // Parse the input from the stream.
-  MaybeError<GenericError> parse();
+  ErrorOr<std::vector<std::unique_ptr<ast::ASTNode>>> parse();
 
  private:
+  static constexpr unsigned int k_lookahead = 1;
+
+  template <typename T>
+  using ErrorOrPtr = ErrorOr<std::unique_ptr<T>>;
+
+  ErrorOr<ast::ASTNode*> parse_toplevel_declaration();
+  ErrorOr<ast::VariableDeclaration*> parse_variable_declaration();
+
+  const lexer::Token& current_token() const;
+  MaybeError<> get_token();
+  void unget_token();
+
+  // How many unget_token() levels we are at.
+  unsigned int backlog_ = 0;
+  std::deque<lexer::Token> token_stack_;
   lexer::Lexer* lexer_;
 };
 
