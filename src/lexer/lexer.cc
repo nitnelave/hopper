@@ -128,6 +128,11 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
         case 'b':
           return read_base(beginning, TokenType::BINARY_NUMBER, 2);
       }
+      if (!is_alpha_num(next_char_)) {
+        unget_char();
+        // Found single '0'.
+        return make_single_token(TokenType::INT);
+      }
       do {
         get_next_char();
       } while (is_alpha_num(next_char_));

@@ -141,6 +141,10 @@ TEST(LexerTest, Numbers) {
        TokenType::INT, TokenType::PLUS, TokenType::INT},
       // Value in base 10 of the literals.
       {"1", "435", "427", "485", "37", "-", "3", "1", "+", "1"}));
+  EXPECT_TRUE(compare_token_types(
+      "0+0 + 1", {TokenType::INT, TokenType::PLUS, TokenType::INT,
+                  TokenType::PLUS, TokenType::INT},
+      {"0", "+", "0", "+", "1"}));
 }
 
 // Tests of comments.
