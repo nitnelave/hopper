@@ -33,6 +33,7 @@ class FunctionDeclaration;
 // class IfBlock;
 // class ImportStatement;
 class IntConstant;
+class Module;
 class Return;
 // class ScopeBlock;
 // class UnaryOp;
@@ -53,6 +54,7 @@ class ASTVisitor {
   virtual void visit(FunctionDeclaration* node) = 0;
   virtual void visit(IntConstant* node) = 0;
   virtual void visit(Return* node) = 0;
+  virtual void visit(Module* node);
   virtual void visit(Value* node) = 0;
   virtual void visit(VariableDeclaration* node) = 0;
   virtual void visit(VariableReference* node) = 0;

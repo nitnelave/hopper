@@ -8,17 +8,22 @@ namespace ast {
 
 class VariableDeclaration : public ASTNode {
  public:
-  VariableDeclaration(const lexer::Range& location, Identifier id, Option<Type> type,
-                      Option<std::unique_ptr<Value>> value, bool mut)
+  VariableDeclaration(const lexer::Range& location, Identifier id,
+                      Option<Type> type, Option<std::unique_ptr<Value>> value,
+                      bool mut)
       : ASTNode(location),
         id_(std::move(id)),
         type_(std::move(type)),
         value_(std::move(value)),
         mut_(mut) {}
 
-  bool is_mutable() const {
-    return mut_;
-  }
+  bool is_mutable() const { return mut_; }
+
+  const Identifier& id() const { return id_; }
+
+  const Option<Type>& type() const { return type_; }
+
+  const Option<std::unique_ptr<Value>>& value() const { return value_; }
 
   ~VariableDeclaration() override = default;
 

@@ -33,7 +33,7 @@ class Parser {
   explicit Parser(lexer::Lexer* lexer);
 
   // Parse the input from the stream.
-  ErrorOr<std::vector<std::unique_ptr<ast::ASTNode>>> parse();
+  ErrorOr<ast::Module*> parse();
 
  private:
   static constexpr unsigned int k_lookahead = 1;
@@ -50,9 +50,12 @@ class Parser {
   MaybeError<> get_token();
   void unget_token();
 
+  lexer::Range range_from(const lexer::Range::Position& begin) const;
+
   // How many unget_token() levels we are at.
   unsigned int backlog_ = 0;
   std::deque<lexer::Token> token_stack_;
+  lexer::Range::Position last_end_{0, 0};
   lexer::Lexer* lexer_;
 };
 
