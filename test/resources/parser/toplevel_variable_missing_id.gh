@@ -1,0 +1,3 @@
+val : Int;
+//  ^
+// ERROR: Expected value identifier
