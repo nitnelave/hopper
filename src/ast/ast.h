@@ -48,16 +48,16 @@ class Value;
 
 class ASTVisitor {
  public:
-  virtual void visit(Assignment* node) = 0;
-  virtual void visit(BinaryOp* node) = 0;
-  virtual void visit(FunctionCall* node) = 0;
-  virtual void visit(FunctionDeclaration* node) = 0;
-  virtual void visit(IntConstant* node) = 0;
-  virtual void visit(Return* node) = 0;
+  virtual void visit(Assignment* node);
+  virtual void visit(BinaryOp* node);
+  virtual void visit(FunctionCall* node);
+  virtual void visit(FunctionDeclaration* node);
+  virtual void visit(IntConstant* node);
   virtual void visit(Module* node);
-  virtual void visit(Value* node) = 0;
-  virtual void visit(VariableDeclaration* node) = 0;
-  virtual void visit(VariableReference* node) = 0;
+  virtual void visit(Return* node);
+  virtual void visit(Value* node);
+  virtual void visit(VariableDeclaration* node);
+  virtual void visit(VariableReference* node);
 };
 
 }  // namespace ast
