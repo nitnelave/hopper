@@ -34,6 +34,7 @@ testing::AssertionResult walk_directory(
         if (!res) return res;
         break;
       case S_IFREG:
+        std::cout << "Opening test file " << full_name << '\n';
         res = tester(full_name);
         if (!res) return res;
         break;
