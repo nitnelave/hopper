@@ -5,6 +5,7 @@
 #include <gflags/gflags.h>
 
 #include "HopperConfig.h"
+#include "ast/module.h"
 #include "parser/parser.h"
 
 DEFINE_bool(success, false, "Whether we successfully added a flag");
@@ -19,13 +20,13 @@ int main(int argc, char* argv[]) {
     const auto* input = argv[i];  // NOLINT: "pointer arithmetics"
     auto lexer = lexer::from_file(input);
     auto parser = parser::Parser(&lexer);
-    const auto result = parser.parse();
+    auto result = parser.parse();
     if (!result.is_ok()) {
       std::cerr << result.to_string() << '\n';
       exit_code = 1;
       break;
     } else {
-      std::cout << "Parsing succeeded!\n";
+      std::unique_ptr<ast::ASTNode> module(result.value_or_die());
     }
   }
 
