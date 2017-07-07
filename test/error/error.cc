@@ -72,17 +72,17 @@ TEST(ErrorTest, ConstructorErrorMove) {
 TEST(ErrorTest, InvalidAccessToError) {
   ErrorOr<std::string, GenericError> res("abc");
   ASSERT_TRUE(res.is_ok());
-  EXPECT_THROW(res.error_or_die(), std::domain_error);
+  EXPECT_THROW(res.error_or_die(), BadVariantAccess);
   const auto& res2 = res;
-  EXPECT_THROW(res2.error_or_die(), std::domain_error);
+  EXPECT_THROW(res2.error_or_die(), BadVariantAccess);
 }
 
 TEST(ErrorTest, InvalidAccessToValue) {
   ErrorOr<std::string, GenericError> res(GenericError("Error"));
   ASSERT_FALSE(res.is_ok());
-  EXPECT_THROW(res.value_or_die(), std::domain_error);
+  EXPECT_THROW(res.value_or_die(), BadVariantAccess);
   const auto& res2 = res;
-  EXPECT_THROW(res2.value_or_die(), std::domain_error);
+  EXPECT_THROW(res2.value_or_die(), BadVariantAccess);
 }
 
 class SpecificError : public GenericError {
@@ -145,6 +145,28 @@ TEST(ErrorTest, MoveAssignmentErrorToError) {
   res = std::move(tmp);
   ASSERT_FALSE(res.is_ok());
   EXPECT_EQ("abc", res.error_or_die().to_string());
+}
+
+struct MyError : public GenericError {
+  MyError() : GenericError("Yay!") {}
+};
+
+TEST(MaybeErrorTest, Misc) {
+  MaybeError<MyError> err;
+  EXPECT_TRUE(err.is_ok());
+  MaybeError<GenericError> err2(std::move(err));
+  EXPECT_TRUE(err2.is_ok());
+  MaybeError<> err3(GenericError("test"));
+  EXPECT_FALSE(err3.is_ok());
+  EXPECT_EQ("test", err3.to_string());
+  MaybeError<> err4(MyError{});
+  EXPECT_FALSE(err4.is_ok());
+  EXPECT_EQ("Yay!", err4.to_string());
+  err3 = std::move(err4);
+  EXPECT_FALSE(err3.is_ok());
+  EXPECT_EQ("Yay!", err3.to_string());
+  // Checking the destructor for MyError.
+  MaybeError<MyError> err5(MyError{});
 }
 
 // Tests of macros (RETURN_IF_ERROR and RETURN_OR_ASSIGN).
