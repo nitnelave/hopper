@@ -13,13 +13,13 @@ namespace parser {
 
 class ParseError : public GenericError {
  public:
-  explicit ParseError(const std::string& message, const lexer::Token& t)
-      : GenericError(location_line(message, t)) {}
+  explicit ParseError(const std::string& message, const lexer::Range& location)
+      : GenericError(location_line(message, location)) {}
 
   static std::string location_line(const std::string& message,
-                                   const lexer::Token& t) {
+                                   const lexer::Range& location) {
     std::stringstream ss;
-    ss << message << "\n At " << t.location.to_string();
+    ss << message << "\n At " << location.to_string();
     return ss.str();
   }
   ~ParseError() override = default;
