@@ -1,0 +1,6 @@
+val a;
+val b : Int;
+val c = 3;
+val c = 0o754;
+val d : Int = 0x52;
+val d : Int = 0b10011010;
