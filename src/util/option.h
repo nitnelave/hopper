@@ -23,6 +23,12 @@ class Option {
 
   const Value& value_or_die() const { return variant_.template get<Value>(); }
   Value& value_or_die() { return variant_.template get<Value>(); }
+  Value&& consume_value_or_die() { return variant_.template consume<Value>(); }
+
+  Option& operator=(Value v) {
+    variant_ = std::move(v);
+    return *this;
+  }
 
   template <typename T, typename = typename std::is_convertible<T, Value>>
   Option& operator=(T v) {
