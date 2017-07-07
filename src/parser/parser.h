@@ -38,7 +38,7 @@ class Parser {
   ErrorOrPtr<ast::Module> parse();
 
  private:
-  static constexpr unsigned int k_lookahead = 1;
+  static constexpr unsigned int k_lookahead = 0;
 
   ErrorOrPtr<ast::ASTNode> parse_toplevel_declaration();
   ErrorOrPtr<ast::IntConstant> parse_int_constant();
