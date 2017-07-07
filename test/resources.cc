@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
+#include "pretty_printer/pretty_printer.h"
 #include "test_utils/files.h"
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
@@ -19,6 +20,23 @@ struct ExpectedError {
 bool starts_with(const std::string& haystack, const std::string& needle) {
   if (haystack.size() < needle.size()) return false;
   return std::equal(needle.begin(), needle.end(), haystack.begin());
+}
+
+bool ends_with(const std::string& haystack, const std::string& needle) {
+  if (haystack.size() < needle.size()) return false;
+  return std::equal(needle.begin(), needle.end(),
+                    haystack.end() - needle.size());
+}
+
+std::string read_file(const std::string& filename) {
+  std::ifstream in(filename, std::ios::in | std::ios::binary);
+  if (in) {
+    std::ostringstream contents;
+    contents << in.rdbuf();
+    in.close();
+    return (contents.str());
+  }
+  throw(errno);
 }
 
 bool parse_position_line(int lineno, const std::string& line,
@@ -141,6 +159,27 @@ testing::AssertionResult test_parser_resource(const std::string& filename) {
   return testing::AssertionSuccess();
 }
 
+testing::AssertionResult test_pretty_printer(const std::string& filename) {
+  if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
+  assert(ends_with(filename, ".gh"));
+  std::string ref_filename =
+      filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
+  lexer::Lexer lex = lexer::from_file(filename);
+  parser::Parser parser(&lex);
+  auto result = parser.parse();
+  if (!result.is_ok())
+    return testing::AssertionFailure() << "Error while parsing " << filename
+                                       << result.to_string();
+  std::stringstream ss;
+  ast::PrettyPrinterVisitor visitor(ss);
+  result.value_or_die()->accept(visitor);
+  auto ref_contents = read_file(ref_filename);
+  if (ref_contents == ss.str()) return testing::AssertionSuccess();
+  return testing::AssertionFailure() << "Expected:\n"
+                                     << ref_contents << "\nGot:\n"
+                                     << ss.str();
+}
+
 TEST(ResourcesTest, Lexer) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
   EXPECT_TRUE(test::walk_directory(
@@ -151,4 +190,11 @@ TEST(ResourcesTest, Parser) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
   EXPECT_TRUE(test::walk_directory(
       (FLAGS_test_resource_folder + "/parser").c_str(), test_parser_resource));
+}
+
+TEST(ResourcesTest, PrettyPrinter) {
+  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
+  EXPECT_TRUE(test::walk_directory(
+      (FLAGS_test_resource_folder + "/pretty_printer").c_str(),
+      test_pretty_printer));
 }
