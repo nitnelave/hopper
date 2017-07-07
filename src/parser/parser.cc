@@ -99,12 +99,14 @@ MaybeError<> Parser::get_token() {
   if (token_stack_.size() > k_lookahead) {
     token_stack_.pop_front();
   }
-  if (backlog_ == 0) {
-    RETURN_OR_ASSIGN(const Token& t, lexer_->get_next_token());
-    token_stack_.push_back(t);
-  } else {
-    --backlog_;
-  }
+  do {
+    if (backlog_ == 0) {
+      RETURN_OR_ASSIGN(const Token& t, lexer_->get_next_token());
+      token_stack_.push_back(t);
+    } else {
+      --backlog_;
+    }
+  } while (current_token().type == TokenType::COMMENT);
   return {};
 }
 
