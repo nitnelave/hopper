@@ -7,6 +7,7 @@
 #include "HopperConfig.h"
 #include "ast/module.h"
 #include "parser/parser.h"
+#include "pretty_printer/pretty_printer.h"
 
 DEFINE_bool(success, false, "Whether we successfully added a flag");
 
@@ -27,6 +28,8 @@ int main(int argc, char* argv[]) {
       break;
     } else {
       std::unique_ptr<ast::ASTNode> module(result.value_or_die());
+      ast::PrettyPrinterVisitor printer(std::cout);
+      module->accept(printer);
     }
   }
 
