@@ -1,0 +1,3 @@
+val a : Int
+// at EOF
+// ERROR: Expected semicolon at the end of the statement
