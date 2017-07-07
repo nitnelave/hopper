@@ -3,6 +3,7 @@ include(ast/CMakeLists.txt)
 include(error/CMakeLists.txt)
 include(lexer/CMakeLists.txt)
 include(parser/CMakeLists.txt)
+include(util/CMakeLists.txt)
 
 set_property(TARGET ${MAIN_TARGET_NAME} PROPERTY CXX_STANDARD 14)
 set_property(TARGET ${MAIN_TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
