@@ -6,7 +6,7 @@
 
 #define EXPECT_TOKEN(TYPE, MESSAGE)   \
   if (current_token().type != (TYPE)) \
-    return ParseError((MESSAGE), current_token());
+    return ParseError((MESSAGE), current_token().location);
 
 namespace parser {
 using lexer::Token;
@@ -52,7 +52,7 @@ ErrorOr<ast::Value*> Parser::parse_value() {
       current_token().type == TokenType::OCT ||
       current_token().type == TokenType::BINARY_NUMBER)
     return parse_int_constant();
-  return ParseError("Expected value", current_token());
+  return ParseError("Expected value", current_token().location);
 }
 
 ErrorOr<ast::VariableDeclaration*> Parser::parse_variable_declaration() {
@@ -89,7 +89,7 @@ ErrorOr<ast::ASTNode*> Parser::parse_toplevel_declaration() {
   if (t.type == TokenType::VAL || t.type == TokenType::MUT) {
     return parse_variable_declaration();
   }
-  return ParseError("Expected top-level declaration", current_token());
+  return ParseError("Expected top-level declaration", current_token().location);
 }
 
 MaybeError<> Parser::get_token() {
