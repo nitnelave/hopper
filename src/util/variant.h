@@ -322,7 +322,7 @@ class Variant {
   template <typename T, typename std::enable_if<
                             (internals::DirectType<T, Types...>::index !=
                              internals::invalid_value)>::type* = nullptr>
-  T&& consume() {
+  T consume() {
     if (type_index == internals::DirectType<T, Types...>::index) {
       return consume_unchecked<T>();
     }
@@ -347,8 +347,8 @@ class Variant {
   template <typename T, typename std::enable_if<
                             (internals::DirectType<T, Types...>::index !=
                              internals::invalid_value)>::type* = nullptr>
-  T&& consume_unchecked() {
-    T&& res = std::move(*reinterpret_cast<T*>(&data));  // NOLINT
+  T consume_unchecked() {
+    T res = std::move(*reinterpret_cast<T*>(&data));  // NOLINT
     helper_type::destroy(type_index, &data);
     type_index = internals::invalid_value;
     return std::move(res);
@@ -382,7 +382,7 @@ class Variant {
       typename std::enable_if<
           (internals::DirectType<std::reference_wrapper<T>, Types...>::index !=
            internals::invalid_value)>::type* = nullptr>
-  T&& consume() {
+  T consume() {
     if (type_index == internals::DirectType<T, Types...>::index)
       return consume_unchecked<T>();
     throw BadVariantAccess("in get<T>()");
@@ -415,8 +415,8 @@ class Variant {
       typename std::enable_if<
           (internals::DirectType<std::reference_wrapper<T>, Types...>::index !=
            internals::invalid_value)>::type* = nullptr>
-  T&& consume_unchecked() {
-    auto&& res = std::move(
+  T consume_unchecked() {
+    auto res = std::move(
         (*reinterpret_cast<std::reference_wrapper<T>*>(&data))  // NOLINT
             .get());
     helper_type::destroy(type_index, &data);
