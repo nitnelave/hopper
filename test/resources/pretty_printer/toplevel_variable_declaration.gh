@@ -1,0 +1,3 @@
+val foo
+:Int=0x3
+;
