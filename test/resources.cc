@@ -1,5 +1,6 @@
 #include <fstream>
 
+#include "ast/module.h"
 #include "gflags/gflags.h"
 #include "gtest/gtest.h"
 #include "lexer/lexer.h"

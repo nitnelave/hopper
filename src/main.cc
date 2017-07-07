@@ -27,9 +27,8 @@ int main(int argc, char* argv[]) {
       exit_code = 1;
       break;
     } else {
-      std::unique_ptr<ast::ASTNode> module(result.value_or_die());
       ast::PrettyPrinterVisitor printer(std::cout);
-      module->accept(printer);
+      result.value_or_die()->accept(printer);
     }
   }
 

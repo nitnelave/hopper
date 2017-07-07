@@ -28,20 +28,22 @@ class ParseError : public GenericError {
 // Parser class allows to parse any input.
 class Parser {
  public:
+  template <typename T>
+  using ErrorOrPtr = ErrorOr<std::unique_ptr<T>>;
   // Initialize the parser with a Lexer.
   // The lexer is not owned by the Parser, it must be deleted.
   explicit Parser(lexer::Lexer* lexer);
 
   // Parse the input from the stream.
-  ErrorOr<ast::Module*> parse();
+  ErrorOrPtr<ast::Module> parse();
 
  private:
   static constexpr unsigned int k_lookahead = 1;
 
-  ErrorOr<ast::ASTNode*> parse_toplevel_declaration();
-  ErrorOr<ast::IntConstant*> parse_int_constant();
-  ErrorOr<ast::VariableDeclaration*> parse_variable_declaration();
-  ErrorOr<ast::Value*> parse_value();
+  ErrorOrPtr<ast::ASTNode> parse_toplevel_declaration();
+  ErrorOrPtr<ast::IntConstant> parse_int_constant();
+  ErrorOrPtr<ast::VariableDeclaration> parse_variable_declaration();
+  ErrorOrPtr<ast::Value> parse_value();
   ErrorOr<ast::Type> parse_type();
   ErrorOr<ast::Identifier> parse_type_identifier();
   ErrorOr<ast::Identifier> parse_value_identifier();
