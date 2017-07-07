@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
       std::cerr << result.to_string() << '\n';
       exit_code = 1;
       break;
+    } else {
+      std::cout << "Parsing succeeded!\n";
     }
   }
 
