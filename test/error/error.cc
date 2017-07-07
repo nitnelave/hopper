@@ -83,6 +83,7 @@ TEST(ErrorTest, InvalidAccessToValue) {
   EXPECT_THROW(res.value_or_die(), BadVariantAccess);
   const auto& res2 = res;
   EXPECT_THROW(res2.value_or_die(), BadVariantAccess);
+  EXPECT_THROW(res.consume_value_or_die(), BadVariantAccess);
 }
 
 class SpecificError : public GenericError {
