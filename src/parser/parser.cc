@@ -1,11 +1,12 @@
 #include "parser/parser.h"
 
 #include "ast/int_constant.h"
+#include "ast/module.h"
 #include "ast/variable_declaration.h"
 
-#define EXPECT_TOKEN(TYPE, MESSAGE) \
-  if (current_token().type != TYPE) \
-    return ParseError(MESSAGE, current_token());
+#define EXPECT_TOKEN(TYPE, MESSAGE)   \
+  if (current_token().type != (TYPE)) \
+    return ParseError((MESSAGE), current_token());
 
 namespace parser {
 using lexer::Token;
@@ -14,6 +15,10 @@ using ast::Identifier;
 using ast::Type;
 
 Parser::Parser(lexer::Lexer* lexer) : lexer_(lexer) {}
+
+lexer::Range Parser::range_from(const lexer::Range::Position& begin) const {
+  return {current_token().location.file, begin, last_end_};
+}
 
 ErrorOr<ast::Identifier> Parser::parse_type_identifier() {
   EXPECT_TOKEN(TokenType::UPPER_CASE_IDENT, "Expected type identifier");
@@ -41,7 +46,7 @@ ErrorOr<ast::IntConstant*> Parser::parse_int_constant() {
   return new ast::IntConstant(location, value);
 }
 
-ErrorOr<ast::Value*>  Parser::parse_value() {
+ErrorOr<ast::Value*> Parser::parse_value() {
   if (current_token().type == TokenType::INT ||
       current_token().type == TokenType::HEX ||
       current_token().type == TokenType::OCT ||
@@ -50,10 +55,10 @@ ErrorOr<ast::Value*>  Parser::parse_value() {
   return ParseError("Expected value", current_token());
 }
 
-ErrorOr<ast::VariableDeclaration*>  Parser::parse_variable_declaration()
-    {
+ErrorOr<ast::VariableDeclaration*> Parser::parse_variable_declaration() {
   // Starts with VAL or MUT.
-  assert(current_token().type == TokenType::VAL || current_token().type == TokenType::MUT);
+  assert(current_token().type == TokenType::VAL ||
+         current_token().type == TokenType::MUT);
   auto begin = current_token().location.begin;
   bool mut = current_token().type == TokenType::MUT;
   RETURN_IF_ERROR(get_token());
@@ -72,10 +77,11 @@ ErrorOr<ast::VariableDeclaration*>  Parser::parse_variable_declaration()
     RETURN_OR_ASSIGN(value, parse_value());
   }
   // Then a semicolon.
-  EXPECT_TOKEN(TokenType::SEMICOLON, "Expected semicolon at the end of the statement");
-  auto end = current_token().location.end;
+  EXPECT_TOKEN(TokenType::SEMICOLON,
+               "Expected semicolon at the end of the statement");
   RETURN_IF_ERROR(get_token());
-  return new ast::VariableDeclaration({current_token().location.file, begin, end}, variable_name, std::move(type), std::move(value), mut);
+  return new ast::VariableDeclaration(range_from(begin), variable_name,
+                                      std::move(type), std::move(value), mut);
 }
 
 ErrorOr<ast::ASTNode*> Parser::parse_toplevel_declaration() {
@@ -87,6 +93,9 @@ ErrorOr<ast::ASTNode*> Parser::parse_toplevel_declaration() {
 }
 
 MaybeError<> Parser::get_token() {
+  if (!token_stack_.empty()) {
+    last_end_ = current_token().location.end;
+  }
   if (token_stack_.size() > k_lookahead) {
     token_stack_.pop_front();
   }
@@ -110,14 +119,15 @@ const Token& Parser::current_token() const {
   return token_stack_[token_stack_.size() - backlog_ - 1];
 }
 
-ErrorOr<std::vector<std::unique_ptr<ast::ASTNode>>> Parser::parse() {
+ErrorOr<ast::Module*> Parser::parse() {
   RETURN_IF_ERROR(get_token());
+  auto begin = current_token().location.begin;
   std::vector<std::unique_ptr<ast::ASTNode>> declarations;
   while (current_token().type != TokenType::END_OF_FILE) {
     RETURN_OR_ASSIGN(auto decl, parse_toplevel_declaration());
     declarations.emplace_back(decl);
   }
-  return std::move(declarations);
+  return new ast::Module(range_from(begin), std::move(declarations));
 }
 
 }  // namespace parser

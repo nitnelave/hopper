@@ -18,6 +18,8 @@ class Type {
   explicit Type(Identifier id) : id_(std::move(id)) {}
   const Identifier& id() const { return id_; }
 
+  const std::string& to_string() const { return id_.to_string(); }
+
  private:
   Identifier id_;
 };
