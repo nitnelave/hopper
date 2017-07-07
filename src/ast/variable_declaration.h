@@ -2,17 +2,23 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
+#include "util/option.h"
 
 namespace ast {
 
 class VariableDeclaration : public ASTNode {
  public:
-  VariableDeclaration(const lexer::Range& location, Identifier id, Type type,
-                      std::unique_ptr<Value> value)
+  VariableDeclaration(const lexer::Range& location, Identifier id, Option<Type> type,
+                      Option<std::unique_ptr<Value>> value, bool mut)
       : ASTNode(location),
         id_(std::move(id)),
         type_(std::move(type)),
-        value_(std::move(value)) {}
+        value_(std::move(value)),
+        mut_(mut) {}
+
+  bool is_mutable() const {
+    return mut_;
+  }
 
   ~VariableDeclaration() override = default;
 
@@ -20,8 +26,9 @@ class VariableDeclaration : public ASTNode {
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
   Identifier id_;
-  Type type_;
-  std::unique_ptr<Value> value_;
+  Option<Type> type_;
+  Option<std::unique_ptr<Value>> value_;
+  bool mut_;
 };
 
 }  // namespace ast
