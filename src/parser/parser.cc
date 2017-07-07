@@ -69,8 +69,7 @@ ErrorOr<ast::VariableDeclaration*>  Parser::parse_variable_declaration()
   Option<std::unique_ptr<ast::Value>> value;
   if (current_token().type == TokenType::ASSIGN) {
     RETURN_IF_ERROR(get_token());
-    RETURN_OR_ASSIGN(ast::Value* v, parse_value());
-    value = std::unique_ptr<ast::Value>(v);
+    RETURN_OR_ASSIGN(value, parse_value());
   }
   // Then a semicolon.
   EXPECT_TOKEN(TokenType::SEMICOLON, "Expected semicolon at the end of the statement");
