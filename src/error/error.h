@@ -122,7 +122,7 @@ class ErrorOr {
   const Value& value_or_die() const { return variant_.template get<Value>(); }
 
   /// Gives ownership of the value if it is one, fail otherwise.
-  Value&& consume_value_or_die() { return variant_.template consume<Value>(); }
+  Value consume_value_or_die() { return variant_.template consume<Value>(); }
 
   /// Return the error if it is one, fail otherwise.
   const Err& error_or_die() const { return *variant_.template get<ErrPtr>(); }
@@ -214,7 +214,7 @@ class MaybeError {
 // Macro to either propagate the error from the method called, or move it to
 // a local variable if it succeeded.
 #define RETURN_OR_MOVE(DECL, CALL)                       \
-  auto&& __ERROR_MACRO_VAR(__LINE__) = CALL;             \
+  auto __ERROR_MACRO_VAR(__LINE__) = CALL;               \
   if (!__ERROR_MACRO_VAR(__LINE__).is_ok())              \
     return {__ERROR_MACRO_VAR(__LINE__).error_or_die()}; \
   DECL = __ERROR_MACRO_VAR(__LINE__).consume_value_or_die();  // NOLINT
