@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ast/ast.h"
+#include "ast/base_types.h"
 #include "error/error.h"
 #include "lexer/lexer.h"
 
@@ -37,11 +38,13 @@ class Parser {
  private:
   static constexpr unsigned int k_lookahead = 1;
 
-  template <typename T>
-  using ErrorOrPtr = ErrorOr<std::unique_ptr<T>>;
-
   ErrorOr<ast::ASTNode*> parse_toplevel_declaration();
+  ErrorOr<ast::IntConstant*> parse_int_constant();
   ErrorOr<ast::VariableDeclaration*> parse_variable_declaration();
+  ErrorOr<ast::Value*> parse_value();
+  ErrorOr<ast::Type> parse_type();
+  ErrorOr<ast::Identifier> parse_type_identifier();
+  ErrorOr<ast::Identifier> parse_value_identifier();
 
   const lexer::Token& current_token() const;
   MaybeError<> get_token();
