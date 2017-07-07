@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include <string>
 
+#include "util/option.h"
+#include "util/variant.h"
+
 // Error utilities.
 
 /// Base error interface.
@@ -51,6 +54,12 @@ inline std::ostream& operator<<(std::ostream& os, const GenericError& error) {
   return os << error.to_string();
 }
 
+namespace internals {
+template <typename Base, typename Derived>
+using enable_if_base_of = typename std::enable_if<
+    std::is_base_of<Base, typename std::decay<Derived>::type>::value>;
+}  // namespace internals
+
 /// Represents either an error or a Value.
 /// This class is immutable (but the Value can be mutable).
 template <typename Value, typename Err = GenericError>
@@ -58,8 +67,9 @@ class ErrorOr {
   static_assert(std::is_base_of<Error, Err>::value,
                 "Error type must be a subclass of Error");
   template <typename E>
-  using enable_if_error = typename std::enable_if<
-      std::is_base_of<Err, typename std::decay<E>::type>::value>;
+  using enable_if_error = internals::enable_if_base_of<Err, E>;
+
+  using ErrPtr = std::unique_ptr<Err>;
 
  public:
   // Constructors from value or errors.
@@ -68,7 +78,7 @@ class ErrorOr {
   template <typename E>
   ErrorOr(E error,  // NOLINT: explicit
           typename enable_if_error<E>::type* /*unused*/ = nullptr)
-      : union_(std::move(error)), is_ok_(false) {}
+      : variant_(std::make_unique<Err>(std::move(error))) {}
 
   /// Construct a value directly.
   template <typename T, typename = typename std::enable_if<
@@ -76,7 +86,7 @@ class ErrorOr {
   ErrorOr(T value,  // NOLINT: explicit
           typename std::enable_if<
               std::is_convertible<T, Value>::value>::type* /*unused*/ = nullptr)
-      : union_(std::move(value)), is_ok_(true) {}
+      : variant_(Value(std::move(value))) {}
 
   // Move constructor.
   template <typename T, typename E,
@@ -84,12 +94,7 @@ class ErrorOr {
                 std::is_convertible<T, Value>::value>::type,
             typename = typename enable_if_error<E>::type>
   ErrorOr(ErrorOr<T, E>&& other)  // NOLINT: explicit
-      : is_ok_(other.is_ok_) {
-    if (is_ok_)
-      new (&union_.value) Value(std::move(other.union_.value));
-    else
-      new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
-  }
+      : variant_(std::move(other.variant_)) {}
 
   // Move assignment.
   template <
@@ -98,12 +103,7 @@ class ErrorOr {
       typename =
           typename std::enable_if<std::is_convertible<E, Err>::value>::type>
   ErrorOr& operator=(ErrorOr<T, E>&& other) {
-    this->~ErrorOr();
-    is_ok_ = other.is_ok_;
-    if (is_ok_)
-      new (&union_.value) Value(std::move(other.union_.value));
-    else
-      new (&union_.error) std::unique_ptr<Err>(std::move(other.union_.error));
+    variant_ = std::move(other.variant_);
     return *this;
   }
 
@@ -113,58 +113,25 @@ class ErrorOr {
   ErrorOr& operator=(const ErrorOr& other) = delete;
 
   /// Check whether it is an error or a value.
-  bool is_ok() const { return is_ok_; }
+  bool is_ok() const { return variant_.template is<Value>(); }
 
   /// Return the value if it is one, fail otherwise.
-  Value& value_or_die() {
-    if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
-    return union_.value;
-  }
+  Value& value_or_die() { return variant_.template get<Value>(); }
 
   /// Return the value if it is one, fail otherwise.
-  const Value& value_or_die() const {
-    if (!is_ok_) throw std::domain_error("ErrorOr was error, asked for value");
-    return union_.value;
-  }
+  const Value& value_or_die() const { return variant_.template get<Value>(); }
 
   /// Return the error if it is one, fail otherwise.
-  const Err& error_or_die() const {
-    if (is_ok_) throw std::domain_error("ErrorOr was value, asked for error");
-    return *union_.error;
-  }
+  const Err& error_or_die() const { return *variant_.template get<ErrPtr>(); }
 
   /// Return the error if it is one, otherwise return "Ok".
   std::string to_string() const {
-    if (is_ok_) return "Ok";
+    if (is_ok()) return "Ok";
     return error_or_die().to_string();
   }
 
-  ~ErrorOr() {
-    // Make sure to delete the right value.
-    if (is_ok_)
-      union_.value.~Value();
-    else
-      union_.error.~unique_ptr<Err>();
-  }
-
  private:
-  // Contain either an error or a value, with the appropriate constructors.
-  union Union {
-    std::unique_ptr<Err> error;
-    Value value;
-
-    template <typename E>
-    explicit Union(E e, typename enable_if_error<E>::type* /*unused*/ = nullptr)
-        : error(new E(std::move(e))) {}
-    explicit Union(Value v) : value(std::move(v)) {}
-    // Default constructor leaves the memory uninitialized, make to to
-    // initialize it after.
-    Union() {}  // NOLINT: modernize suggests =default
-    // Destructor does not destroy (not enough information).
-    ~Union() {}  // NOLINT: modernize suggests =default
-  } union_;
-  // true: value, false: error.
-  bool is_ok_;
+  Variant<Value, ErrPtr> variant_;
 
   // Friend other implementations of that class, for the move
   // constructor/assignment.
@@ -172,27 +139,53 @@ class ErrorOr {
   friend class ErrorOr;
 };
 
-namespace internals {
-// Empty struct to act as placeholder of a value.
-struct Dummy {};
-}  // namespace internals
-
 /// Either an error or a positive result.
 /// This class is immutable.
 template <typename Err = GenericError>
-class MaybeError : private ErrorOr<internals::Dummy, Err> {
+class MaybeError {
  public:
-  using Base = ErrorOr<internals::Dummy, Err>;
+  static_assert(std::is_base_of<Error, Err>::value,
+                "Error type must be a subclass of Error");
+  template <typename E>
+  using enable_if_error = internals::enable_if_base_of<Err, E>;
+
   // Constructor for no error.
-  MaybeError() : Base(internals::Dummy()) {}  // NOLINT: explicit
+  MaybeError() : error_or_() {}
 
   // Inherit the constructors.
-  template <typename T>
-  MaybeError(T&& value) : Base(std::forward<T>(value)) {}  // NOLINT: explicit
+  template <typename E>
+  MaybeError(E&& value,  // NOLINT: explicit
+             typename enable_if_error<E>::type* /*unused*/ = nullptr)
+      : error_or_(std::make_unique<Err>(std::forward<E>(value))) {}
+
+  template <typename E>
+  MaybeError(MaybeError<E>&& other,  // NOLINT: explicit
+             typename enable_if_error<E>::type* /*unused*/ = nullptr)
+      : error_or_(std::move(other.error_or_)) {}
+
+  template <typename E, typename = typename enable_if_error<E>::type>
+  MaybeError& operator=(MaybeError<E>&& other) {
+    error_or_ = std::move(other.error_or_);
+    return *this;
+  }
+
+  MaybeError(const MaybeError&) = delete;
+  MaybeError& operator=(const MaybeError&) = delete;
+
   // Inherit methods.
-  using Base::error_or_die;
-  using Base::is_ok;
-  using Base::to_string;
+  const Err& error_or_die() const { return *error_or_.value_or_die(); }
+  bool is_ok() const { return !error_or_.is_ok(); }
+
+  std::string to_string() const {
+    if (is_ok()) return "Ok";
+    return error_or_die().to_string();
+  }
+
+ private:
+  Option<std::unique_ptr<Err>> error_or_;
+
+  template <typename E>
+  friend class MaybeError;
 };
 
 // Macro to propagate the error from the method called, if it failed.
