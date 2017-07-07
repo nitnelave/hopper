@@ -3,6 +3,7 @@
 #include "gflags/gflags.h"
 #include "gtest/gtest.h"
 #include "lexer/lexer.h"
+#include "parser/parser.h"
 #include "test_utils/files.h"
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
@@ -110,8 +111,43 @@ testing::AssertionResult test_lexer_resource(const std::string& filename) {
   return testing::AssertionSuccess();
 }
 
+testing::AssertionResult test_parser_resource(const std::string& filename) {
+  auto expected_errors =
+      MAP_VEC(parse_expected_errors(filename),
+              parser::ParseError(__ARG__.message, __ARG__.range));
+  if (expected_errors.size() > 1) {
+    std::stringstream ss;
+    ss << "You must have at most one position (^^^) and \"ERROR\" line in a "
+          "resource file, you had "
+       << expected_errors.size() << "\nWhile reading " << filename;
+    throw std::runtime_error(ss.str().c_str());
+  }
+  lexer::Lexer lex = lexer::from_file(filename);
+  parser::Parser parser(&lex);
+  auto result = parser.parse();
+  if (result.is_ok() && !expected_errors.empty())
+    return testing::AssertionFailure() << "Expected error:\n"
+                                       << expected_errors[0] << "\nGot success";
+  if (!result.is_ok()) {
+    if (expected_errors.empty())
+      return testing::AssertionFailure() << "Expected success, got:\n"
+                                         << result.error_or_die();
+    if (result.error_or_die() != expected_errors[0])
+      return testing::AssertionFailure() << "Expected:\n"
+                                         << expected_errors[0] << "\nGot:\n"
+                                         << result.error_or_die();
+  }
+  return testing::AssertionSuccess();
+}
+
 TEST(ResourcesTest, Lexer) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
   EXPECT_TRUE(test::walk_directory(
       (FLAGS_test_resource_folder + "/lexer").c_str(), test_lexer_resource));
+}
+
+TEST(ResourcesTest, Parser) {
+  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
+  EXPECT_TRUE(test::walk_directory(
+      (FLAGS_test_resource_folder + "/parser").c_str(), test_parser_resource));
 }
