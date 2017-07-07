@@ -1,4 +1,6 @@
 target_sources(${GRACC_LIBRARY}
+    PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/visitor.cc"
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/ast.h"
         "${CMAKE_CURRENT_LIST_DIR}/base_types.h"
