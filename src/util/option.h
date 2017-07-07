@@ -24,8 +24,8 @@ class Option {
   const Value& value_or_die() const { return variant_.template get<Value>(); }
   Value& value_or_die() { return variant_.template get<Value>(); }
 
-  Option& operator=(const Value& v) {
-    variant_ = v;
+  Option& operator=(Value v) {
+    variant_ = std::move(v);
     return *this;
   }
 
