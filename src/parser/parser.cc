@@ -39,14 +39,14 @@ ErrorOr<ast::Type> Parser::parse_type() {
   return Type(id);
 }
 
-ErrorOr<ast::IntConstant*> Parser::parse_int_constant() {
+Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
   auto location = current_token().location;
   auto value = std::atoi(current_token().text.c_str());
   RETURN_IF_ERROR(get_token());
-  return new ast::IntConstant(location, value);
+  return std::make_unique<ast::IntConstant>(location, value);
 }
 
-ErrorOr<ast::Value*> Parser::parse_value() {
+Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
   if (current_token().type == TokenType::INT ||
       current_token().type == TokenType::HEX ||
       current_token().type == TokenType::OCT ||
@@ -55,7 +55,8 @@ ErrorOr<ast::Value*> Parser::parse_value() {
   return ParseError("Expected value", current_token().location);
 }
 
-ErrorOr<ast::VariableDeclaration*> Parser::parse_variable_declaration() {
+Parser::ErrorOrPtr<ast::VariableDeclaration>
+Parser::parse_variable_declaration() {
   // Starts with VAL or MUT.
   assert(current_token().type == TokenType::VAL ||
          current_token().type == TokenType::MUT);
@@ -74,17 +75,17 @@ ErrorOr<ast::VariableDeclaration*> Parser::parse_variable_declaration() {
   Option<std::unique_ptr<ast::Value>> value;
   if (current_token().type == TokenType::ASSIGN) {
     RETURN_IF_ERROR(get_token());
-    RETURN_OR_ASSIGN(value, parse_value());
+    RETURN_OR_MOVE(value, parse_value());
   }
   // Then a semicolon.
   EXPECT_TOKEN(TokenType::SEMICOLON,
                "Expected semicolon at the end of the statement");
   RETURN_IF_ERROR(get_token());
-  return new ast::VariableDeclaration(range_from(begin), variable_name,
-                                      std::move(type), std::move(value), mut);
+  return std::make_unique<ast::VariableDeclaration>(
+      range_from(begin), variable_name, std::move(type), std::move(value), mut);
 }
 
-ErrorOr<ast::ASTNode*> Parser::parse_toplevel_declaration() {
+Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   const Token& t = current_token();
   if (t.type == TokenType::VAL || t.type == TokenType::MUT) {
     return parse_variable_declaration();
@@ -121,15 +122,16 @@ const Token& Parser::current_token() const {
   return token_stack_[token_stack_.size() - backlog_ - 1];
 }
 
-ErrorOr<ast::Module*> Parser::parse() {
+Parser::ErrorOrPtr<ast::Module> Parser::parse() {
   RETURN_IF_ERROR(get_token());
   auto begin = current_token().location.begin;
   std::vector<std::unique_ptr<ast::ASTNode>> declarations;
   while (current_token().type != TokenType::END_OF_FILE) {
-    RETURN_OR_ASSIGN(auto decl, parse_toplevel_declaration());
-    declarations.emplace_back(decl);
+    RETURN_OR_MOVE(auto decl, parse_toplevel_declaration());
+    declarations.emplace_back(std::move(decl));
   }
-  return new ast::Module(range_from(begin), std::move(declarations));
+  return std::make_unique<ast::Module>(range_from(begin),
+                                       std::move(declarations));
 }
 
 }  // namespace parser
