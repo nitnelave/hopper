@@ -72,6 +72,9 @@ class ErrorOr {
   using ErrPtr = std::unique_ptr<Err>;
 
  public:
+  using ErrorType = Err;
+  using ValueType = Value;
+
   // Constructors from value or errors.
 
   /// Construct an error from a subtype of Err.
@@ -147,6 +150,9 @@ class MaybeError {
  public:
   static_assert(std::is_base_of<Error, Err>::value,
                 "Error type must be a subclass of Error");
+
+  using ErrorType = Err;
+
   template <typename E>
   using enable_if_error = internals::enable_if_base_of<Err, E>;
 
