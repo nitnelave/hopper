@@ -176,6 +176,17 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
       }
       unget_char();
       return make_single_token(TokenType::DIVIDE);
+    case '.':
+      RETURN_IF_ERROR(get_next_char());
+      if (current_char() == '.') {
+        RETURN_IF_ERROR(get_next_char());
+        if (current_char() == '.')
+          return Token{TokenType::DOTDOTDOT, "...", {beginning, location()}};
+        unget_char();
+        return make_double_token(TokenType::DOTDOT);
+      }
+      unget_char();
+      return make_single_token(TokenType::DOT);
     case '*':
       return with_second_char(TokenType::STAR,
                               {{'=', TokenType::TIMES_ASSIGN}});
@@ -219,7 +230,25 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
     case ';':
       return make_single_token(TokenType::SEMICOLON);
     case ':':
-      return make_single_token(TokenType::COLON);
+      return with_second_char(TokenType::COLON,
+                              {{':', TokenType::COLON_COLON}});
+    case '?':
+      RETURN_IF_ERROR(get_next_char());
+      if (current_char() == '.')
+        return make_double_token(TokenType::QUESTION_MARK_DOT);
+      if (current_char() == ':')
+        return make_double_token(TokenType::QUESTION_MARK_COLON);
+      if (current_char() == '-') {
+        RETURN_IF_ERROR(get_next_char());
+        if (current_char() == '>')
+          return Token{
+              TokenType::QUESTION_MARK_ARROW, "?->", {beginning, location()}};
+        unget_char();
+      }
+      unget_char();
+      return make_single_token(TokenType::QUESTION_MARK);
+    case '_':
+      return make_single_token(TokenType::UNDERSCORE);
     case ',':
       return make_single_token(TokenType::COMMA);
     case EOF:
