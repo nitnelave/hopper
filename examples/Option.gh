@@ -10,7 +10,7 @@
 // otherwise, it returns None (the Option value for nothing).
 fun getInt(val in : Int32) : Int32? = if (in > 3) in else None;
 
-fun main(val args : String...) {
+public fun main(val args : String...) {
   val maybeInt : Int32? = getInt(4);
   // Here, we don't know if maybeInt is None or a number, so we can't use it
   // directly. This won't compile:
@@ -30,7 +30,7 @@ fun main(val args : String...) {
 
   // If we have an object, we can call a method of the object if the Option is
   // valid, or get None if the original object is None.
-  var vec : Vector<Int32>? = if (y == 3) Vector<Int32>() else None;
+  var vec : Vector![Int32]? = if (y == 3) Vector![Int32]() else None;
   // len is the vector length if the vector exists, and None otherwise.
   val len : Int32? = vec?.length();
   // Now, len is an Option, so we can't just use it as an int. We can give it a
@@ -43,7 +43,7 @@ fun main(val args : String...) {
   // the assert will be removed in release/optimized mode. This allows to have a
   // good measure of safety (with the debug mode checking it), and yet have the
   // maximum performance in release mode.
-  assertNotNone(maybeInt);
+  assert(maybeInt != None);
 }
 
 
