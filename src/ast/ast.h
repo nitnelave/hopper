@@ -17,7 +17,9 @@ class ASTNode {
   /// The range of text that this piece of code represents.
   const lexer::Range& location() const { return location_; }
 
+  // LCOV_EXCL_START: never called
   virtual ~ASTNode() = default;
+  // LCOV_EXCL_STOP
 
  private:
   virtual void accept_impl(ASTVisitor& visitor) = 0;

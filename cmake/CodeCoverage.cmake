@@ -74,15 +74,10 @@ find_program( LCOV_PATH lcov )
 find_program( GENHTML_PATH genhtml )
 find_program( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
 find_program( SIMPLE_PYTHON_EXECUTABLE python )
-find_program( CPPFILT c++filt )
 
 if(NOT GCOV_PATH)
     message(FATAL_ERROR "gcov not found! Aborting...")
 endif() # NOT GCOV_PATH
-
-if(NOT CPPFILT)
-  set(CPPFILT cat)
-endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
     if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
@@ -162,11 +157,10 @@ function(SETUP_TARGET_FOR_COVERAGE)
         COMMAND ${Coverage_EXECUTABLE}
 
         # Capturing lcov counters and generating report
-        COMMAND ${LCOV_PATH} ${LCOV_RC} --capture --output-file ${Coverage_NAME}.info
-        COMMAND ${LCOV_PATH} ${LCOV_RC} --remove ${Coverage_NAME}.info ${COVERAGE_EXCLUDES} --output-file ${Coverage_NAME}.info.filtered
-        COMMAND cat ${Coverage_NAME}.info.filtered | ${CPPFILT} > ${Coverage_NAME}.info.cleaned
-        COMMAND ${GENHTML_PATH} -o ${Coverage_NAME} ${Coverage_NAME}.info.cleaned
-        COMMAND ${CMAKE_COMMAND} -E remove ${Coverage_NAME}.info ${Coverage_NAME}.info.filtered
+        COMMAND ${LCOV_PATH} ${LCOV_RC} --capture --output-file ${Coverage_NAME}.info.raw
+        COMMAND ${LCOV_PATH} ${LCOV_RC} --remove ${Coverage_NAME}.info.raw ${COVERAGE_EXCLUDES} --output-file ${Coverage_NAME}.info
+        COMMAND ${GENHTML_PATH} --demangle-cpp -o ${Coverage_NAME} ${Coverage_NAME}.info
+        COMMAND ${CMAKE_COMMAND} -E remove ${Coverage_NAME}.info.raw
 
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
