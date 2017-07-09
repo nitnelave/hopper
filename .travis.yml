@@ -7,6 +7,9 @@ cache:
     - ${TRAVIS_BUILD_DIR}/gflags
     - ${TRAVIS_BUILD_DIR}/lcov
 
+git:
+  depth: 3
+
 env:
   global:
     - CC="clang-3.8"
