@@ -65,8 +65,10 @@ TEST(LexerTest, TokenTypeToStream) {
 // Tests of binary operators.
 TEST(LexerTest, BinaryOperators) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
-      "+ - / *",
-      {TokenType::PLUS, TokenType::MINUS, TokenType::DIVIDE, TokenType::STAR}));
+      "+ - / * div mod ?: ?. ?->",
+      {TokenType::PLUS, TokenType::MINUS, TokenType::DIVIDE, TokenType::STAR,
+       TokenType::DIV, TokenType::MODULO, TokenType::QUESTION_MARK_COLON,
+       TokenType::QUESTION_MARK_DOT, TokenType::QUESTION_MARK_ARROW}));
   EXPECT_TRUE(compare_tokens_types_and_symbols(
       "|| && > < >= <=",
       {TokenType::OR, TokenType::AND, TokenType::GREATER, TokenType::LESS,
@@ -81,12 +83,16 @@ TEST(LexerTest, BinaryOperators) {
       {TokenType::ASSIGN, TokenType::PLUS_ASSIGN, TokenType::MINUS_ASSIGN,
        TokenType::TIMES_ASSIGN, TokenType::DIVIDE_ASSIGN, TokenType::OR_ASSIGN,
        TokenType::XOR_ASSIGN, TokenType::AND_ASSIGN}));
+  EXPECT_TRUE(compare_tokens_types_and_symbols(
+      "?-*", {TokenType::QUESTION_MARK, TokenType::MINUS, TokenType::STAR}));
 }
 
 TEST(LexerTest, BinaryOperatorsNoSpace) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
-      "+-/*",
-      {TokenType::PLUS, TokenType::MINUS, TokenType::DIVIDE, TokenType::STAR}));
+      "+-/*?:?.?->",
+      {TokenType::PLUS, TokenType::MINUS, TokenType::DIVIDE, TokenType::STAR,
+       TokenType::QUESTION_MARK_COLON, TokenType::QUESTION_MARK_DOT,
+       TokenType::QUESTION_MARK_ARROW}));
   EXPECT_TRUE(compare_tokens_types_and_symbols(
       "||&&><>=<=",
       {TokenType::OR, TokenType::AND, TokenType::GREATER, TokenType::LESS,
@@ -119,11 +125,13 @@ TEST(LexerTest, UnaryOperators) {
 // Tests of delimiters.
 TEST(LexerTest, Delimiters) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
-      "( ) [ ] { } ; : , ->",
+      "( ) [ ] { } ; : , -> :: ::: . .. ...",
       {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
        TokenType::CLOSE_BRACKET, TokenType::OPEN_BRACE, TokenType::CLOSE_BRACE,
        TokenType::SEMICOLON, TokenType::COLON, TokenType::COMMA,
-       TokenType::ARROW}));
+       TokenType::ARROW, TokenType::COLON_COLON, TokenType::COLON_COLON,
+       TokenType::COLON, TokenType::DOT, TokenType::DOTDOT,
+       TokenType::DOTDOTDOT}));
   EXPECT_TRUE(compare_tokens_types_and_symbols(
       "()[]{};:->,",
       {TokenType::OPEN_PAREN, TokenType::CLOSE_PAREN, TokenType::OPEN_BRACKET,
@@ -158,13 +166,38 @@ TEST(LexerTest, Comments) {
 // Tests of keywords.
 TEST(LexerTest, Keywords) {
   EXPECT_TRUE(compare_tokens_types_and_symbols(
-      "as do enum data class private public from for forward fun if import is "
-      "mut return val when while",
-      {TokenType::AS, TokenType::DO, TokenType::ENUM, TokenType::DATA,
-       TokenType::CLASS, TokenType::PRIVATE, TokenType::PUBLIC, TokenType::FROM,
-       TokenType::FOR, TokenType::FORWARD, TokenType::FUN, TokenType::IF,
-       TokenType::IMPORT, TokenType::IS, TokenType::MUT, TokenType::RETURN,
-       TokenType::VAL, TokenType::WHEN, TokenType::WHILE}));
+      "_ abstract as baseclass break catch class constant continue dataclass "
+      "default defer div do else enum extern finally for forward from fun if "
+      "implements import in inherit interface is macro mod mut new noexcept "
+      "object override package protected private public pure reinterpret_cast "
+      "return throw try try_compile using val virtual when while with yield",
+      {TokenType::UNDERSCORE, TokenType::ABSTRACT,
+       TokenType::AS,         TokenType::BASECLASS,
+       TokenType::BREAK,      TokenType::CATCH,
+       TokenType::CLASS,      TokenType::CONSTANT,
+       TokenType::CONTINUE,   TokenType::DATACLASS,
+       TokenType::DEFAULT,    TokenType::DEFER,
+       TokenType::DIV,        TokenType::DO,
+       TokenType::ELSE,       TokenType::ENUM,
+       TokenType::EXTERN,     TokenType::FINALLY,
+       TokenType::FOR,        TokenType::FORWARD,
+       TokenType::FROM,       TokenType::FUN,
+       TokenType::IF,         TokenType::IMPLEMENTS,
+       TokenType::IMPORT,     TokenType::IN,
+       TokenType::INHERIT,    TokenType::INTERFACE,
+       TokenType::IS,         TokenType::MACRO,
+       TokenType::MODULO,     TokenType::MUT,
+       TokenType::NEW,        TokenType::NOEXCEPT,
+       TokenType::OBJECT,     TokenType::OVERRIDE,
+       TokenType::PACKAGE,    TokenType::PROTECTED,
+       TokenType::PRIVATE,    TokenType::PUBLIC,
+       TokenType::PURE,       TokenType::REINTERPRET_CAST,
+       TokenType::RETURN,     TokenType::THROW,
+       TokenType::TRY,        TokenType::TRY_COMPILE,
+       TokenType::USING,      TokenType::VAL,
+       TokenType::VIRTUAL,    TokenType::WHEN,
+       TokenType::WHILE,      TokenType::WITH,
+       TokenType::YIELD}));
 }
 
 // Tests of identifiers.
