@@ -63,29 +63,72 @@ namespace lexer {
   X(CLOSE_BRACE, "}")                                 \
   X(SEMICOLON, ";")                                   \
   X(COLON, ":")                                       \
+  X(COLON_COLON, "::")                                \
   X(COMMA, ",")                                       \
   X(ARROW, "->")                                      \
+  X(QUESTION_MARK, "?")                               \
+  X(QUESTION_MARK_COLON, "?:")                        \
+  X(QUESTION_MARK_DOT, "?.")                          \
+  X(QUESTION_MARK_ARROW, "?->")                       \
+  X(UNDERSCORE, "_")                                  \
+  X(DOT, ".")                                         \
+  X(DOTDOT, "..")                                     \
+  X(DOTDOTDOT, "...")                                 \
   /* Keywords (alphabetical order). */                \
   X(__KEYWORDS_START__, "") /* Not a token */         \
+  X(ABSTRACT, "abstract")                             \
   X(AS, "as")                                         \
-  X(DO, "do")                                         \
-  X(ENUM, "enum")                                     \
-  X(DATA, "data")                                     \
+  X(BASECLASS, "baseclass")                           \
+  X(BREAK, "break")                                   \
+  X(CATCH, "catch")                                   \
   X(CLASS, "class")                                   \
-  X(PRIVATE, "private")                               \
-  X(PUBLIC, "public")                                 \
-  X(FROM, "from")                                     \
+  X(CONSTANT, "constant")                             \
+  X(CONTINUE, "continue")                             \
+  X(DATACLASS, "dataclass")                           \
+  X(DEFAULT, "default")                               \
+  X(DEFER, "defer")                                   \
+  X(DELETE, "delete")                                 \
+  X(DIV, "div")                                       \
+  X(DO, "do")                                         \
+  X(ELSE, "else")                                     \
+  X(ENUM, "enum")                                     \
+  X(EXTERN, "extern")                                 \
+  X(FINALLY, "finally")                               \
   X(FOR, "for")                                       \
   X(FORWARD, "forward") /* for forward-references. */ \
+  X(FROM, "from")                                     \
   X(FUN, "fun")                                       \
   X(IF, "if")                                         \
+  X(IMPLEMENTS, "implements")                         \
   X(IMPORT, "import")                                 \
+  X(IN, "in")                                         \
+  X(INHERIT, "inherit")                               \
+  X(INTERFACE, "interface")                           \
   X(IS, "is")                                         \
+  X(MACRO, "macro")                                   \
+  X(MODULO, "mod")                                    \
   X(MUT, "mut")                                       \
+  X(NEW, "new")                                       \
+  X(NOEXCEPT, "noexcept")                             \
+  X(OBJECT, "object")                                 \
+  X(OVERRIDE, "override")                             \
+  X(PACKAGE, "package")                               \
+  X(PROTECTED, "protected")                           \
+  X(PRIVATE, "private")                               \
+  X(PUBLIC, "public")                                 \
+  X(PURE, "pure")                                     \
+  X(REINTERPRET_CAST, "reinterpret_cast")             \
   X(RETURN, "return")                                 \
+  X(THROW, "throw")                                   \
+  X(TRY, "try")                                       \
+  X(TRY_COMPILE, "try_compile")                       \
+  X(USING, "using")                                   \
   X(VAL, "val")                                       \
+  X(VIRTUAL, "virtual")                               \
   X(WHEN, "when")                                     \
   X(WHILE, "while")                                   \
+  X(WITH, "with")                                     \
+  X(YIELD, "yield")                                   \
   X(__KEYWORDS_END__, "") /* Not a token */           \
   /* Misc. */                                         \
   X(ANNOTATION, "@annotation")                        \
