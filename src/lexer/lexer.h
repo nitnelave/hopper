@@ -5,20 +5,11 @@
 #include <string>
 
 #include "error/error.h"
+#include "lexer/file_reader.h"
 #include "lexer/token.h"
+#include "util/lookahead_stack.h"
 
 namespace lexer {
-class LexError : public GenericError {
- public:
-  explicit LexError(const std::string& message, const Range& r)
-      : GenericError(message + " in " + r.to_string()) {}
-  ~LexError() override = default;
-};
-
-inline std::ostream& operator<<(std::ostream& os, const LexError& error) {
-  return os << error.to_string();
-}
-
 class Lexer {
  public:
   // What type of input is given to the constructor.
@@ -55,19 +46,31 @@ class Lexer {
   // against keywords. Returns either a LOWER_CASE_IDENT or the corresponding
   // keyword token.
   ErrorOr<Token, LexError> read_lowercase_identifier();
-  // Puts the value of the next char into next_char_, and updates the location.
-  void get_next_char();
-  // Setup the lexer such that the next call to get_next_char() returns the
-  // same character and location. The value of next_char_ is updated with the
-  // previous value.
+  // Reads the next char from the stream, updating the location. May return an
+  // error if read operation fails.
+  MaybeError<LexError> get_next_char();
+  // Push the current character and location on a stack, and restore the
+  // previous one.
   void unget_char();
 
-  char next_char_ = 0;
-  char previous_char_ = 0;
-  bool was_not_consumed_ = false;
-  std::unique_ptr<std::istream> stream_;
-  Location location_;
-  Location previous_location_;
+  // Returns the current char to be examined.
+  char current_char() const;
+
+  // The amount of lookahead needed for lexing (2 char needed to lex "?->").
+  static constexpr int k_lookahead = 2;
+
+  // Holds the stream and the current state of the stream. To be passed to the
+  // LookaheadStack.
+  FileReader reader_;
+
+  // Stack that will take care of getting/ungetting chars, by calling the
+  // callback to get new chars, at the appropriate moments.
+  using CharStack =
+      util::LookaheadStack</*maximum lookahead needed*/ k_lookahead,
+                           /*values in the stack*/ FileReader::State,
+                           /*potential error type*/ LexError>;
+  CharStack char_stack_ =
+      CharStack(std::bind(&FileReader::read_one_char, &reader_));
 };
 
 /// Return an instance of Lexer that will read from the file.
