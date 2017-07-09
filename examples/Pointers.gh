@@ -34,7 +34,7 @@ fun main(val args: String...) {
   // creates the object, returns an OPtr pointing to that area.
   // When the OPtr is destroyed, it destroys the pointed object, and frees the
   // memory.
-  var optr : OPtr<Int32> = make<Int32>(4);
+  var optr : OPtr![Int32] = make![Int32](4);
 
   // We can now use optr like a normal pointer:
   *optr = 3;
@@ -49,7 +49,7 @@ fun main(val args: String...) {
   // variables, and creating owned pointers. Another one comes from using
   // Vectors, or Arrays. They are a contiguous zone of memory that we can
   // access, either of variable size (Vector) or fixed size (Array).
-  var intVec = Vector<Int32>();
+  var intVec = Vector![Int32]();
   intVec.append(3);
   intVec.append(4);
   val last = &intVec[1];
