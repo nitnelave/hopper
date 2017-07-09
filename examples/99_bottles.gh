@@ -7,9 +7,9 @@
 fun toBottles(val n: Int) : String {
     // When for pattern matching.
     val prefix = when (n) {
-      0 -> "No more bottles"
-      1 -> "One bottle"
-      else -> "${n} bottles"
+      0 -> "No more bottles";
+      1 -> "One bottle";
+      default -> "${n} bottles";
     }
     return prefix + " of beer on the wall.";
 }
@@ -20,11 +20,11 @@ fun toBottles(val n: Int) : String {
 /// Returns the full verse for the number of bottles of beer.
 fun toVerse(val n: Int) =
     when (n) {
-      0 -> "${toBottles(0)} Go to the store and buy some more. ${toBottles(99)}"
-      else -> "${toBottles(n)} Take one down and pass it around. ${toBottles(n-1)}" 
+      0 -> "${toBottles(0)} Go to the store and buy some more. ${toBottles(99)}";
+      default -> "${toBottles(n)} Take one down and pass it around. ${toBottles(n-1)}";
     }
 
 // Variadic number of arguments.
-fun main(val args: String...) {
-    listOf(99..0).map(::toVerse).apply(::println);
+public fun main(val args: String...) {
+    listOf(99..0).map(toVerse).apply(println);
 }
