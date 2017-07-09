@@ -14,9 +14,9 @@ using lexer::TokenType;
 using ast::Identifier;
 using ast::Type;
 
-Parser::Parser(lexer::Lexer* lexer) : lexer_(lexer) {}
+Parser::Parser(Lexer* lexer) : lexer_(lexer) {}
 
-lexer::Range Parser::range_from(const lexer::Range::Position& begin) const {
+lexer::Range Parser::range_from(const Range::Position& begin) const {
   return {current_token().location.file, begin, last_end_};
 }
 
@@ -97,30 +97,15 @@ MaybeError<> Parser::get_token() {
   if (!token_stack_.empty()) {
     last_end_ = current_token().location.end;
   }
-  if (token_stack_.size() > k_lookahead) {
-    token_stack_.pop_front();
-  }
   do {
-    if (backlog_ == 0) {
-      RETURN_OR_ASSIGN(const Token& t, lexer_->get_next_token());
-      token_stack_.push_back(t);
-    } else {
-      --backlog_;
-    }
+    RETURN_IF_ERROR(token_stack_.get_next());
   } while (current_token().type == TokenType::COMMENT);
   return {};
 }
 
-void Parser::unget_token() {
-  ++backlog_;
-  assert(backlog_ <= k_lookahead &&
-         "Too much token backlog; increase k_lookahead?");
-}
+void Parser::unget_token() { token_stack_.unget(); }
 
-const Token& Parser::current_token() const {
-  assert(token_stack_.size() > backlog_);
-  return token_stack_[token_stack_.size() - backlog_ - 1];
-}
+const Token& Parser::current_token() const { return token_stack_.current(); }
 
 Parser::ErrorOrPtr<ast::Module> Parser::parse() {
   RETURN_IF_ERROR(get_token());
