@@ -6,6 +6,7 @@ cache:
     - ${TRAVIS_BUILD_DIR}/gtest
     - ${TRAVIS_BUILD_DIR}/gflags
     - ${TRAVIS_BUILD_DIR}/lcov
+    - ${TRAVIS_BUILD_DIR}/npm
 
 git:
   depth: 3
@@ -23,6 +24,7 @@ env:
     - PATH="${PATH}:${TRAVIS_BUILD_DIR}/lcov/bin"
     - PATH="/usr/lib/llvm-3.8/bin/:$PATH"
     - CODECOV_TOKEN="71561ee1-2cd7-44a8-934b-ff2fe0be6318"
+    - CODACY_BIN="${TRAVIS_BUILD_DIR}/npm/node_modules/.bin/codacy-coverage"
 
 apt_sources: &apt_sources
   sources:
@@ -61,7 +63,13 @@ install:
       cd lcov-${LCOV_VERSION}
       make install PREFIX=${TRAVIS_BUILD_DIR}/lcov
     fi
-  - if which npm; then cd ${TRAVIS_BUILD_DIR} && npm install codacy-coverage --save; fi
+  - |
+    if which npm && [ ! -d "${CODACY_BIN}" ]
+    then
+      cd ${TRAVIS_BUILD_DIR}/npm
+      npm install codacy-coverage --save
+    fi
+
 
 
 cmake_command: &cmake_command |
@@ -94,13 +102,16 @@ matrix:
             - llvm-3.8
             - nodejs
             - valgrind
+      before_install:
+        - pip install --user cpp-coveralls
       script:
         - *cmake_command
         - make -j${JOBS} gracc
         - make -j${JOBS} check
         - make -j${JOBS} gracc_coverage
-        - bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
-        - cat gracc_coverage.info.cleaned | ${TRAVIS_BUILD_DIR}/node_modules/.bin/codacy-coverage -p ${TRAVIS_BUILD_DIR} --language cpp
+      after_success:
+        - coveralls --include ${TRAVIS_BUILD_DIR}/src --gcov-options '\-lp' --root ${TRAVIS_BUILD_DIR} --build-root ${BUILD_DIR} --gcov ${TRAVIS_BUILD_DIR}/tools/llvm-gcov
+        - cat gracc_coverage.info | ${TRAVIS_BUILD_DIR}/npm/node_modules/.bin/codacy-coverage -p ${TRAVIS_BUILD_DIR} --language cpp
 
     # Job #2, clang-tidy
     - addons:
