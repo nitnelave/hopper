@@ -8,6 +8,7 @@
 #include "ast/base_types.h"
 #include "error/error.h"
 #include "lexer/lexer.h"
+#include "util/lookahead_stack.h"
 
 namespace parser {
 
@@ -28,17 +29,20 @@ class ParseError : public GenericError {
 // Parser class allows to parse any input.
 class Parser {
  public:
+  using Lexer = lexer::Lexer;
+  using Range = lexer::Range;
+
   template <typename T>
   using ErrorOrPtr = ErrorOr<std::unique_ptr<T>>;
   // Initialize the parser with a Lexer.
   // The lexer is not owned by the Parser, it must be deleted.
-  explicit Parser(lexer::Lexer* lexer);
+  explicit Parser(Lexer* lexer);
 
   // Parse the input from the stream.
   ErrorOrPtr<ast::Module> parse();
 
  private:
-  static constexpr unsigned int k_lookahead = 1;
+  static constexpr unsigned int k_lookahead = 0;
 
   ErrorOrPtr<ast::ASTNode> parse_toplevel_declaration();
   ErrorOrPtr<ast::IntConstant> parse_int_constant();
@@ -52,13 +56,14 @@ class Parser {
   MaybeError<> get_token();
   void unget_token();
 
-  lexer::Range range_from(const lexer::Range::Position& begin) const;
+  Range range_from(const Range::Position& begin) const;
 
-  // How many unget_token() levels we are at.
-  unsigned int backlog_ = 0;
-  std::deque<lexer::Token> token_stack_;
-  lexer::Range::Position last_end_{0, 0};
-  lexer::Lexer* lexer_;
+  Range::Position last_end_{0, 0};
+  Lexer* lexer_;
+  using TokenStack =
+      util::LookaheadStack<k_lookahead, lexer::Token, lexer::LexError>;
+  TokenStack token_stack_ =
+      TokenStack{std::bind(&Lexer::get_next_token, lexer_)};
 };
 
 }  // namespace parser

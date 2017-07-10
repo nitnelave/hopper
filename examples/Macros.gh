@@ -1,8 +1,8 @@
-import exception
+import Exception
 
 // "public" keyword marks exported symbols.
 // "pure" functions are automatically marked as such and can be used for constexpr or macros
-fun getCamlCase(val prefix: String, val suffix: String) {
+pure fun getCamlCase(val prefix: String, val suffix: String) {
   val p = if (prefix[0] in a..z) prefix else (prefix[0] - 'A'.toInt() + 'a'.toInt()) + prefix[1..];
   val s = if (suffix[0] in A..Z) suffix else (suffix[0] - 'a'.toInt() + 'A'.toInt()) + suffix[1..];
   return p + s;
@@ -19,24 +19,23 @@ constant setter_function = """
   }""";
 
 /// Create a getter and a setter for a field.
-public macro WITH_GET_SET(val d: FieldDeclaration) : List<MemberDeclaration> {
+public macro #with_get_set(val d: FieldDeclaration) : List<MemberDeclaration> {
   if (!d.isMutable())
-    raise exception.IllegalArgument("WITH_GET_SET can only be called on mutable variables, " +
+    raise exception.IllegalArgument("#with_get_set can only be called on mutable variables, " +
                                     "but ${d.parent().name()}::${d.name()} is immutable.");
   val t = d.type();
   val id = d.name();
-  mut result : List<Declaration> = [];
-  result.append(d);
+  mut result : List<Declaration> = [d];
   val getter = MemberFunctionDeclaration.parseFrom(getter_function.format(id=id, type=t));
   val setter = MemberFunctionDeclaration.parseFrom(setter_function.format(id=id, type=t));
   result.append(getter, setter);
-  return result
+  return result;
 }
 
 /// Create a constructor with the fields of the class as arguments.
-public macro DATA_CLASS(mut d: ClassDeclaration) : ClassDeclaration {
+public macro #data_class(mut d: ClassDeclaration) : ClassDeclaration {
   if (d.hasConstructor())
-    raise exception.IllegalArgument("DATA_CLASS can only be called on classes with no constructors, " +
+    throw Exception::IllegalArgument("#data_class can only be called on classes with no constructors, " +
                                     "but ${d.name()} has a constructor");
   mut c = Constructor();
   for (f in d.getFields()) {
@@ -51,7 +50,7 @@ public macro DATA_CLASS(mut d: ClassDeclaration) : ClassDeclaration {
 ///   this.superField = superField;
 ///   this.otherField = otherField;
 /// }
-DATA_CLASS(class ExampleDataClass {
-  WITH_GET_SET(mut superField: Int32);
-  WITH_GET_SET(mut otherField: String = "test");
+data_class(class ExampleDataClass {
+  #with_get_set(mut superField: Int32);
+  #with_get_set(mut otherField: String = "test");
 });
