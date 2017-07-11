@@ -1,5 +1,6 @@
 #include "ast/ast.h"
 #include "ast/module.h"
+#include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
 
 namespace ast {
@@ -13,7 +14,9 @@ void ASTVisitor::visit(Module* node) {
   for (const auto& declaration : node->top_level_declarations())
     declaration->accept(*this);
 }
-void ASTVisitor::visit(Return* /*unused*/) {}
+void ASTVisitor::visit(ReturnStatement* node) {
+  if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
+}
 void ASTVisitor::visit(Value* /*unused*/) {}
 void ASTVisitor::visit(VariableDeclaration* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
