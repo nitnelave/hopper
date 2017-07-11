@@ -2,11 +2,6 @@
 
 namespace lexer {
 
-Range make_range(int line1, int col1, int line2, int col2,
-                 const std::string& file) {
-  return {file, line1, col1, line2, col2};
-}
-
 ErrorOr<std::vector<Token>> consume_tokens(Lexer& lexer) {
   std::vector<Token> result;
   while (true) {
