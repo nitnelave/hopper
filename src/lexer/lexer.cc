@@ -52,14 +52,15 @@ Lexer::Lexer(const std::string& source, SourceTag tag,
     : reader_{get_stream_from_source(source, tag), filename} {}
 
 ErrorOr<Token, LexError> Lexer::read_lowercase_identifier() {
-  RETURN_OR_ASSIGN(Token tok, read_identifier(TokenType::LOWER_CASE_IDENT));
+  RETURN_OR_MOVE(Token tok, read_identifier(TokenType::LOWER_CASE_IDENT));
   // Check for keywords.
   for (int i = static_cast<int>(TokenType::__KEYWORDS_START__) + 1;
        i < static_cast<int>(TokenType::__KEYWORDS_END__); ++i) {
     TokenType tt = static_cast<TokenType>(i);
-    if (tok.text == to_symbol(tt)) return Token{tt, tok.text, tok.location};
+    if (tok.text() == to_symbol(tt))
+      return Token{tt, tok.text(), tok.location()};
   }
-  return tok;
+  return std::move(tok);
 }
 
 ErrorOr<Token, LexError> Lexer::read_identifier(TokenType tt) {
@@ -86,8 +87,8 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
 
   // Construct a token with the last character.
   auto make_single_token = [&, this](TokenType tt) {
-    return ErrorOr<Token, LexError>{
-        Token{tt, {current}, {beginning, beginning}}};
+    return ErrorOr<Token, LexError>(
+        Token(tt, std::string(1, current), {beginning, beginning}));
   };
 
   // Construct a token with the last 2 characters.
@@ -294,9 +295,7 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
     return LexError("Invalid number literal", {beginning, location()});
   }
   unget_char();
-  auto result_token =
-      Token{tt, std::to_string(result), {beginning, location()}};
-  return std::move(result_token);
+  return Token{tt, result, {beginning, location()}};
 }
 
 MaybeError<LexError> Lexer::get_next_char() { return char_stack_.get_next(); }

@@ -12,8 +12,9 @@ namespace {
 testing::AssertionResult compare_token_types(
     const std::vector<Token>& tokens, const std::vector<TokenType>& types,
     const std::vector<std::string>& text = {}) {
-  CALL_ASSERT(compare(types, MAP_VEC(tokens, __ARG__.type)));
-  if (!text.empty()) CALL_ASSERT(compare(text, MAP_VEC(tokens, __ARG__.text)));
+  CALL_ASSERT(compare(types, MAP_VEC(tokens, __ARG__.type())));
+  if (!text.empty())
+    CALL_ASSERT(compare(text, MAP_VEC(tokens, __ARG__.to_symbol())));
   return testing::AssertionSuccess();
 }
 
@@ -250,15 +251,15 @@ TEST(LexerTest, Location) {
   };
   ASSERT_EQ(expected_columns.size(), tokens.size());
   for (unsigned int i = 0; i < expected_columns.size() - 1; ++i) {
-    EXPECT_EQ("<string>", tokens[i].location.file);
-    EXPECT_EQ(1, tokens[i].location.begin.line);
-    EXPECT_EQ(1, tokens[i].location.end.line);
+    EXPECT_EQ("<string>", tokens[i].location().file);
+    EXPECT_EQ(1, tokens[i].location().begin.line);
+    EXPECT_EQ(1, tokens[i].location().end.line);
   }
-  EXPECT_EQ(2, tokens.back().location.begin.line);
-  EXPECT_EQ(2, tokens.back().location.end.line);
+  EXPECT_EQ(2, tokens.back().location().begin.line);
+  EXPECT_EQ(2, tokens.back().location().end.line);
   auto actual_columns =
-      MAP_VEC(tokens, (std::pair<int, int>{__ARG__.location.begin.column,
-                                           __ARG__.location.end.column}));
+      MAP_VEC(tokens, (std::pair<int, int>{__ARG__.location().begin.column,
+                                           __ARG__.location().end.column}));
   EXPECT_EQ(expected_columns, actual_columns);
 }
 }  // namespace lexer

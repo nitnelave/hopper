@@ -5,6 +5,8 @@
 #include <sstream>
 #include <string>
 
+#include "util/variant.h"
+
 namespace lexer {
 
 #define TOKEN_ENUM(X)                                 \
@@ -227,16 +229,67 @@ inline std::ostream& operator<<(std::ostream& os, const Location& loc) {
   return os << loc.to_string();
 }
 
-struct Token {
-  const TokenType type;
-  const std::string text;
-  const Range location;
+class Token {
+ public:
+  Token(TokenType type, std::string text, Range location)
+      : type_(type), value_(std::move(text)), location_(std::move(location)) {}
+
+  Token(TokenType type, int64_t int_value, Range location)
+      : type_(type), value_(int_value), location_(std::move(location)) {}
+
+  TokenType type() const { return type_; }
+
+  std::string to_symbol() const {
+    if (value().is<std::string>()) return text();
+    if (value().is<int64_t>()) return std::to_string(int_value());
+    assert(false);
+  }
+
+  std::string to_string() const {
+    std::stringstream ss;
+    ss << "{" << type();
+    if (value().is<std::string>()) {
+      if (!text().empty()) ss << ": " << text();
+    } else if (value().is<int64_t>()) {
+      ss << ": " << int_value();
+    }
+    ss << "} at " << location().to_string();
+    return ss.str();
+  }
+
+  const Range& location() const { return location_; }
+
+  const std::string& text() const {
+#ifdef NDEBUG
+    return value_.get_unchecked<std::string>();
+#else
+    return value_.get<std::string>();
+#endif
+  }
+
+  int64_t int_value() const {
+#ifdef NDEBUG
+    return value_.get_unchecked<int64_t>();
+#else
+    return value_.get<int64_t>();
+#endif
+  }
+
+  const Variant<std::string, int64_t>& value() const { return value_; }
+
+  Token(const Token&) = delete;
+  Token& operator=(const Token&) = delete;
+  Token(Token&& other) = default;       // NOLINT: noexcept
+  Token& operator=(Token&&) = default;  // NOLINT: noexcept
+
+ private:
+  TokenType type_;
+  Variant<std::string, int64_t> value_;
+  Range location_;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Token& tok) {
-  os << "{" << tok.type;
-  if (!tok.text.empty()) os << ": " << tok.text;
-  os << "at " << tok.location.to_string();
+  os << tok.to_string();
   return os;
 }
 

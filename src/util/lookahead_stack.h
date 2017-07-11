@@ -36,8 +36,8 @@ class LookaheadStack {
       token_stack_.pop_front();
     }
     if (backlog_ == 0) {
-      RETURN_OR_ASSIGN(const Value& t, callback_());
-      token_stack_.push_back(t);
+      RETURN_OR_MOVE(Value t, callback_());
+      token_stack_.emplace_back(std::move(t));
     } else {
       --backlog_;
     }

@@ -10,11 +10,11 @@ Range make_range(int line1, int col1, int line2, int col2,
 ErrorOr<std::vector<Token>> consume_tokens(Lexer& lexer) {
   std::vector<Token> result;
   while (true) {
-    RETURN_OR_ASSIGN(Token tok, lexer.get_next_token());
-    if (tok.type == TokenType::END_OF_FILE) return result;
+    RETURN_OR_MOVE(Token tok, lexer.get_next_token());
+    if (tok.type() == TokenType::END_OF_FILE) return std::move(result);
     result.emplace_back(std::move(tok));
   }
-  return result;
+  return std::move(result);
 }
 
 ErrorOr<std::vector<Token>> string_to_tokens(const std::string& input) {
