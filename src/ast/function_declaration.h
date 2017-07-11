@@ -13,20 +13,21 @@ namespace ast {
 
 class FunctionDeclaration : public ASTNode {
  public:
-  FunctionDeclaration(
-      lexer::Range location, Identifier id,
-      std::vector<std::unique_ptr<FunctionArgumentDeclaration>> arguments,
-      Option<Type> type, std::vector<std::unique_ptr<Statement>> body)
+  using ArgumentList =
+      std::vector<std::unique_ptr<FunctionArgumentDeclaration>>;
+  using ValueBody = std::unique_ptr<Value>;
+  using StatementsBody = std::vector<std::unique_ptr<Statement>>;
+  FunctionDeclaration(lexer::Range location, Identifier id,
+                      ArgumentList arguments, Option<Type> type,
+                      StatementsBody body)
       : ASTNode(std::move(location)),
         id_(std::move(id)),
         arguments_(std::move(arguments)),
         type_(std::move(type)),
         body_(std::move(body)) {}
 
-  FunctionDeclaration(
-      lexer::Range location, Identifier id,
-      std::vector<std::unique_ptr<FunctionArgumentDeclaration>> arguments,
-      Option<Type> type, std::unique_ptr<Value> body)
+  FunctionDeclaration(lexer::Range location, Identifier id,
+                      ArgumentList arguments, Option<Type> type, ValueBody body)
       : ASTNode(std::move(location)),
         id_(std::move(id)),
         arguments_(std::move(arguments)),
@@ -37,16 +38,9 @@ class FunctionDeclaration : public ASTNode {
 
   const Option<Type>& type() const { return type_; }
 
-  const std::vector<std::unique_ptr<FunctionArgumentDeclaration>>& arguments()
-      const {
-    return arguments_;
-  }
+  const ArgumentList& arguments() const { return arguments_; }
 
-  const Variant<std::vector<std::unique_ptr<Statement>>,
-                std::unique_ptr<Value>>&
-  body() const {
-    return body_;
-  }
+  const Variant<StatementsBody, ValueBody>& body() const { return body_; }
 
   ~FunctionDeclaration() override = default;
 
@@ -54,10 +48,9 @@ class FunctionDeclaration : public ASTNode {
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
   Identifier id_;
-  std::vector<std::unique_ptr<FunctionArgumentDeclaration>> arguments_;
+  ArgumentList arguments_;
   Option<Type> type_;
-  Variant<std::vector<std::unique_ptr<Statement>>, std::unique_ptr<Value>>
-      body_;
+  Variant<StatementsBody, ValueBody> body_;
 };
 
 }  // namespace ast
