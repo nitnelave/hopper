@@ -9,6 +9,8 @@
 #include "parser/parser.h"
 #include "pretty_printer/pretty_printer.h"
 
+// LCOV_EXCL_START: main is not tested
+
 DEFINE_bool(success, false, "Whether we successfully added a flag");
 
 int main(int argc, char* argv[]) {
@@ -35,3 +37,5 @@ int main(int argc, char* argv[]) {
   gflags::ShutDownCommandLineFlags();
   return exit_code;
 }
+
+// LCOV_EXCL_STOP
