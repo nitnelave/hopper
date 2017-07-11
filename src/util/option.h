@@ -2,17 +2,21 @@
 
 #include "util/variant.h"
 
+struct NoneType {};
+
+static constexpr NoneType none = NoneType();
+
 template <typename Value>
 class Option {
   static_assert(!std::is_reference<Value>::value,
                 "Option doesn't support references");
 
-  struct NoneType {};
-
   Variant<NoneType, Value> variant_;
 
  public:
   Option() = default;
+
+  Option(const NoneType& /*unused*/) : Option() {}  // NOLINT
 
   template <typename T, typename = typename std::is_convertible<T, Value>>
   Option(Option<T>&& rhs) : variant_(std::move(rhs.variant_)) {}  // NOLINT
