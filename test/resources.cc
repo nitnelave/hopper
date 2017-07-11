@@ -160,11 +160,8 @@ testing::AssertionResult test_parser_resource(const std::string& filename) {
   return testing::AssertionSuccess();
 }
 
-testing::AssertionResult test_pretty_printer(const std::string& filename) {
-  if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
-  assert(ends_with(filename, ".gh"));
-  std::string ref_filename =
-      filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
+Variant<testing::AssertionResult, std::string> get_pretty_printed_file(
+    const std::string& filename) {
   lexer::Lexer lex = lexer::from_file(filename);
   parser::Parser parser(&lex);
   auto result = parser.parse();
@@ -174,11 +171,36 @@ testing::AssertionResult test_pretty_printer(const std::string& filename) {
   std::stringstream ss;
   ast::PrettyPrinterVisitor visitor(ss);
   result.value_or_die()->accept(visitor);
+  return ss.str();
+}
+
+testing::AssertionResult test_pretty_printer(const std::string& filename) {
+  if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
+  assert(ends_with(filename, ".gh"));
+  std::string ref_filename =
+      filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
+  auto first_pass = get_pretty_printed_file(filename);
+  if (first_pass.is<testing::AssertionResult>())
+    return first_pass.get_unchecked<testing::AssertionResult>();
+  const std::string& first_pass_result =
+      first_pass.get_unchecked<std::string>();
   auto ref_contents = read_file(ref_filename);
-  if (ref_contents == ss.str()) return testing::AssertionSuccess();
-  return testing::AssertionFailure() << "Expected:\n"
-                                     << ref_contents << "\nGot:\n"
-                                     << ss.str();
+  if (ref_contents != first_pass_result)
+    return testing::AssertionFailure() << "Expected:\n"
+                                       << ref_contents << "\nGot:\n"
+                                       << first_pass_result;
+
+  auto second_pass = get_pretty_printed_file(ref_filename);
+  if (second_pass.is<testing::AssertionResult>())
+    return second_pass.get_unchecked<testing::AssertionResult>();
+  const std::string& second_pass_result =
+      second_pass.get_unchecked<std::string>();
+  if (ref_contents != second_pass_result)
+    return testing::AssertionFailure()
+           << "PrettyPrinter not stable. Expected:\n"
+           << ref_contents << "\nGot:\n"
+           << second_pass_result;
+  return testing::AssertionSuccess();
 }
 
 TEST(ResourcesTest, Lexer) {
