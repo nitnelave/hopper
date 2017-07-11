@@ -1,0 +1,4 @@
+val a : Int = b;
+fun my_function() : Int {
+  return b;
+}
