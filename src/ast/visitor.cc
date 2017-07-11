@@ -1,4 +1,5 @@
 #include "ast/ast.h"
+#include "ast/function_declaration.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
@@ -8,7 +9,21 @@ namespace ast {
 void ASTVisitor::visit(Assignment* /*unused*/) {}
 void ASTVisitor::visit(BinaryOp* /*unused*/) {}
 void ASTVisitor::visit(FunctionCall* /*unused*/) {}
-void ASTVisitor::visit(FunctionDeclaration* /*unused*/) {}
+void ASTVisitor::visit(FunctionDeclaration* node) {
+  for (const auto& argument : node->arguments()) {
+    argument->accept(*this);
+  }
+  using StatementsBody = std::vector<std::unique_ptr<Statement>>;
+  using ValueBody = std::unique_ptr<Value>;
+  const Variant<StatementsBody, ValueBody>& body = node->body();
+  if (body.is<StatementsBody>()) {
+    for (const auto& statement : body.get_unchecked<StatementsBody>()) {
+      statement->accept(*this);
+    }
+  } else {
+    body.get_unchecked<ValueBody>()->accept(*this);
+  }
+}
 void ASTVisitor::visit(IntConstant* /*unused*/) {}
 void ASTVisitor::visit(Module* node) {
   for (const auto& declaration : node->top_level_declarations())

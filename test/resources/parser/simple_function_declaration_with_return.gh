@@ -1,0 +1,3 @@
+fun my_function() : Int {
+  return 3;
+}

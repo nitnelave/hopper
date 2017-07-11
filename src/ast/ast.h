@@ -30,6 +30,7 @@ class ASTNode {
 class Assignment;
 class BinaryOp;
 // class ForBlock;
+class FunctionArgumentDeclaration;
 class FunctionCall;
 class FunctionDeclaration;
 // class IfBlock;
