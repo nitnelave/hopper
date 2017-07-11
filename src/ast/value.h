@@ -6,7 +6,7 @@ namespace ast {
 
 class Value : public ASTNode {
  public:
-  explicit Value(const lexer::Range& location) : ASTNode(location) {}
+  explicit Value(lexer::Range location) : ASTNode(std::move(location)) {}
   ~Value() override = default;
 
  private:
