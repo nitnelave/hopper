@@ -218,7 +218,7 @@ class Variant {
 
   template <typename... Ts,
             typename = typename std::enable_if<internals::Disjunction<
-                std::is_copy_constructible<Ts>...>::value>::type>
+                std::is_constructible<Ts>...>::value>::type>
   Variant(const Variant<Types...>& old)  // NOLINT
       : type_index_(old.type_index_) {
     HelperType::copy(old.type_index_, &old.data_, &data_);
@@ -237,7 +237,7 @@ class Variant {
  private:
   template <typename... Ts,
             typename = typename std::enable_if<internals::Disjunction<
-                std::is_copy_constructible<Ts>...>::value>::type>
+                std::is_constructible<Ts>...>::value>::type>
   void copy_assign(const Variant<Ts...>& rhs) {
     HelperType::destroy(type_index_, &data_);
     type_index_ = internals::invalid_value;
