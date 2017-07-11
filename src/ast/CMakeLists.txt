@@ -10,4 +10,5 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/value.h"
         "${CMAKE_CURRENT_LIST_DIR}/variable_declaration.h"
+        "${CMAKE_CURRENT_LIST_DIR}/variable_reference.h"
     )

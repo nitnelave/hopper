@@ -3,6 +3,7 @@
 #include "ast/int_constant.h"
 #include "ast/module.h"
 #include "ast/variable_declaration.h"
+#include "ast/variable_reference.h"
 
 #define EXPECT_TOKEN(TYPE, MESSAGE)   \
   if (current_token().type() != (TYPE)) \
@@ -82,6 +83,21 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
       current_token().type() == TokenType::OCT ||
       current_token().type() == TokenType::BINARY_NUMBER)
     return parse_int_constant();
+
+  if (current_token().type() == TokenType::LOWER_CASE_IDENT ||
+      current_token().type() == TokenType::COLON_COLON) {
+    RETURN_OR_MOVE(Identifier id, parse_value_identifier());
+    if (current_token().type() == TokenType::OPEN_PAREN) {
+      // Function call
+      return ParseError("Function calls not supported", location.error_range());
+    }
+    if (current_token().type() == TokenType::OPEN_BRACKET) {
+      // Array access
+      return ParseError("Array access not supported", location.error_range());
+    }
+    return std::make_unique<ast::VariableReference>(location.range(), id);
+  }
+
   return ParseError("Expected value", location.error_range());
 }
 
