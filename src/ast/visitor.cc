@@ -13,15 +13,14 @@ void ASTVisitor::visit(FunctionDeclaration* node) {
   for (const auto& argument : node->arguments()) {
     argument->accept(*this);
   }
-  using StatementsBody = std::vector<std::unique_ptr<Statement>>;
-  using ValueBody = std::unique_ptr<Value>;
-  const Variant<StatementsBody, ValueBody>& body = node->body();
-  if (body.is<StatementsBody>()) {
-    for (const auto& statement : body.get_unchecked<StatementsBody>()) {
+  const auto& body = node->body();
+  if (body.is<FunctionDeclaration::StatementsBody>()) {
+    for (const auto& statement :
+         body.get_unchecked<FunctionDeclaration::StatementsBody>()) {
       statement->accept(*this);
     }
   } else {
-    body.get_unchecked<ValueBody>()->accept(*this);
+    body.get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
   }
 }
 void ASTVisitor::visit(IntConstant* /*unused*/) {}
