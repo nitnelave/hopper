@@ -2,12 +2,14 @@
 
 #include "ast/int_constant.h"
 #include "ast/module.h"
+#include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
 
-#define EXPECT_TOKEN(TYPE, MESSAGE)   \
-  if (current_token().type() != (TYPE)) \
-    return ParseError((MESSAGE), current_token().location());
+#define EXPECT_TOKEN(TYPE, MESSAGE)                       \
+  if (current_token().type() != (TYPE))                   \
+    return ParseError((MESSAGE), location.error_range()); \
+  RETURN_IF_ERROR(get_token());
 
 namespace parser {
 using lexer::Token;
@@ -126,9 +128,40 @@ Parser::parse_variable_declaration() {
   // Then a semicolon.
   EXPECT_TOKEN(TokenType::SEMICOLON,
                "Expected semicolon at the end of the statement");
-  RETURN_IF_ERROR(get_token());
   return std::make_unique<ast::VariableDeclaration>(
       location.range(), variable_name, std::move(type), std::move(value), mut);
+}
+
+Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
+  auto location = scoped_location();
+  if (current_token().type() == TokenType::RETURN) {
+    RETURN_IF_ERROR(get_token());
+    if (current_token().type() == TokenType::SEMICOLON) {
+      RETURN_IF_ERROR(get_token());
+      return std::make_unique<ast::ReturnStatement>(location.range(), none);
+    }
+    // Otherwise, expect value.
+    RETURN_OR_MOVE(auto value, parse_value());
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+                 "Expected `;' at the end of the statement");
+    return std::make_unique<ast::ReturnStatement>(location.range(),
+                                                  std::move(value));
+  }
+  return ParseError("Could not parse as statement", location.error_range());
+}
+
+ErrorOr<std::vector<std::unique_ptr<ast::Statement>>>
+Parser::parse_statement_list() {
+  auto location = scoped_location();
+  RETURN_IF_ERROR(get_token());
+  std::vector<std::unique_ptr<ast::Statement>> result;
+  while (current_token().type() != TokenType::CLOSE_BRACE) {
+    RETURN_OR_MOVE(auto statement, parse_statement());
+    result.emplace_back(std::move(statement));
+  }
+  EXPECT_TOKEN(TokenType::CLOSE_BRACE,
+               "Expected `}' to match the opening brace");
+  return std::move(result);
 }
 
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
