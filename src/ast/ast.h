@@ -47,6 +47,7 @@ class VariableReference;
 
 /// Abstract node classes.
 class Value;
+class Statement;
 
 class ASTVisitor {
  public:
