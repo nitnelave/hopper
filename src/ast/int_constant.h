@@ -6,8 +6,8 @@ namespace ast {
 
 class IntConstant : public Value {
  public:
-  IntConstant(const lexer::Range& location, int64_t value)
-      : Value(location), value_(value) {}
+  IntConstant(lexer::Range location, int64_t value)
+      : Value(std::move(location)), value_(value) {}
   ~IntConstant() override = default;
 
   int64_t value() const { return value_; }

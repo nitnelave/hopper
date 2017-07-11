@@ -10,8 +10,8 @@ namespace ast {
 class Module : public Value {
  public:
   using Declarations = std::vector<std::unique_ptr<ASTNode>>;
-  Module(const lexer::Range& location, Declarations top_level_declarations)
-      : Value(location),
+  Module(lexer::Range location, Declarations top_level_declarations)
+      : Value(std::move(location)),
         top_level_declarations_(std::move(top_level_declarations)) {}
   ~Module() override = default;
 

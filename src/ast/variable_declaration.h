@@ -8,10 +8,9 @@ namespace ast {
 
 class VariableDeclaration : public ASTNode {
  public:
-  VariableDeclaration(const lexer::Range& location, Identifier id,
-                      Option<Type> type, Option<std::unique_ptr<Value>> value,
-                      bool mut)
-      : ASTNode(location),
+  VariableDeclaration(lexer::Range location, Identifier id, Option<Type> type,
+                      Option<std::unique_ptr<Value>> value, bool mut)
+      : ASTNode(std::move(location)),
         id_(std::move(id)),
         type_(std::move(type)),
         value_(std::move(value)),
