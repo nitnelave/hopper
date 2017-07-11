@@ -49,6 +49,8 @@ class Parser {
   ErrorOrPtr<ast::IntConstant> parse_int_constant();
   ErrorOrPtr<ast::VariableDeclaration> parse_variable_declaration();
   ErrorOrPtr<ast::Value> parse_value();
+  ErrorOr<std::vector<std::unique_ptr<ast::Statement>>> parse_statement_list();
+  ErrorOrPtr<ast::Statement> parse_statement();
   ErrorOr<ast::Type> parse_type();
   ErrorOr<ast::Identifier> parse_type_identifier(bool simple = false);
   ErrorOr<ast::Identifier> parse_value_identifier(bool simple = false);
