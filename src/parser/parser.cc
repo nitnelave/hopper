@@ -1,5 +1,6 @@
 #include "parser/parser.h"
 
+#include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
@@ -164,11 +165,46 @@ Parser::parse_statement_list() {
   return std::move(result);
 }
 
+Parser::ErrorOrPtr<ast::FunctionDeclaration>
+Parser::parse_function_declaration() {
+  auto location = scoped_location();
+  EXPECT_TOKEN(TokenType::FUN, "Function declarations must start with `fun'");
+  RETURN_OR_MOVE(Identifier fun_name, parse_value_identifier());
+  EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected `(' in function declaration");
+  std::vector<std::unique_ptr<ast::FunctionArgumentDeclaration>> arguments;
+  EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected `)' after argument list");
+  // Then an optional type.
+  Option<Type> type;
+  if (current_token().type() == TokenType::COLON) {
+    RETURN_IF_ERROR(get_token());
+    RETURN_OR_MOVE(type, parse_type());
+  }
+  if (current_token().type() == TokenType::ASSIGN) {
+    // fun my_fun() = 3;
+    RETURN_IF_ERROR(get_token());
+    RETURN_OR_MOVE(std::unique_ptr<ast::Value> body, parse_value());
+    EXPECT_TOKEN(TokenType::SEMICOLON, "Expected `;' after function body");
+    return std::make_unique<ast::FunctionDeclaration>(
+        location.range(), std::move(fun_name), std::move(arguments),
+        std::move(type), std::move(body));
+  }
+  if (current_token().type() == TokenType::OPEN_BRACE) {
+    RETURN_OR_MOVE(auto body, parse_statement_list());
+    return std::make_unique<ast::FunctionDeclaration>(
+        location.range(), std::move(fun_name), std::move(arguments),
+        std::move(type), std::move(body));
+  }
+  return ParseError("Expected function body", location.error_range());
+}
+
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   auto location = scoped_location();
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
     return parse_variable_declaration();
+  }
+  if (current_token().type() == TokenType::FUN) {
+    return parse_function_declaration();
   }
   return ParseError("Expected top-level declaration", location.error_range());
 }
