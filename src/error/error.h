@@ -69,6 +69,9 @@ class ErrorOr {
   template <typename E>
   using enable_if_error = internals::enable_if_base_of<Err, E>;
 
+  static_assert(std::is_constructible<Value, Value&&>::value,
+                "Value must be move-constructible");
+
   using ErrPtr = std::unique_ptr<Err>;
 
  public:
@@ -85,24 +88,24 @@ class ErrorOr {
 
   /// Construct a value directly.
   template <typename T, typename = typename std::enable_if<
-                            std::is_constructible<Value, T>::value>::type>
+                            std::is_constructible<Value, T&&>::value>::type>
   ErrorOr(T value)  // NOLINT: explicit
       : variant_(Value(std::move(value))) {}
 
   // Move constructor.
   template <typename T, typename E,
             typename = typename std::enable_if<
-                std::is_constructible<Value, T>::value>::type,
+                std::is_constructible<Value, T&&>::value>::type,
             typename = typename enable_if_error<E>::type>
   ErrorOr(ErrorOr<T, E>&& other)  // NOLINT: explicit
       : variant_(std::move(other.variant_)) {}
 
   // Move assignment.
-  template <
-      typename T, typename E, typename = typename std::enable_if<
-                                  std::is_constructible<Value, T>::value>::type,
-      typename =
-          typename std::enable_if<std::is_constructible<Err, E>::value>::type>
+  template <typename T, typename E,
+            typename = typename std::enable_if<
+                std::is_constructible<Value, T&&>::value>::type,
+            typename = typename std::enable_if<
+                std::is_constructible<Err, E&&>::value>::type>
   ErrorOr& operator=(ErrorOr<T, E>&& other) {
     variant_ = std::move(other.variant_);
     return *this;
@@ -164,18 +167,18 @@ class MaybeError {
   MaybeError(  // NOLINT: explicit
       E&& value,
       typename std::enable_if<
-          std::is_constructible<Err, E>::value>::type* /*unused*/ = nullptr)
+          std::is_constructible<Err, E&&>::value>::type* /*unused*/ = nullptr)
       : error_or_(std::make_unique<Err>(std::forward<E>(value))) {}
 
   template <typename E>
   MaybeError(  // NOLINT: explicit
       MaybeError<E>&& other,
       typename std::enable_if<
-          std::is_constructible<Err, E>::value>::type* /*unused*/ = nullptr)
+          std::is_constructible<Err, E&&>::value>::type* /*unused*/ = nullptr)
       : error_or_(std::move(other.error_or_)) {}
 
   template <typename E, typename = typename std::enable_if<
-                            std::is_constructible<Err, E>::value>::type>
+                            std::is_constructible<Err, E&&>::value>::type>
   MaybeError& operator=(MaybeError<E>&& other) {
     error_or_ = std::move(other.error_or_);
     return *this;
