@@ -1,3 +1,6 @@
 fun my_function() : Int {
   return 3;
 }
+fun my_function() {
+  return;
+}
