@@ -8,6 +8,7 @@ namespace ast {
 
 void ASTVisitor::visit(Assignment* /*unused*/) {}
 void ASTVisitor::visit(BinaryOp* /*unused*/) {}
+void ASTVisitor::visit(FunctionArgumentDeclaration* /*unused*/) {}
 void ASTVisitor::visit(FunctionCall* /*unused*/) {}
 void ASTVisitor::visit(FunctionDeclaration* node) {
   for (const auto& argument : node->arguments()) {
