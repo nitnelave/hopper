@@ -54,6 +54,7 @@ ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(bool simple) {
     RETURN_IF_ERROR(get_token());
     if (!simple && current_token().type() == TokenType::COLON_COLON) {
       text << current_token().text();
+      RETURN_IF_ERROR(get_token());
     } else {
       return Identifier(text.str(), location.range(), true, absolute);
       ;
@@ -88,6 +89,7 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
     return parse_int_constant();
 
   if (current_token().type() == TokenType::LOWER_CASE_IDENT ||
+      current_token().type() == TokenType::UPPER_CASE_IDENT ||
       current_token().type() == TokenType::COLON_COLON) {
     RETURN_OR_MOVE(Identifier id, parse_value_identifier());
     if (current_token().type() == TokenType::OPEN_PAREN) {

@@ -1,4 +1,9 @@
 val a : Int = b;
-fun my_function() : Int {
+val b : ::Int = ::b;
+val c : Module::Int = Module::b;
+val d : ::Module::Int = ::Module::b;
+val e : ::Module::OtherModule::Int = ::Module::OtherModule::b;
+fun my_function() : Module::Int {
   return b;
+  return Module::b;
 }
