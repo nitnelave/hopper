@@ -6,6 +6,7 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/base_types.h"
         "${CMAKE_CURRENT_LIST_DIR}/int_constant.h"
         "${CMAKE_CURRENT_LIST_DIR}/module.h"
+        "${CMAKE_CURRENT_LIST_DIR}/statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/value.h"
         "${CMAKE_CURRENT_LIST_DIR}/variable_declaration.h"
     )
