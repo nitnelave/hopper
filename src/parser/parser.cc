@@ -18,18 +18,49 @@ Parser::Parser(Lexer* lexer) : lexer_(lexer) {}
 
 ScopedLocation Parser::scoped_location() const { return ScopedLocation(this); }
 
-ErrorOr<ast::Identifier> Parser::parse_type_identifier() {
-  EXPECT_TOKEN(TokenType::UPPER_CASE_IDENT, "Expected type identifier");
-  Identifier res(current_token().text());
-  RETURN_IF_ERROR(get_token());
-  return res;
+ErrorOr<ast::Identifier> Parser::parse_type_identifier(bool simple) {
+  auto location = scoped_location();
+  RETURN_OR_MOVE(Option<Identifier> id, parse_identifier(simple));
+  if (!id.is_ok() || !id.value_or_die().is_uppercase()) {
+    return ParseError("Expected type identifier", location.error_range());
+  }
+  return id.value_or_die();
 }
 
-ErrorOr<ast::Identifier> Parser::parse_value_identifier() {
-  EXPECT_TOKEN(TokenType::LOWER_CASE_IDENT, "Expected value identifier");
-  Identifier res(current_token().text());
-  RETURN_IF_ERROR(get_token());
-  return res;
+ErrorOr<ast::Identifier> Parser::parse_value_identifier(bool simple) {
+  auto location = scoped_location();
+  RETURN_OR_MOVE(Option<Identifier> id, parse_identifier(simple));
+  if (!id.is_ok() || id.value_or_die().is_uppercase()) {
+    return ParseError("Expected value identifier", location.error_range());
+  }
+  return id.value_or_die();
+}
+
+ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(bool simple) {
+  auto location = scoped_location();
+  bool absolute = false;
+  std::stringstream text;
+  text << current_token().text();
+  if (!simple && current_token().type() == TokenType::COLON_COLON) {
+    absolute = true;
+    RETURN_IF_ERROR(get_token());
+    text << current_token().text();
+  }
+  while (current_token().type() == TokenType::UPPER_CASE_IDENT) {
+    RETURN_IF_ERROR(get_token());
+    if (!simple && current_token().type() == TokenType::COLON_COLON) {
+      text << current_token().text();
+    } else {
+      return Identifier(text.str(), location.range(), true, absolute);
+      ;
+    }
+  }
+  if (current_token().type() == TokenType::LOWER_CASE_IDENT) {
+    RETURN_IF_ERROR(get_token());
+    return Identifier(text.str(), location.range(), false, absolute);
+    ;
+  }
+  return none;
 }
 
 ErrorOr<ast::Type> Parser::parse_type() {

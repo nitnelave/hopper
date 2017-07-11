@@ -50,8 +50,9 @@ class Parser {
   ErrorOrPtr<ast::VariableDeclaration> parse_variable_declaration();
   ErrorOrPtr<ast::Value> parse_value();
   ErrorOr<ast::Type> parse_type();
-  ErrorOr<ast::Identifier> parse_type_identifier();
-  ErrorOr<ast::Identifier> parse_value_identifier();
+  ErrorOr<ast::Identifier> parse_type_identifier(bool simple = false);
+  ErrorOr<ast::Identifier> parse_value_identifier(bool simple = false);
+  ErrorOr<Option<ast::Identifier>> parse_identifier(bool simple = false);
 
   const lexer::Token& current_token() const;
   MaybeError<> get_token();
