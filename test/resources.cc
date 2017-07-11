@@ -55,7 +55,10 @@ bool parse_position_line(int lineno, const std::string& line,
   // Keep reading while it's a '^'.
   for (; i < line.size() && line[i] == '^'; ++i) continue;
   range.begin = {lineno - 1, start + 1};
-  range.end = {lineno - 1, static_cast<int>(i)};
+  if (ends_with(line, "to EOF"))
+    range.end = {-1, 1};
+  else
+    range.end = {lineno - 1, static_cast<int>(i)};
   return true;
 }
 
@@ -84,7 +87,7 @@ std::vector<ExpectedError> parse_expected_errors(const std::string& filename) {
         std::stringstream ss;
         ss << "A position (^^^) line should be immediately followed by an "
               "\"ERROR:\" line\nWhile reading "
-           << filename;
+           << filename << '\n';
         throw std::runtime_error(ss.str().c_str());
       }
     } else if (parse_position_line(lineno, line, error_range)) {
@@ -95,10 +98,8 @@ std::vector<ExpectedError> parse_expected_errors(const std::string& filename) {
   }
   for (auto& error : result) {
     // Replace EOF with the proper line number.
-    if (error.range.begin.line == -1) {
-      error.range.begin.line = lineno + 1;
-      error.range.end.line = lineno + 1;
-    }
+    if (error.range.begin.line == -1) error.range.begin.line = lineno + 1;
+    if (error.range.end.line == -1) error.range.end.line = lineno + 1;
   }
   return result;
 }
@@ -111,7 +112,7 @@ testing::AssertionResult test_lexer_resource(const std::string& filename) {
     std::stringstream ss;
     ss << "You must have at most one position (^^^) and \"ERROR\" line in a "
           "resource file, you had "
-       << expected_errors.size() << "\nWhile reading " << filename;
+       << expected_errors.size() << "\nWhile reading " << filename << '\n';
     throw std::runtime_error(ss.str().c_str());
   }
   auto result = lexer::file_to_tokens(filename);
@@ -138,7 +139,7 @@ testing::AssertionResult test_parser_resource(const std::string& filename) {
     std::stringstream ss;
     ss << "You must have at most one position (^^^) and \"ERROR\" line in a "
           "resource file, you had "
-       << expected_errors.size() << "\nWhile reading " << filename;
+       << expected_errors.size() << "\nWhile reading " << filename << '\n';
     throw std::runtime_error(ss.str().c_str());
   }
   lexer::Lexer lex = lexer::from_file(filename);
@@ -169,7 +170,7 @@ testing::AssertionResult test_pretty_printer(const std::string& filename) {
   auto result = parser.parse();
   if (!result.is_ok())
     return testing::AssertionFailure() << "Error while parsing " << filename
-                                       << result.to_string();
+                                       << result.to_string() << '\n';
   std::stringstream ss;
   ast::PrettyPrinterVisitor visitor(ss);
   result.value_or_die()->accept(visitor);
