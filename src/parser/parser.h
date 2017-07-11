@@ -8,6 +8,7 @@
 #include "ast/base_types.h"
 #include "error/error.h"
 #include "lexer/lexer.h"
+#include "parser/scoped_location.h"
 #include "util/lookahead_stack.h"
 
 namespace parser {
@@ -56,7 +57,7 @@ class Parser {
   MaybeError<> get_token();
   void unget_token();
 
-  Range range_from(const Range::Position& begin) const;
+  ScopedLocation scoped_location() const;
 
   Range::Position last_end_{0, 0};
   Lexer* lexer_;
@@ -64,6 +65,7 @@ class Parser {
       util::LookaheadStack<k_lookahead, lexer::Token, lexer::LexError>;
   TokenStack token_stack_ =
       TokenStack{std::bind(&Lexer::get_next_token, lexer_)};
+  friend class ScopedLocation;
 };
 
 }  // namespace parser

@@ -16,9 +16,7 @@ using ast::Type;
 
 Parser::Parser(Lexer* lexer) : lexer_(lexer) {}
 
-lexer::Range Parser::range_from(const Range::Position& begin) const {
-  return {current_token().location().file, begin, last_end_};
-}
+ScopedLocation Parser::scoped_location() const { return ScopedLocation(this); }
 
 ErrorOr<ast::Identifier> Parser::parse_type_identifier() {
   EXPECT_TOKEN(TokenType::UPPER_CASE_IDENT, "Expected type identifier");
@@ -40,28 +38,29 @@ ErrorOr<ast::Type> Parser::parse_type() {
 }
 
 Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
-  auto location = current_token().location();
+  auto location = scoped_location();
   auto value = current_token().int_value();
   RETURN_IF_ERROR(get_token());
-  return std::make_unique<ast::IntConstant>(location, value);
+  return std::make_unique<ast::IntConstant>(location.range(), value);
 }
 
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
+  auto location = scoped_location();
   if (current_token().type() == TokenType::INT ||
       current_token().type() == TokenType::HEX ||
       current_token().type() == TokenType::OCT ||
       current_token().type() == TokenType::BINARY_NUMBER)
     return parse_int_constant();
-  return ParseError("Expected value", current_token().location());
+  return ParseError("Expected value", location.error_range());
 }
 
 Parser::ErrorOrPtr<ast::VariableDeclaration>
 Parser::parse_variable_declaration() {
+  auto location = scoped_location();
   // Starts with VAL or MUT.
   assert(current_token().type() == TokenType::VAL ||
          current_token().type() == TokenType::MUT);
   bool mut = current_token().type() == TokenType::MUT;
-  auto begin = current_token().location().begin;
   RETURN_IF_ERROR(get_token());
   // Then a name, lowercase.
   RETURN_OR_MOVE(Identifier variable_name, parse_value_identifier());
@@ -82,15 +81,16 @@ Parser::parse_variable_declaration() {
                "Expected semicolon at the end of the statement");
   RETURN_IF_ERROR(get_token());
   return std::make_unique<ast::VariableDeclaration>(
-      range_from(begin), variable_name, std::move(type), std::move(value), mut);
+      location.range(), variable_name, std::move(type), std::move(value), mut);
 }
 
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
+  auto location = scoped_location();
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
     return parse_variable_declaration();
   }
-  return ParseError("Expected top-level declaration", current_token().location());
+  return ParseError("Expected top-level declaration", location.error_range());
 }
 
 MaybeError<> Parser::get_token() {
@@ -109,13 +109,13 @@ const Token& Parser::current_token() const { return token_stack_.current(); }
 
 Parser::ErrorOrPtr<ast::Module> Parser::parse() {
   RETURN_IF_ERROR(get_token());
-  auto begin = current_token().location().begin;
+  auto location = scoped_location();
   std::vector<std::unique_ptr<ast::ASTNode>> declarations;
   while (current_token().type() != TokenType::END_OF_FILE) {
     RETURN_OR_MOVE(auto decl, parse_toplevel_declaration());
     declarations.emplace_back(std::move(decl));
   }
-  return std::make_unique<ast::Module>(range_from(begin),
+  return std::make_unique<ast::Module>(location.range(),
                                        std::move(declarations));
 }
 
