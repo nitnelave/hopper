@@ -47,6 +47,50 @@ bool is_alpha_num(char c, bool underscore = true) {
 }
 }  // namespace
 
+namespace internals {
+class LexerHelper {
+ public:
+  LexerHelper(Lexer* lexer)
+      : lexer_(lexer),
+        beginning_(lexer_->location()),
+        first_char_(lexer_->current_char()) {}
+
+  // Construct a token with the last character.
+  ErrorOr<Token, LexError> make_single_token(TokenType tt) const {
+    return Token(tt, std::string(1, lexer_->current_char()),
+                 {beginning_, beginning_});
+  };
+
+  // Construct a token with the last 2 characters.
+  ErrorOr<Token, LexError> make_double_token(TokenType tt) const {
+    return Token{tt,
+                 {first_char_, lexer_->current_char()},
+                 {beginning_, lexer_->location()}};
+  };
+
+  // Test the next character for each of the mappings and return the
+  // corresponding token, if matching. Otherwise, return a token of type
+  // default_type.
+  ErrorOr<Token, LexError> with_second_char(
+      TokenType default_type,
+      const std::initializer_list<std::pair<char, TokenType>>& mappings) const {
+    if (mappings.size() > 0) {
+      RETURN_IF_ERROR(lexer_->get_next_char());
+      for (const auto& m : mappings)
+        if (m.first == lexer_->current_char())
+          return make_double_token(m.second);
+      lexer_->unget_char();
+    }
+    return make_single_token(default_type);
+  };
+
+ private:
+  Lexer* lexer_;
+  Location beginning_;
+  char first_char_;
+};
+}  // namespace internals
+
 Lexer::Lexer(const std::string& source, SourceTag tag,
              const std::string& filename)
     : reader_{get_stream_from_source(source, tag), filename} {}
@@ -82,36 +126,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
 
   // Save initial location.
   Location beginning = location();
-  // Save initial lookup character.
-  char current = current_char();
-
-  // Construct a token with the last character.
-  auto make_single_token = [&, this](TokenType tt) {
-    return ErrorOr<Token, LexError>(
-        Token(tt, std::string(1, current), {beginning, beginning}));
-  };
-
-  // Construct a token with the last 2 characters.
-  auto make_double_token = [&, this](TokenType tt) {
-    return ErrorOr<Token, LexError>{
-        Token{tt, {current, this->current_char()}, {beginning, location()}}};
-  };
-
-  // Test the next character for each of the mappings and return the
-  // corresponding token, if matching. Otherwise, return a token of type
-  // default_type.
-  auto with_second_char = [&, this](
-      TokenType default_type,
-      const std::initializer_list<std::pair<char, TokenType>>& mappings)
-      -> ErrorOr<Token, LexError> {
-        if (mappings.size() > 0) {
-          RETURN_IF_ERROR(get_next_char());
-          for (const auto& m : mappings)
-            if (m.first == current_char()) return make_double_token(m.second);
-          unget_char();
-        }
-        return make_single_token(default_type);
-      };
+  internals::LexerHelper helper(this);
 
   // LEXER STARTS.
 
@@ -132,7 +147,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
       if (!is_alpha_num(current_char())) {
         unget_char();
         // Found single '0'.
-        return make_single_token(TokenType::INT);
+        return helper.make_single_token(TokenType::INT);
       }
       do {
         RETURN_IF_ERROR(get_next_char());
@@ -161,22 +176,24 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
       unget_char();
       break;  // Normal identifier, defer to after switch.
     case '+':
-      return with_second_char(TokenType::PLUS, {{'+', TokenType::INCREMENT},
-                                                {'=', TokenType::PLUS_ASSIGN}});
+      return helper.with_second_char(
+          TokenType::PLUS,
+          {{'+', TokenType::INCREMENT}, {'=', TokenType::PLUS_ASSIGN}});
     case '-':
-      return with_second_char(TokenType::MINUS, {{'-', TokenType::DECREMENT},
-                                                 {'=', TokenType::MINUS_ASSIGN},
-                                                 {'>', TokenType::ARROW}});
+      return helper.with_second_char(TokenType::MINUS,
+                                     {{'-', TokenType::DECREMENT},
+                                      {'=', TokenType::MINUS_ASSIGN},
+                                      {'>', TokenType::ARROW}});
     case '/':
       RETURN_IF_ERROR(get_next_char());
       switch (current_char()) {
         case '/':
           return read_comment(beginning);
         case '=':
-          return make_double_token(TokenType::DIVIDE_ASSIGN);
+          return helper.make_double_token(TokenType::DIVIDE_ASSIGN);
       }
       unget_char();
-      return make_single_token(TokenType::DIVIDE);
+      return helper.make_single_token(TokenType::DIVIDE);
     case '.':
       RETURN_IF_ERROR(get_next_char());
       if (current_char() == '.') {
@@ -184,61 +201,63 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
         if (current_char() == '.')
           return Token{TokenType::DOTDOTDOT, "...", {beginning, location()}};
         unget_char();
-        return make_double_token(TokenType::DOTDOT);
+        return helper.make_double_token(TokenType::DOTDOT);
       }
       unget_char();
-      return make_single_token(TokenType::DOT);
+      return helper.make_single_token(TokenType::DOT);
     case '*':
-      return with_second_char(TokenType::STAR,
-                              {{'=', TokenType::TIMES_ASSIGN}});
+      return helper.with_second_char(TokenType::STAR,
+                                     {{'=', TokenType::TIMES_ASSIGN}});
     case '|':
-      return with_second_char(TokenType::BITOR,
-                              {{'|', TokenType::OR},
-                               {'=', TokenType::OR_ASSIGN},
-                               {'>', TokenType::BITSHIFT_RIGHT}});
+      return helper.with_second_char(TokenType::BITOR,
+                                     {{'|', TokenType::OR},
+                                      {'=', TokenType::OR_ASSIGN},
+                                      {'>', TokenType::BITSHIFT_RIGHT}});
     case '&':
-      return with_second_char(
+      return helper.with_second_char(
           TokenType::AMPERSAND,
           {{'&', TokenType::AND}, {'=', TokenType::AND_ASSIGN}});
     case '>':
-      return with_second_char(TokenType::GREATER,
-                              {{'=', TokenType::GREATER_OR_EQUAL}});
+      return helper.with_second_char(TokenType::GREATER,
+                                     {{'=', TokenType::GREATER_OR_EQUAL}});
     case '<':
-      return with_second_char(
+      return helper.with_second_char(
           TokenType::LESS,
           {{'|', TokenType::BITSHIFT_LEFT}, {'=', TokenType::LESS_OR_EQUAL}});
     case '=':
-      return with_second_char(TokenType::ASSIGN, {{'=', TokenType::EQUAL}});
+      return helper.with_second_char(TokenType::ASSIGN,
+                                     {{'=', TokenType::EQUAL}});
     case '!':
-      return with_second_char(TokenType::BANG, {{'=', TokenType::DIFFERENT}});
+      return helper.with_second_char(TokenType::BANG,
+                                     {{'=', TokenType::DIFFERENT}});
     case '^':
-      return with_second_char(TokenType::BITXOR,
-                              {{'=', TokenType::XOR_ASSIGN}});
+      return helper.with_second_char(TokenType::BITXOR,
+                                     {{'=', TokenType::XOR_ASSIGN}});
     case '~':
-      return make_single_token(TokenType::TILDE);
+      return helper.make_single_token(TokenType::TILDE);
     case '(':
-      return make_single_token(TokenType::OPEN_PAREN);
+      return helper.make_single_token(TokenType::OPEN_PAREN);
     case ')':
-      return make_single_token(TokenType::CLOSE_PAREN);
+      return helper.make_single_token(TokenType::CLOSE_PAREN);
     case '[':
-      return make_single_token(TokenType::OPEN_BRACKET);
+      return helper.make_single_token(TokenType::OPEN_BRACKET);
     case ']':
-      return make_single_token(TokenType::CLOSE_BRACKET);
+      return helper.make_single_token(TokenType::CLOSE_BRACKET);
     case '{':
-      return make_single_token(TokenType::OPEN_BRACE);
+      return helper.make_single_token(TokenType::OPEN_BRACE);
     case '}':
-      return make_single_token(TokenType::CLOSE_BRACE);
+      return helper.make_single_token(TokenType::CLOSE_BRACE);
     case ';':
-      return make_single_token(TokenType::SEMICOLON);
+      return helper.make_single_token(TokenType::SEMICOLON);
     case ':':
-      return with_second_char(TokenType::COLON,
-                              {{':', TokenType::COLON_COLON}});
+      return helper.with_second_char(TokenType::COLON,
+                                     {{':', TokenType::COLON_COLON}});
     case '?':
       RETURN_IF_ERROR(get_next_char());
       if (current_char() == '.')
-        return make_double_token(TokenType::QUESTION_MARK_DOT);
+        return helper.make_double_token(TokenType::QUESTION_MARK_DOT);
       if (current_char() == ':')
-        return make_double_token(TokenType::QUESTION_MARK_COLON);
+        return helper.make_double_token(TokenType::QUESTION_MARK_COLON);
       if (current_char() == '-') {
         RETURN_IF_ERROR(get_next_char());
         if (current_char() == '>')
@@ -247,13 +266,13 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
         unget_char();
       }
       unget_char();
-      return make_single_token(TokenType::QUESTION_MARK);
+      return helper.make_single_token(TokenType::QUESTION_MARK);
     case '_':
-      return make_single_token(TokenType::UNDERSCORE);
+      return helper.make_single_token(TokenType::UNDERSCORE);
     case ',':
-      return make_single_token(TokenType::COMMA);
+      return helper.make_single_token(TokenType::COMMA);
     case EOF:
-      return make_single_token(TokenType::END_OF_FILE);
+      return helper.make_single_token(TokenType::END_OF_FILE);
   }
   if (is_lowercase(current_char())) return read_lowercase_identifier();
   if (is_uppercase(current_char()))
