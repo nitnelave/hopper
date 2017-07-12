@@ -50,7 +50,7 @@ public macro #data_class(mut d: ClassDeclaration) : ClassDeclaration {
 ///   this.superField = superField;
 ///   this.otherField = otherField;
 /// }
-data_class(class ExampleDataClass {
+#data_class(class ExampleDataClass {
   #with_get_set(mut superField: Int32);
   #with_get_set(mut otherField: String = "test");
 });

@@ -12,6 +12,8 @@ public fun main(val args: String...) {
                     // This new lambda captures myLambda from the environment.
                     // This is equivalent to writing
                     // map(myLambda)
+                    // or
+                    // map({e -> myLambda(e)})
                     .map({e -> apply(myLambda, e)})
                     // Apply the function ::println to each element, and ignore
                     // the return.
