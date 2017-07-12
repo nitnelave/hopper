@@ -57,13 +57,11 @@ ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(bool simple) {
       RETURN_IF_ERROR(get_token());
     } else {
       return Identifier(text.str(), location.range(), true, absolute);
-      ;
     }
   }
   if (current_token().type() == TokenType::LOWER_CASE_IDENT) {
     RETURN_IF_ERROR(get_token());
     return Identifier(text.str(), location.range(), false, absolute);
-    ;
   }
   return none;
 }

@@ -242,7 +242,7 @@ class Token {
   std::string to_symbol() const {
     if (value().is<std::string>()) return text();
     if (value().is<int64_t>()) return std::to_string(int_value());
-    assert(false);
+    assert(false && "Shouldn't reach this code");
   }
 
   std::string to_string() const {
