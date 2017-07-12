@@ -6,10 +6,14 @@
 
 #include "error/error.h"
 #include "lexer/file_reader.h"
+#include "lexer/lex_error.h"
 #include "lexer/token.h"
 #include "util/lookahead_stack.h"
 
 namespace lexer {
+namespace internals {
+class LexerHelper;
+}  // namespace internals
 class Lexer {
  public:
   // What type of input is given to the constructor.
@@ -71,6 +75,7 @@ class Lexer {
                            /*potential error type*/ LexError>;
   CharStack char_stack_ =
       CharStack(std::bind(&FileReader::read_one_char, &reader_));
+  friend class internals::LexerHelper;
 };
 
 /// Return an instance of Lexer that will read from the file.
