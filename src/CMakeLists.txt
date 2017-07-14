@@ -4,6 +4,7 @@ include(error/CMakeLists.txt)
 include(lexer/CMakeLists.txt)
 include(parser/CMakeLists.txt)
 include(pretty_printer/CMakeLists.txt)
+include(transform/CMakeLists.txt)
 include(util/CMakeLists.txt)
 
 set_property(TARGET ${MAIN_TARGET_NAME} PROPERTY CXX_STANDARD 14)
