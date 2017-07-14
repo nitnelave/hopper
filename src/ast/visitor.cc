@@ -14,15 +14,7 @@ void ASTVisitor::visit(FunctionDeclaration* node) {
   for (const auto& argument : node->arguments()) {
     argument->accept(*this);
   }
-  const auto& body = node->body();
-  if (body.is<FunctionDeclaration::StatementsBody>()) {
-    for (const auto& statement :
-         body.get_unchecked<FunctionDeclaration::StatementsBody>()) {
-      statement->accept(*this);
-    }
-  } else {
-    body.get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
-  }
+  node->accept_body(*this);
 }
 void ASTVisitor::visit(IntConstant* /*unused*/) {}
 void ASTVisitor::visit(Module* node) {
