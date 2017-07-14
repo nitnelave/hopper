@@ -7,6 +7,7 @@
 #include "ast/base_types.h"
 #include "ast/function_argument_declaration.h"
 #include "ast/statement.h"
+#include "ast/value.h"
 #include "util/option.h"
 
 namespace ast {
@@ -40,9 +41,18 @@ class FunctionDeclaration : public ASTNode {
 
   const ArgumentList& arguments() const { return arguments_; }
 
-  const Variant<StatementsBody, ValueBody>& body() const { return body_; }
+  Variant<StatementsBody, ValueBody>& body() { return body_; }
 
   ~FunctionDeclaration() override = default;
+
+  void accept_body(ASTVisitor& visitor) {
+    if (body_.is<StatementsBody>()) {
+      for (const auto& statement : body_.get_unchecked<StatementsBody>())
+        statement->accept(visitor);
+    } else {
+      body_.get_unchecked<ValueBody>()->accept(visitor);
+    }
+  }
 
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
