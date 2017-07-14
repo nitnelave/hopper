@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #include <gflags/gflags.h>
@@ -8,6 +7,7 @@
 #include "ast/module.h"
 #include "parser/parser.h"
 #include "pretty_printer/pretty_printer.h"
+#include "transform/function_value_body.h"
 
 // LCOV_EXCL_START: main is not tested
 
@@ -29,6 +29,8 @@ int main(int argc, char* argv[]) {
       exit_code = 1;
       break;
     } else {
+      transform::FunctionValueBodyTransformer transformer;
+      result.value_or_die()->accept(transformer);
       ast::PrettyPrinterVisitor printer(std::cout);
       result.value_or_die()->accept(printer);
     }
