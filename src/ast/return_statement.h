@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ast/ast.h"
 #include "ast/base_types.h"
 #include "ast/statement.h"
