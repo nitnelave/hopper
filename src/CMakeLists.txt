@@ -1,5 +1,6 @@
 add_executable(${MAIN_TARGET_NAME} main.cc)
 include(ast/CMakeLists.txt)
+include(codegen/CMakeLists.txt)
 include(error/CMakeLists.txt)
 include(lexer/CMakeLists.txt)
 include(parser/CMakeLists.txt)
