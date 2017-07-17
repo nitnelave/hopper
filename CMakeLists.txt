@@ -35,7 +35,9 @@ set(TEST_FLAGS "--test_resource_folder=${PROJECT_TEST_RESOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(gflags REQUIRED)
-
+find_package(LLVM REQUIRED CONFIG)
+include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -57,6 +59,7 @@ include(Sources)
 include(Tests)
 
 set(GRACC_LIBRARY grasshopper)
+set(GRACC_LLVM_LIBRARY grasshopper_llvm)
 
 add_library(${GRACC_LIBRARY} STATIC "")
 set_property(TARGET ${GRACC_LIBRARY} PROPERTY CXX_STANDARD 14)
@@ -65,6 +68,18 @@ TARGET_LINK_LIBRARIES(${GRACC_LIBRARY}
     PUBLIC
         gflags
     )
+
+add_library(${GRACC_LLVM_LIBRARY} STATIC "")
+set_property(TARGET ${GRACC_LLVM_LIBRARY} PROPERTY CXX_STANDARD 14)
+set_property(TARGET ${GRACC_LLVM_LIBRARY} PROPERTY CXX_STANDARD_REQUIRED ON)
+llvm_map_components_to_libnames(llvm_libs x86asmparser x86codegen)
+TARGET_LINK_LIBRARIES(${GRACC_LLVM_LIBRARY}
+    PUBLIC
+        ${GRACC_LIBRARY}
+        ${llvm_libs}
+        gflags
+    )
+
 
 include_directories(${PROJECT_SOURCE_DIR})
 
