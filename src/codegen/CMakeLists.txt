@@ -1,0 +1,8 @@
+target_sources(${GRACC_LLVM_LIBRARY}
+    PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/codegen.cc"
+        "${CMAKE_CURRENT_LIST_DIR}/codegen_function.cc"
+        "${CMAKE_CURRENT_LIST_DIR}/codegen_value.cc"
+    PUBLIC
+        "${CMAKE_CURRENT_LIST_DIR}/codegen.h"
+    )
