@@ -17,6 +17,7 @@ target_link_libraries(${PROJECT_TEST_NAME}
     ${GTEST_LIBS_DIR}/libgtest.a
     ${GTEST_LIBS_DIR}/libgtest_main.a
     ${GRACC_LIBRARY}
+    ${GRACC_LLVM_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     )
 
