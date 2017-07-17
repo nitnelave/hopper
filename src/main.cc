@@ -1,14 +1,14 @@
 #include <iostream>
 #include <string>
 
-#include <gflags/gflags.h>
-
 #include "HopperConfig.h"
+
 #include "ast/module.h"
 #include "codegen/codegen.h"
 #include "parser/parser.h"
 #include "pretty_printer/pretty_printer.h"
 #include "transform/function_value_body.h"
+#include "util/gflags_utils.h"
 
 // LCOV_EXCL_START: main is not tested
 
@@ -23,7 +23,7 @@ std::string ir_filename(const std::string& filename) {
 }
 
 int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  gflags::GFlagsWrapper w(&argc, &argv, true);
 
   if (FLAGS_success) std::cout << "Success!\n";
 
@@ -58,7 +58,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  gflags::ShutDownCommandLineFlags();
   return exit_code;
 }
 
