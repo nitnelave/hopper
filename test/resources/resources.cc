@@ -14,6 +14,12 @@
 
 DEFINE_string(test_resource_folder, "", "Location of the test resources");
 
+namespace test {
+
+using ::testing::AssertionSuccess;
+using ::testing::AssertionResult;
+using ::testing::AssertionFailure;
+
 bool parse_position_line(int lineno, const std::string& line,
                          lexer::Range& range) {
   if (!starts_with(line, "//")) return false;
@@ -79,7 +85,7 @@ std::vector<ExpectedError> parse_expected_errors(const std::string& filename) {
   return result;
 }
 
-testing::AssertionResult test_lexer_resource(const std::string& filename) {
+AssertionResult test_lexer_resource(const std::string& filename) {
   auto expected_errors =
       MAP_VEC(parse_expected_errors(filename),
               lexer::LexError(__ARG__.message, __ARG__.range));
@@ -92,21 +98,21 @@ testing::AssertionResult test_lexer_resource(const std::string& filename) {
   }
   auto result = lexer::file_to_tokens(filename);
   if (result.is_ok() && !expected_errors.empty())
-    return testing::AssertionFailure() << "Expected error:\n"
-                                       << expected_errors[0] << "\nGot success";
+    return AssertionFailure() << "Expected error:\n"
+                              << expected_errors[0] << "\nGot success";
   if (!result.is_ok()) {
     if (expected_errors.empty())
-      return testing::AssertionFailure() << "Expected success, got:\n"
-                                         << result.error_or_die();
+      return AssertionFailure() << "Expected success, got:\n"
+                                << result.error_or_die();
     if (result.error_or_die() != expected_errors[0])
-      return testing::AssertionFailure() << "Expected:\n"
-                                         << expected_errors[0] << "\nGot:\n"
-                                         << result.error_or_die();
+      return AssertionFailure() << "Expected:\n"
+                                << expected_errors[0] << "\nGot:\n"
+                                << result.error_or_die();
   }
-  return testing::AssertionSuccess();
+  return AssertionSuccess();
 }
 
-testing::AssertionResult test_parser_resource(const std::string& filename) {
+AssertionResult test_parser_resource(const std::string& filename) {
   auto expected_errors =
       MAP_VEC(parse_expected_errors(filename),
               parser::ParseError(__ARG__.message, __ARG__.range));
@@ -121,28 +127,28 @@ testing::AssertionResult test_parser_resource(const std::string& filename) {
   parser::Parser parser(&lex);
   auto result = parser.parse();
   if (result.is_ok() && !expected_errors.empty())
-    return testing::AssertionFailure() << "Expected error:\n"
-                                       << expected_errors[0] << "\nGot success";
+    return AssertionFailure() << "Expected error:\n"
+                              << expected_errors[0] << "\nGot success";
   if (!result.is_ok()) {
     if (expected_errors.empty())
-      return testing::AssertionFailure() << "Expected success, got:\n"
-                                         << result.error_or_die();
+      return AssertionFailure() << "Expected success, got:\n"
+                                << result.error_or_die();
     if (result.error_or_die() != expected_errors[0])
-      return testing::AssertionFailure() << "Expected:\n"
-                                         << expected_errors[0] << "\nGot:\n"
-                                         << result.error_or_die();
+      return AssertionFailure() << "Expected:\n"
+                                << expected_errors[0] << "\nGot:\n"
+                                << result.error_or_die();
   }
-  return testing::AssertionSuccess();
+  return AssertionSuccess();
 }
 
-Variant<testing::AssertionResult, std::string> get_pretty_printed_file(
+Variant<AssertionResult, std::string> get_pretty_printed_file(
     const std::string& filename) {
   lexer::Lexer lex = lexer::from_file(filename);
   parser::Parser parser(&lex);
   auto result = parser.parse();
   if (!result.is_ok())
-    return testing::AssertionFailure() << "Error while parsing " << filename
-                                       << result.to_string() << '\n';
+    return AssertionFailure() << "Error while parsing " << filename
+                              << result.to_string() << '\n';
   std::stringstream ss;
   ast::PrettyPrinterVisitor visitor(ss);
   result.value_or_die()->accept(visitor);
@@ -150,14 +156,14 @@ Variant<testing::AssertionResult, std::string> get_pretty_printed_file(
 }
 
 template <typename Transformer>
-Variant<testing::AssertionResult, std::string>
-get_transformed_pretty_printed_file(const std::string& filename) {
+Variant<AssertionResult, std::string> get_transformed_pretty_printed_file(
+    const std::string& filename) {
   lexer::Lexer lex = lexer::from_file(filename);
   parser::Parser parser(&lex);
   auto result = parser.parse();
   if (!result.is_ok())
-    return testing::AssertionFailure() << "Error while parsing " << filename
-                                       << result.to_string() << '\n';
+    return AssertionFailure() << "Error while parsing " << filename
+                              << result.to_string() << '\n';
 
   Transformer transformer;
   result.value_or_die()->accept(transformer);
@@ -167,53 +173,54 @@ get_transformed_pretty_printed_file(const std::string& filename) {
   return ss.str();
 }
 
-testing::AssertionResult test_pretty_printer(const std::string& filename) {
-  if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
+AssertionResult test_pretty_printer(const std::string& filename) {
+  if (ends_with(filename, ".ref")) return AssertionSuccess();
   assert(ends_with(filename, ".gh"));
   std::string ref_filename =
       filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
   auto first_pass = get_pretty_printed_file(filename);
-  if (first_pass.is<testing::AssertionResult>())
-    return first_pass.get_unchecked<testing::AssertionResult>();
+  if (first_pass.is<AssertionResult>())
+    return first_pass.get_unchecked<AssertionResult>();
   const std::string& first_pass_result =
       first_pass.get_unchecked<std::string>();
   auto ref_contents = read_file(ref_filename);
   if (ref_contents != first_pass_result)
-    return testing::AssertionFailure() << "Expected:\n"
-                                       << ref_contents << "\nGot:\n"
-                                       << first_pass_result;
+    return AssertionFailure() << "Expected:\n"
+                              << ref_contents << "\nGot:\n"
+                              << first_pass_result;
 
   auto second_pass = get_pretty_printed_file(ref_filename);
-  if (second_pass.is<testing::AssertionResult>())
-    return second_pass.get_unchecked<testing::AssertionResult>();
+  if (second_pass.is<AssertionResult>())
+    return second_pass.get_unchecked<AssertionResult>();
   const std::string& second_pass_result =
       second_pass.get_unchecked<std::string>();
   if (ref_contents != second_pass_result)
-    return testing::AssertionFailure()
-           << "PrettyPrinter not stable. Expected:\n"
-           << ref_contents << "\nGot:\n"
-           << second_pass_result;
-  return testing::AssertionSuccess();
+    return AssertionFailure() << "PrettyPrinter not stable. Expected:\n"
+                              << ref_contents << "\nGot:\n"
+                              << second_pass_result;
+  return AssertionSuccess();
 }
 
-template <typename Transformer>
-testing::AssertionResult test_transformer(const std::string& filename) {
-  if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
+using TransformFunction =
+    Variant<AssertionResult, std::string> (*)(const std::string&);
+
+template <TransformFunction transform>
+AssertionResult test_foo(const std::string& filename) {
+  if (ends_with(filename, ".ref")) return AssertionSuccess();
   assert(ends_with(filename, ".gh"));
   std::string ref_filename =
       filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
-  Variant<testing::AssertionResult, std::string> first_pass =
-      get_transformed_pretty_printed_file<Transformer>(filename);
-  if (first_pass.is<testing::AssertionResult>())
-    return first_pass.get_unchecked<testing::AssertionResult>();
+  Variant<AssertionResult, std::string> first_pass = transform(filename);
+  if (first_pass.is<AssertionResult>())
+    return first_pass.get_unchecked<AssertionResult>();
   const std::string& first_pass_result =
       first_pass.get_unchecked<std::string>();
   auto ref_contents = read_file(ref_filename);
   if (ref_contents != first_pass_result)
-    return testing::AssertionFailure() << "Expected:\n"
-                                       << ref_contents << "\nGot:\n"
-                                       << first_pass_result;
-  return testing::AssertionSuccess();
+    return AssertionFailure() << "Expected:\n"
+                              << ref_contents << "\nGot:\n"
+                              << first_pass_result;
+  return AssertionSuccess();
 }
 
 TEST(ResourcesTest, Lexer) {
@@ -237,7 +244,11 @@ TEST(ResourcesTest, PrettyPrinter) {
 
 TEST(ResourcesTest, FunctionValueBodyTransformer) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
+  TestFunction tester = test_foo<get_transformed_pretty_printed_file<
+      transform::FunctionValueBodyTransformer>>;
   EXPECT_TRUE(test::walk_directory(
       (FLAGS_test_resource_folder + "/transformer/function_value_body").c_str(),
-      test_transformer<transform::FunctionValueBodyTransformer>));
+      tester));
 }
+
+}  // namespace test

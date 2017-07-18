@@ -6,8 +6,9 @@
 
 namespace test {
 
-testing::AssertionResult walk_directory(
-    const char* folder,
-    const std::function<testing::AssertionResult(const std::string&)>& tester);
+using TestFunction = testing::AssertionResult (*)(const std::string&);
+
+testing::AssertionResult walk_directory(const char* folder,
+                                        const TestFunction& tester);
 
 }  // namespace test
