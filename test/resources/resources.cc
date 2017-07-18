@@ -6,38 +6,13 @@
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "pretty_printer/pretty_printer.h"
+#include "resources/resources_utils.h"
 #include "test_utils/files.h"
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
+#include "transform/function_value_body.h"
 
 DEFINE_string(test_resource_folder, "", "Location of the test resources");
-
-struct ExpectedError {
-  std::string message;
-  lexer::Range range;
-};
-
-bool starts_with(const std::string& haystack, const std::string& needle) {
-  if (haystack.size() < needle.size()) return false;
-  return std::equal(needle.begin(), needle.end(), haystack.begin());
-}
-
-bool ends_with(const std::string& haystack, const std::string& needle) {
-  if (haystack.size() < needle.size()) return false;
-  return std::equal(needle.begin(), needle.end(),
-                    haystack.end() - needle.size());
-}
-
-std::string read_file(const std::string& filename) {
-  std::ifstream in(filename, std::ios::in | std::ios::binary);
-  if (in) {
-    std::ostringstream contents;
-    contents << in.rdbuf();
-    in.close();
-    return (contents.str());
-  }
-  throw(errno);
-}
 
 bool parse_position_line(int lineno, const std::string& line,
                          lexer::Range& range) {
@@ -174,6 +149,24 @@ Variant<testing::AssertionResult, std::string> get_pretty_printed_file(
   return ss.str();
 }
 
+template <typename Transformer>
+Variant<testing::AssertionResult, std::string>
+get_transformed_pretty_printed_file(const std::string& filename) {
+  lexer::Lexer lex = lexer::from_file(filename);
+  parser::Parser parser(&lex);
+  auto result = parser.parse();
+  if (!result.is_ok())
+    return testing::AssertionFailure() << "Error while parsing " << filename
+                                       << result.to_string() << '\n';
+
+  Transformer transformer;
+  result.value_or_die()->accept(transformer);
+  std::stringstream ss;
+  ast::PrettyPrinterVisitor visitor(ss);
+  result.value_or_die()->accept(visitor);
+  return ss.str();
+}
+
 testing::AssertionResult test_pretty_printer(const std::string& filename) {
   if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
   assert(ends_with(filename, ".gh"));
@@ -203,6 +196,26 @@ testing::AssertionResult test_pretty_printer(const std::string& filename) {
   return testing::AssertionSuccess();
 }
 
+template <typename Transformer>
+testing::AssertionResult test_transformer(const std::string& filename) {
+  if (ends_with(filename, ".ref")) return testing::AssertionSuccess();
+  assert(ends_with(filename, ".gh"));
+  std::string ref_filename =
+      filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
+  Variant<testing::AssertionResult, std::string> first_pass =
+      get_transformed_pretty_printed_file<Transformer>(filename);
+  if (first_pass.is<testing::AssertionResult>())
+    return first_pass.get_unchecked<testing::AssertionResult>();
+  const std::string& first_pass_result =
+      first_pass.get_unchecked<std::string>();
+  auto ref_contents = read_file(ref_filename);
+  if (ref_contents != first_pass_result)
+    return testing::AssertionFailure() << "Expected:\n"
+                                       << ref_contents << "\nGot:\n"
+                                       << first_pass_result;
+  return testing::AssertionSuccess();
+}
+
 TEST(ResourcesTest, Lexer) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
   EXPECT_TRUE(test::walk_directory(
@@ -220,4 +233,11 @@ TEST(ResourcesTest, PrettyPrinter) {
   EXPECT_TRUE(test::walk_directory(
       (FLAGS_test_resource_folder + "/pretty_printer").c_str(),
       test_pretty_printer));
+}
+
+TEST(ResourcesTest, FunctionValueBodyTransformer) {
+  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
+  EXPECT_TRUE(test::walk_directory(
+      (FLAGS_test_resource_folder + "/transformer/function_value_body").c_str(),
+      test_transformer<transform::FunctionValueBodyTransformer>));
 }
