@@ -46,3 +46,5 @@ std::vector<internals::result_of_t<Mapper(In)>> convert_vector(
 /// Ex: auto res = MAP_VEC(my_vector, 2 * __ARG__ + 1);
 #define MAP_VEC(INPUT, LAMBDA) \
   convert_vector((INPUT), [](const auto& __ARG__) { return LAMBDA; })
+
+std::string crop_first_lines(const std::string& text, int number_of_lines);

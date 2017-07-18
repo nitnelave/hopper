@@ -2,6 +2,7 @@ target_sources(${PROJECT_TEST_NAME}
     PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/files.cc"
         "${CMAKE_CURRENT_LIST_DIR}/lexing.cc"
+        "${CMAKE_CURRENT_LIST_DIR}/utils.cc"
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/files.h"
         "${CMAKE_CURRENT_LIST_DIR}/lexing.h"
