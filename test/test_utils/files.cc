@@ -8,9 +8,8 @@
 
 namespace test {
 
-testing::AssertionResult walk_directory(
-    const char* folder,
-    const std::function<testing::AssertionResult(const std::string&)>& tester) {
+testing::AssertionResult walk_directory(const char* folder,
+                                        const TestFunction& tester) {
   DIR* dir;
   struct dirent* ent;
   if ((dir = opendir(folder)) == nullptr) {
