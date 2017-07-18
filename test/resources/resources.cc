@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include "ast/module.h"
+#include "codegen/codegen.h"
 #include "gflags/gflags.h"
 #include "gtest/gtest.h"
 #include "lexer/lexer.h"
@@ -156,6 +157,12 @@ Variant<AssertionResult, std::string> get_pretty_printed_file(
 }
 
 template <typename Transformer>
+void apply_transformer(ast::Module* ast) {
+  Transformer transformer;
+  ast->accept(transformer);
+}
+
+template <typename... Transformer>
 Variant<AssertionResult, std::string> get_transformed_pretty_printed_file(
     const std::string& filename) {
   lexer::Lexer lex = lexer::from_file(filename);
@@ -165,12 +172,36 @@ Variant<AssertionResult, std::string> get_transformed_pretty_printed_file(
     return AssertionFailure() << "Error while parsing " << filename
                               << result.to_string() << '\n';
 
-  Transformer transformer;
-  result.value_or_die()->accept(transformer);
+  using swallow = int[];
+  (void)swallow{
+      (apply_transformer<Transformer>(result.value_or_die().get()), 0)...};
   std::stringstream ss;
   ast::PrettyPrinterVisitor visitor(ss);
   result.value_or_die()->accept(visitor);
   return ss.str();
+}
+
+template <typename... Transformer>
+Variant<AssertionResult, std::string> get_transformed_ir(
+    const std::string& filename) {
+  lexer::Lexer lex = lexer::from_file(filename);
+  parser::Parser parser(&lex);
+  auto result = parser.parse();
+  if (!result.is_ok())
+    return AssertionFailure() << "Error while parsing " << filename
+                              << result.to_string() << '\n';
+
+  // Trick to run all the transformers, in order.
+  using swallow = int[];
+  (void)swallow{
+      (apply_transformer<Transformer>(result.value_or_die().get()), 0)...};
+  std::string ir;
+  codegen::LLVMInitializer llvm_init;
+  codegen::CodeGenerator generator(filename);
+  result.value_or_die()->accept(generator);
+  llvm::raw_string_ostream out(ir);
+  generator.print(out);
+  return crop_first_lines(ir, 4);
 }
 
 AssertionResult test_pretty_printer(const std::string& filename) {
@@ -249,6 +280,14 @@ TEST(ResourcesTest, FunctionValueBodyTransformer) {
   EXPECT_TRUE(test::walk_directory(
       (FLAGS_test_resource_folder + "/transformer/function_value_body").c_str(),
       tester));
+}
+
+TEST(ResourcesTest, CodeGenerator) {
+  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
+  TestFunction tester =
+      test_foo<get_transformed_ir<transform::FunctionValueBodyTransformer>>;
+  EXPECT_TRUE(test::walk_directory((FLAGS_test_resource_folder + "/ir").c_str(),
+                                   tester));
 }
 
 }  // namespace test
