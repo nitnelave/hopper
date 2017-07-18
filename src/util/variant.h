@@ -104,19 +104,19 @@ struct ValueTraits {
       typename std::tuple_element<tindex, std::tuple<void, Types...>>::type;
 };
 
-template <TypeIndex Arg1, TypeIndex... Others>
+template <TypeIndex arg1, TypeIndex... others>
 struct StaticMax;
 
-template <TypeIndex Arg>
-struct StaticMax<Arg> {
-  static const TypeIndex value = Arg;
+template <TypeIndex arg>
+struct StaticMax<arg> {
+  static const TypeIndex value = arg;
 };
 
-template <TypeIndex Arg1, TypeIndex Arg2, TypeIndex... Others>
-struct StaticMax<Arg1, Arg2, Others...> {
-  static const TypeIndex value = Arg1 >= Arg2
-                                     ? StaticMax<Arg1, Others...>::value
-                                     : StaticMax<Arg2, Others...>::value;
+template <TypeIndex arg1, TypeIndex arg2, TypeIndex... others>
+struct StaticMax<arg1, arg2, others...> {
+  static const TypeIndex value = arg1 >= arg2
+                                     ? StaticMax<arg1, others...>::value
+                                     : StaticMax<arg2, others...>::value;
 };
 
 template <typename... Types>

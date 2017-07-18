@@ -20,7 +20,9 @@ CheckOptions:
     value:           lower_case
   - key:             readability-identifier-naming.StructCase
     value:           CamelCase
-  - key:             readability-identifier-naming.TemplateParameterCase
+  - key:             readability-identifier-naming.TypeTemplateParameterCase
     value:           CamelCase
+  - key:             readability-identifier-naming.ValueTemplateParameterCase
+    value:           lower_case
   - key:             readability-identifier-naming.VariableCase
     value:           lower_case
