@@ -1,11 +1,12 @@
 find_package(Threads REQUIRED)
 
-add_executable(${PROJECT_TEST_NAME} "main.cc" "resources.cc")
+add_executable(${PROJECT_TEST_NAME} "main.cc")
 
 
 include(error/CMakeLists.txt)
 include(lexer/CMakeLists.txt)
 include(parser/CMakeLists.txt)
+include(resources/CMakeLists.txt)
 include(test_utils/CMakeLists.txt)
 
 set_property(TARGET ${PROJECT_TEST_NAME} PROPERTY CXX_STANDARD 14)
