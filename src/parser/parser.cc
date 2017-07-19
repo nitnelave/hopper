@@ -2,6 +2,7 @@
 
 #include "ast/binary_operation.h"
 #include "ast/boolean_constant.h"
+#include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/module.h"
@@ -116,14 +117,6 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
       current_token().type() == TokenType::UPPER_CASE_IDENT ||
       current_token().type() == TokenType::COLON_COLON) {
     RETURN_OR_MOVE(Identifier id, parse_value_identifier());
-    if (current_token().type() == TokenType::OPEN_PAREN) {
-      // Function call
-      return ParseError("Function calls not supported", location.error_range());
-    }
-    if (current_token().type() == TokenType::OPEN_BRACKET) {
-      // Array access
-      return ParseError("Array access not supported", location.error_range());
-    }
     return std::make_unique<ast::VariableReference>(location.range(), id);
   }
 
@@ -133,6 +126,26 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
   auto location = scoped_location();
   RETURN_OR_MOVE(auto value, parse_value_no_operator());
+
+  // Parse function calls.
+  while (current_token().type() == TokenType::OPEN_PAREN) {
+    RETURN_IF_ERROR(get_token());
+    std::vector<std::unique_ptr<ast::Value>> arguments;
+    while (current_token().type() != TokenType::CLOSE_PAREN) {
+      RETURN_OR_MOVE(auto arg, parse_value());
+      arguments.emplace_back(std::move(arg));
+      if (current_token().type() == TokenType::COMMA)
+        RETURN_IF_ERROR(get_token());
+      else
+        break;
+    }
+    EXPECT_TOKEN(
+        TokenType::CLOSE_PAREN,
+        "Expected a closing parenthesis at the end of the function call");
+    value = std::make_unique<ast::FunctionCall>(
+        location.range(), std::move(value), std::move(arguments));
+  }
+
   // Binary operator precedence resolution.
   // If the operator is of lower or equal precedence than the parent call,
   // delegate to the parent.
