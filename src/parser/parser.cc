@@ -1,5 +1,6 @@
 #include "parser/parser.h"
 
+#include "ast/boolean_constant.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/module.h"
@@ -80,6 +81,12 @@ Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
 
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
   auto location = scoped_location();
+  if (current_token().type() == TokenType::TRUE ||
+      current_token().type() == TokenType::FALSE) {
+    bool bool_value = current_token().type() == TokenType::TRUE;
+    RETURN_IF_ERROR(get_token());
+    return std::make_unique<ast::BooleanConstant>(location.range(), bool_value);
+  }
   if (current_token().type() == TokenType::INT ||
       current_token().type() == TokenType::HEX ||
       current_token().type() == TokenType::OCT ||
