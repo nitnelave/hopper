@@ -1,0 +1,3 @@
+val a = my_function(b, 2+3);
+val b = Qualified::function();
+val c = my_function()(a)(1+3, b)(1+(2*3))((c));
