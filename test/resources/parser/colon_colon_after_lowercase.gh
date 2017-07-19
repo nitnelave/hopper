@@ -1,0 +1,3 @@
+val a = module::foo;
+//      ^^^^^^^^
+// ERROR: Unexpected '::' after lowercase id
