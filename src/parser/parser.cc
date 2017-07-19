@@ -7,6 +7,7 @@
 #include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
+#include "lexer/operators.h"
 
 #define EXPECT_TOKEN(TYPE, MESSAGE)                       \
   if (current_token().type() != (TYPE))                   \

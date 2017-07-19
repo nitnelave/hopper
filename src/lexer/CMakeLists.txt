@@ -4,7 +4,8 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/lexer.cc"
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/file_reader.h"
-        "${CMAKE_CURRENT_LIST_DIR}/lexer.h"
         "${CMAKE_CURRENT_LIST_DIR}/lex_error.h"
+        "${CMAKE_CURRENT_LIST_DIR}/lexer.h"
+        "${CMAKE_CURRENT_LIST_DIR}/operators.h"
         "${CMAKE_CURRENT_LIST_DIR}/token.h"
     )
