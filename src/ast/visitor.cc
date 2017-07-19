@@ -29,7 +29,6 @@ void ASTVisitor::visit(Module* node) {
 void ASTVisitor::visit(ReturnStatement* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }
-void ASTVisitor::visit(Value* /*unused*/) {}
 void ASTVisitor::visit(VariableDeclaration* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }

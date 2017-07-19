@@ -62,7 +62,6 @@ class ASTVisitor {
   virtual void visit(IntConstant* node);
   virtual void visit(Module* node);
   virtual void visit(ReturnStatement* node);
-  virtual void visit(Value* node);
   virtual void visit(VariableDeclaration* node);
   virtual void visit(VariableReference* node);
 };
