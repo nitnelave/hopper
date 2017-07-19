@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "ast/ast.h"
+#include "ast/boolean_constant.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/return_statement.h"
@@ -61,6 +62,12 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(IntConstant* node) override { out_ << node->value(); }
+  void visit(BooleanConstant* node) override {
+    if (node->value())
+      out_ << "true";
+    else
+      out_ << "false";
+  }
 
   void visit(ReturnStatement* node) override {
     print_indent() << "return";

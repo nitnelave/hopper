@@ -95,6 +95,7 @@ namespace lexer {
   X(ELSE, "else")                                     \
   X(ENUM, "enum")                                     \
   X(EXTERN, "extern")                                 \
+  X(FALSE, "false")                                   \
   X(FINALLY, "finally")                               \
   X(FOR, "for")                                       \
   X(FORWARD, "forward") /* for forward-references. */ \
@@ -122,6 +123,7 @@ namespace lexer {
   X(REINTERPRET_CAST, "reinterpret_cast")             \
   X(RETURN, "return")                                 \
   X(THROW, "throw")                                   \
+  X(TRUE, "true")                                     \
   X(TRY, "try")                                       \
   X(TRY_COMPILE, "try_compile")                       \
   X(USING, "using")                                   \

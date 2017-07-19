@@ -28,6 +28,7 @@ class ASTNode {
 
 /// Concrete node classes.
 class Assignment;
+class BooleanConstant;
 class BinaryOp;
 // class ForBlock;
 class FunctionArgumentDeclaration;
@@ -53,6 +54,7 @@ class Statement;
 class ASTVisitor {
  public:
   virtual void visit(Assignment* node);
+  virtual void visit(BooleanConstant* node);
   virtual void visit(BinaryOp* node);
   virtual void visit(FunctionArgumentDeclaration* node);
   virtual void visit(FunctionCall* node);
