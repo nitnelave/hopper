@@ -1,0 +1,3 @@
+val ::a = 3;
+//  ^^
+// ERROR: Unexpected '::', expected unqualified id
