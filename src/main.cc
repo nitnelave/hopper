@@ -16,7 +16,7 @@ DEFINE_bool(success, false, "Whether we successfully added a flag");
 
 std::string ir_filename(const std::string& filename) {
   auto last = filename.find_last_of(".");
-  if (last != 0)
+  if (last == std::string::npos)
     throw std::invalid_argument("Filename " + filename +
                                 " does not end in '.gh'");
   return filename.substr(0, last + 1) + "ll";
