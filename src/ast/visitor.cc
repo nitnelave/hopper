@@ -1,4 +1,5 @@
 #include "ast/ast.h"
+#include "ast/binary_operation.h"
 #include "ast/function_declaration.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
@@ -7,8 +8,11 @@
 namespace ast {
 
 void ASTVisitor::visit(Assignment* /*unused*/) {}
-void ASTVisitor::visit(BinaryOp* /*unused*/) {}
 void ASTVisitor::visit(BooleanConstant* /*unused*/) {}
+void ASTVisitor::visit(BinaryOp* node) {
+  node->left_value().accept(*this);
+  node->right_value().accept(*this);
+}
 void ASTVisitor::visit(FunctionArgumentDeclaration* /*unused*/) {}
 void ASTVisitor::visit(FunctionCall* /*unused*/) {}
 void ASTVisitor::visit(FunctionDeclaration* node) {

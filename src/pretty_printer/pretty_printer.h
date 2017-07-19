@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "ast/ast.h"
+#include "ast/binary_operation.h"
 #include "ast/boolean_constant.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
@@ -56,6 +57,7 @@ class PrettyPrinterVisitor : public ASTVisitor {
     }
     out_ << '\n';
   }
+  void visit(BinaryOp* node) override;
 
   void visit(VariableReference* node) override {
     out_ << node->id().to_string();
