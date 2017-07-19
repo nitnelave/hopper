@@ -82,6 +82,13 @@ Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
 
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
   auto location = scoped_location();
+  if (current_token().type() == TokenType::OPEN_PAREN) {
+    RETURN_IF_ERROR(get_token());
+    RETURN_OR_MOVE(auto value, parse_value());
+    EXPECT_TOKEN(TokenType::CLOSE_PAREN,
+                 "Expected a ')' to match the opening one");
+    return std::move(value);
+  }
   if (current_token().type() == TokenType::TRUE ||
       current_token().type() == TokenType::FALSE) {
     bool bool_value = current_token().type() == TokenType::TRUE;
