@@ -9,6 +9,7 @@ include(lexer/CMakeLists.txt)
 include(parser/CMakeLists.txt)
 include(resources/CMakeLists.txt)
 include(test_utils/CMakeLists.txt)
+include(visitor/CMakeLists.txt)
 
 set_property(TARGET ${PROJECT_TEST_NAME} PROPERTY CXX_STANDARD 14)
 set_property(TARGET ${PROJECT_TEST_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
