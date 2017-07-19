@@ -48,7 +48,10 @@ ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(bool simple) {
   bool absolute = false;
   std::stringstream text;
   text << current_token().text();
-  if (!simple && current_token().type() == TokenType::COLON_COLON) {
+  if (current_token().type() == TokenType::COLON_COLON) {
+    if (simple)
+      return ParseError("Unexpected '::', expected unqualified id",
+                        location.error_range());
     absolute = true;
     RETURN_IF_ERROR(get_token());
     text << current_token().text();
@@ -59,11 +62,17 @@ ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(bool simple) {
       text << current_token().text();
       RETURN_IF_ERROR(get_token());
     } else {
+      if (current_token().type() == TokenType::COLON_COLON)
+        return ParseError("Unexpected '::', expected unqualified id",
+                          location.error_range());
       return Identifier(text.str(), location.range(), true, absolute);
     }
   }
   if (current_token().type() == TokenType::LOWER_CASE_IDENT) {
     RETURN_IF_ERROR(get_token());
+    if (current_token().type() == TokenType::COLON_COLON)
+      return ParseError("Unexpected '::' after lowercase id",
+                        location.error_range());
     return Identifier(text.str(), location.range(), false, absolute);
   }
   return none;
@@ -165,8 +174,9 @@ Parser::parse_variable_declaration() {
          current_token().type() == TokenType::MUT);
   bool mut = current_token().type() == TokenType::MUT;
   RETURN_IF_ERROR(get_token());
-  // Then a name, lowercase.
-  RETURN_OR_MOVE(Identifier variable_name, parse_value_identifier());
+  // Then a simple name, lowercase.
+  RETURN_OR_MOVE(Identifier variable_name,
+                 parse_value_identifier(/*simple=*/true));
   // Then an optional type.
   Option<Type> type;
   if (current_token().type() == TokenType::COLON) {
@@ -222,7 +232,7 @@ Parser::ErrorOrPtr<ast::FunctionDeclaration>
 Parser::parse_function_declaration() {
   auto location = scoped_location();
   EXPECT_TOKEN(TokenType::FUN, "Function declarations must start with `fun'");
-  RETURN_OR_MOVE(Identifier fun_name, parse_value_identifier());
+  RETURN_OR_MOVE(Identifier fun_name, parse_value_identifier(/*simple=*/true));
   EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected `(' in function declaration");
   std::vector<std::unique_ptr<ast::FunctionArgumentDeclaration>> arguments;
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected `)' after argument list");
