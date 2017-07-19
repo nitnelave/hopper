@@ -1,5 +1,6 @@
 #include "parser/parser.h"
 
+#include "ast/binary_operation.h"
 #include "ast/boolean_constant.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
@@ -80,7 +81,7 @@ Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
   return std::make_unique<ast::IntConstant>(location.range(), value);
 }
 
-Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
+Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
   auto location = scoped_location();
   if (current_token().type() == TokenType::OPEN_PAREN) {
     RETURN_IF_ERROR(get_token());
@@ -117,6 +118,43 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value() {
   }
 
   return ParseError("Expected value", location.error_range());
+}
+
+Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
+  auto location = scoped_location();
+  RETURN_OR_MOVE(auto value, parse_value_no_operator());
+  // Binary operator precedence resolution.
+  // If the operator is of lower or equal precedence than the parent call,
+  // delegate to the parent.
+  // There is a double loop: the outer one corresponds to the precedence
+  // resolution (each iteration handles a certain level of precedence,
+  // delegating to a recursive call for higher precedence operators), and the
+  // inner one corresponds to the left associativity (i.e. "2+3+4" is
+  // "(2+3)+4"), staying at the same level of precedence.
+  // "value" is always the left side of the operator, "binop" is always the
+  // current (if valid) operator to handle, and "precedence" is the precedence
+  // we are handling in the inner loop.
+  Option<ast::BinaryOperator> binop =
+      lexer::token_to_binary_operator(current_token().type());
+  // Handle precedence.
+  while (binop.is_ok() &&
+         lexer::operator_precedence(binop.value_or_die()) > parent_precedence) {
+    int precedence = lexer::operator_precedence(binop.value_or_die());
+    // Handle associativity.
+    while (binop.is_ok() &&
+           lexer::operator_precedence(binop.value_or_die()) == precedence) {
+      // Consume the operator.
+      RETURN_IF_ERROR(get_token());
+      // Parse the right side (up to the next operator).
+      RETURN_OR_MOVE(auto right_value, parse_value(precedence));
+      value = std::make_unique<ast::BinaryOp>(
+          location.range(), std::move(value), binop.value_or_die(),
+          std::move(right_value));
+      // Peek at the next token.
+      binop = lexer::token_to_binary_operator(current_token().type());
+    }
+  }
+  return std::move(value);
 }
 
 Parser::ErrorOrPtr<ast::VariableDeclaration>
