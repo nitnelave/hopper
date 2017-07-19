@@ -21,5 +21,5 @@ std::string read_file(const std::string& filename) {
     in.close();
     return (contents.str());
   }
-  throw(errno);
+  throw std::runtime_error("Could not read file " + filename);
 }
