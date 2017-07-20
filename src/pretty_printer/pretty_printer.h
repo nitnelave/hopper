@@ -5,6 +5,7 @@
 #include "ast/ast.h"
 #include "ast/binary_operation.h"
 #include "ast/boolean_constant.h"
+#include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/return_statement.h"
@@ -29,6 +30,19 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(FunctionDeclaration* node) override;
+
+  void visit(FunctionCall* node) override {
+    node->base().accept(*this);
+    out_ << '(';
+    auto delimiter = "";
+    for (auto& arg : node->arguments()) {
+      out_ << delimiter;
+      arg->accept(*this);
+      delimiter = ", ";
+    }
+    out_ << ')';
+  }
+
   void visit(BinaryOp* node) override;
 
   void visit(VariableReference* node) override {
