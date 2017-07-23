@@ -13,6 +13,7 @@ void ASTVisitor::visit(BinaryOp* node) {
   node->left_value().accept(*this);
   node->right_value().accept(*this);
 }
+void ASTVisitor::visit(BuiltinType* /*unused*/) {}
 void ASTVisitor::visit(FunctionArgumentDeclaration* /*unused*/) {}
 void ASTVisitor::visit(FunctionCall* /*unused*/) {}
 void ASTVisitor::visit(FunctionDeclaration* node) {
