@@ -9,6 +9,7 @@ class ASTVisitor {
   virtual void visit(Assignment* node);
   virtual void visit(BooleanConstant* node);
   virtual void visit(BinaryOp* node);
+  virtual void visit(BuiltinType* node);
   virtual void visit(FunctionArgumentDeclaration* node);
   virtual void visit(FunctionCall* node);
   virtual void visit(FunctionDeclaration* node);

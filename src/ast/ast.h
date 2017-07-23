@@ -28,8 +28,9 @@ class ASTNode {
 
 /// Concrete node classes.
 class Assignment;
-class BooleanConstant;
 class BinaryOp;
+class BooleanConstant;
+class BuiltinType;
 // class ForBlock;
 class FunctionArgumentDeclaration;
 class FunctionCall;
