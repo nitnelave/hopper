@@ -79,8 +79,12 @@ inline TokenType operator_to_token(BinaryOperator op) {
   return internals::binary_operator_token[internals::binop_to_index(op)];
 }
 
+inline std::string to_string(BinaryOperator binop) {
+  return to_symbol(operator_to_token(binop));
+}
+
 inline std::ostream& operator<<(std::ostream& os, BinaryOperator binop) {
-  return os << to_symbol(operator_to_token(binop));
+  return os << to_string(binop);
 }
 
 }  // namespace lexer
