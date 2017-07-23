@@ -299,40 +299,38 @@ AssertionResult transformer_test(const std::string& filename) {
   return AssertionSuccess();
 }
 
+template <TestFunction tester>
+AssertionResult test_all_files_in_dir(const std::string& directory) {
+  if (FLAGS_test_resource_folder.empty())
+    return AssertionFailure() << "Could not find test resources\n"
+                                 "Please give --test_resource_folder flag";
+  return test::walk_directory(
+      (FLAGS_test_resource_folder + "/" + directory).c_str(), tester);
+}
+
 TEST(ResourcesTest, Lexer) {
-  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  EXPECT_TRUE(test::walk_directory(
-      (FLAGS_test_resource_folder + "/lexer").c_str(), test_lexer_resource));
+  EXPECT_TRUE(test_all_files_in_dir<test_lexer_resource>("lexer"));
 }
 
 TEST(ResourcesTest, Parser) {
-  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  EXPECT_TRUE(test::walk_directory(
-      (FLAGS_test_resource_folder + "/parser").c_str(), test_parser_resource));
+  EXPECT_TRUE(test_all_files_in_dir<test_parser_resource>("parser"));
 }
 
 TEST(ResourcesTest, PrettyPrinter) {
-  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  EXPECT_TRUE(test::walk_directory(
-      (FLAGS_test_resource_folder + "/pretty_printer").c_str(),
-      test_pretty_printer));
+  EXPECT_TRUE(test_all_files_in_dir<test_pretty_printer>("pretty_printer"));
 }
 
 TEST(ResourcesTest, FunctionValueBodyTransformer) {
-  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  TestFunction tester = transformer_test<get_transformed_pretty_printed_file<
-      transform::FunctionValueBodyTransformer>>;
-  EXPECT_TRUE(test::walk_directory(
-      (FLAGS_test_resource_folder + "/transformer/function_value_body").c_str(),
-      tester));
+  EXPECT_TRUE(test_all_files_in_dir<
+              transformer_test<get_transformed_pretty_printed_file<
+                  transform::FunctionValueBodyTransformer>>>(
+      "transformer/function_value_body"));
 }
 
 TEST(ResourcesTest, CodeGenerator) {
-  EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  TestFunction tester = transformer_test<
-      get_transformed_ir<transform::FunctionValueBodyTransformer>>;
-  EXPECT_TRUE(test::walk_directory((FLAGS_test_resource_folder + "/ir").c_str(),
-                                   tester));
+  EXPECT_TRUE(
+      test_all_files_in_dir<transformer_test<
+          get_transformed_ir<transform::FunctionValueBodyTransformer>>>("ir"));
 }
 
 }  // namespace test
