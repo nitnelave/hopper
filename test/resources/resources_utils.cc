@@ -23,3 +23,8 @@ std::string read_file(const std::string& filename) {
   }
   throw std::runtime_error("Could not read file " + filename);
 }
+
+std::string ref_name_for_gh_file(const std::string& filename) {
+  assert(ends_with(filename, ".gh"));
+  return filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
+}

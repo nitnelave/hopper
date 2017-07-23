@@ -14,3 +14,5 @@ bool starts_with(const std::string& haystack, const std::string& needle);
 bool ends_with(const std::string& haystack, const std::string& needle);
 
 std::string read_file(const std::string& filename);
+
+std::string ref_name_for_gh_file(const std::string& filename);

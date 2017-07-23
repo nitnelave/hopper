@@ -239,13 +239,13 @@ Variant<AssertionResult, std::string> get_transformed_ir(
 AssertionResult test_pretty_printer(const std::string& filename) {
   if (ends_with(filename, ".ref")) return AssertionSuccess();
   assert(ends_with(filename, ".gh"));
-  std::string ref_filename =
-      filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
   auto first_pass = get_pretty_printed_file(filename);
   if (first_pass.is<AssertionResult>())
     return first_pass.get_unchecked<AssertionResult>();
   const std::string& first_pass_result =
       first_pass.get_unchecked<std::string>();
+
+  std::string ref_filename = ref_name_for_gh_file(filename);
   auto ref_contents = read_file(ref_filename);
   if (ref_contents != first_pass_result)
     return AssertionFailure() << "Expected:\n"
@@ -271,18 +271,31 @@ template <TransformFunction transform>
 AssertionResult transformer_test(const std::string& filename) {
   if (ends_with(filename, ".ref")) return AssertionSuccess();
   assert(ends_with(filename, ".gh"));
-  std::string ref_filename =
-      filename.substr(0, filename.size() - sizeof(".gh") + 1) + ".ref";
+  std::string ref_filename = ref_name_for_gh_file(filename);
   Variant<AssertionResult, std::string> first_pass = transform(filename);
-  if (first_pass.is<AssertionResult>())
-    return first_pass.get_unchecked<AssertionResult>();
-  const std::string& first_pass_result =
-      first_pass.get_unchecked<std::string>();
-  auto ref_contents = read_file(ref_filename);
-  if (ref_contents != first_pass_result)
-    return AssertionFailure() << "Expected:\n"
-                              << ref_contents << "\nGot:\n"
-                              << first_pass_result;
+  auto expected_errors = parse_expected_errors(filename);
+  if (expected_errors.empty()) {
+    if (first_pass.is<AssertionResult>())
+      return first_pass.get_unchecked<AssertionResult>();
+    const std::string& first_pass_result =
+        first_pass.get_unchecked<std::string>();
+    auto ref_contents = read_file(ref_filename);
+    if (ref_contents != first_pass_result)
+      return AssertionFailure() << "Expected:\n"
+                                << ref_contents << "\nGot:\n"
+                                << first_pass_result;
+  } else {
+    if (!first_pass.is<AssertionResult>())
+      return AssertionFailure() << "Test passed, expected failure";
+    auto actual_message =
+        first_pass.get_unchecked<AssertionResult>().failure_message();
+    std::stringstream ss;
+    for (const auto& err : expected_errors) {
+      ss << err.message << " in " << err.range.to_string();
+    }
+    return AssertionResult(ss.str() == actual_message)
+           << "Expected: " + ss.str() + "\nGot:\n" + actual_message;
+  }
   return AssertionSuccess();
 }
 
