@@ -1,8 +1,14 @@
 #pragma once
 
+#include <functional>  // hash
+#include <string>
+
 #include "lexer/token.h"
+#include "util/option.h"
 
 namespace ast {
+
+class TypeDeclaration;
 
 class Identifier {
  public:
@@ -26,16 +32,41 @@ class Identifier {
   bool is_uppercase_;
 };
 
+inline bool operator==(const Identifier& left, const Identifier& right) {
+  return left.qualified_name() == right.qualified_name();
+}
+
 class Type {
  public:
   explicit Type(Identifier id) : id_(std::move(id)) {}
-  const Identifier& id() const { return id_; }
-  const lexer::Range& location() const { return id_.location(); }
+  explicit Type(const TypeDeclaration* decl) : type_(decl) {}
 
-  const std::string& to_string() const { return id_.to_string(); }
+  bool is_resolved() const { return type_.is_ok(); }
+
+  void set_resolution(const TypeDeclaration* decl) { type_ = decl; }
+
+  const TypeDeclaration* get_declaration() const {
+    assert(is_resolved());
+    return type_.value_or_die();
+  }
+
+  const Identifier& id() const;
+  const lexer::Range& location() const { return id().location(); }
+
+  const std::string& to_string() const { return id().to_string(); }
 
  private:
-  Identifier id_;
+  Option<Identifier> id_;
+  Option<const TypeDeclaration*> type_;
 };
 
 }  // namespace ast
+
+namespace std {
+template <>
+struct hash<ast::Identifier> {
+  size_t operator()(const ast::Identifier& id) const {
+    return std::hash<std::string>{}(id.qualified_name());
+  }
+};
+}  // namespace std

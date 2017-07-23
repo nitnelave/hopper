@@ -1,5 +1,6 @@
 target_sources(${GRACC_LIBRARY}
     PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/base_types.cc"
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/ast.h"
         "${CMAKE_CURRENT_LIST_DIR}/base_types.h"
@@ -12,6 +13,7 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/module.h"
         "${CMAKE_CURRENT_LIST_DIR}/return_statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/statement.h"
+        "${CMAKE_CURRENT_LIST_DIR}/type_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/value.h"
         "${CMAKE_CURRENT_LIST_DIR}/variable_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/variable_reference.h"
