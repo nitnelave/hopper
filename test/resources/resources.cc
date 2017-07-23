@@ -236,7 +236,7 @@ using TransformFunction =
     Variant<AssertionResult, std::string> (*)(const std::string&);
 
 template <TransformFunction transform>
-AssertionResult test_foo(const std::string& filename) {
+AssertionResult transformer_test(const std::string& filename) {
   if (ends_with(filename, ".ref")) return AssertionSuccess();
   assert(ends_with(filename, ".gh"));
   std::string ref_filename =
@@ -275,7 +275,7 @@ TEST(ResourcesTest, PrettyPrinter) {
 
 TEST(ResourcesTest, FunctionValueBodyTransformer) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  TestFunction tester = test_foo<get_transformed_pretty_printed_file<
+  TestFunction tester = transformer_test<get_transformed_pretty_printed_file<
       transform::FunctionValueBodyTransformer>>;
   EXPECT_TRUE(test::walk_directory(
       (FLAGS_test_resource_folder + "/transformer/function_value_body").c_str(),
@@ -284,8 +284,8 @@ TEST(ResourcesTest, FunctionValueBodyTransformer) {
 
 TEST(ResourcesTest, CodeGenerator) {
   EXPECT_FALSE(FLAGS_test_resource_folder.empty());
-  TestFunction tester =
-      test_foo<get_transformed_ir<transform::FunctionValueBodyTransformer>>;
+  TestFunction tester = transformer_test<
+      get_transformed_ir<transform::FunctionValueBodyTransformer>>;
   EXPECT_TRUE(test::walk_directory((FLAGS_test_resource_folder + "/ir").c_str(),
                                    tester));
 }
