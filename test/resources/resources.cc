@@ -12,6 +12,7 @@
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
 #include "transform/function_value_body.h"
+#include "visitor/error_visitor.h"
 
 DEFINE_string(test_resource_folder, "", "Location of the test resources");
 
@@ -156,10 +157,43 @@ Variant<AssertionResult, std::string> get_pretty_printed_file(
   return ss.str();
 }
 
-template <typename Transformer>
-void apply_transformer(ast::Module* ast) {
+using MaybeVisitorError = MaybeError<ast::ErrorList<>>;
+
+namespace internals {
+
+struct GeneralCaseTag {};
+struct SpecialCaseTag : GeneralCaseTag {};
+
+template <typename Transformer,
+          typename = decltype(std::declval<Transformer>().error_list())>
+void apply_transformer(ast::Module* ast, MaybeVisitorError* status,
+                       SpecialCaseTag /*unused*/) {
+  if (!status->is_ok()) return;
   Transformer transformer;
   ast->accept(transformer);
+  if (!transformer.error_list().errors().empty())
+    *status = MaybeVisitorError(transformer.error_list());
+}
+
+template <typename Transformer>
+void apply_transformer(ast::Module* ast, MaybeVisitorError* status,
+                       GeneralCaseTag /*unused*/) {
+  if (!status->is_ok()) return;
+  Transformer transformer;
+  ast->accept(transformer);
+}
+}  // namespace internals
+
+template <typename... Transformer>
+AssertionResult apply_all_transformers(ast::Module* ast) {
+  MaybeVisitorError status;
+  // Trick to run all the transformers, in order.
+  using swallow = int[];
+  (void)swallow{(internals::apply_transformer<Transformer>(
+                     ast, &status, internals::SpecialCaseTag()),
+                 0)...};
+  if (!status.is_ok()) return AssertionFailure() << status.error_or_die();
+  return AssertionSuccess();
 }
 
 template <typename... Transformer>
@@ -171,10 +205,9 @@ Variant<AssertionResult, std::string> get_transformed_pretty_printed_file(
   if (!result.is_ok())
     return AssertionFailure() << "Error while parsing " << filename
                               << result.to_string() << '\n';
-
-  using swallow = int[];
-  (void)swallow{
-      (apply_transformer<Transformer>(result.value_or_die().get()), 0)...};
+  auto status =
+      apply_all_transformers<Transformer...>(result.value_or_die().get());
+  if (!status) return status;
   std::stringstream ss;
   ast::PrettyPrinterVisitor visitor(ss);
   result.value_or_die()->accept(visitor);
@@ -191,10 +224,9 @@ Variant<AssertionResult, std::string> get_transformed_ir(
     return AssertionFailure() << "Error while parsing " << filename
                               << result.to_string() << '\n';
 
-  // Trick to run all the transformers, in order.
-  using swallow = int[];
-  (void)swallow{
-      (apply_transformer<Transformer>(result.value_or_die().get()), 0)...};
+  auto status =
+      apply_all_transformers<Transformer...>(result.value_or_die().get());
+  if (!status) return status;
   std::string ir;
   codegen::LLVMInitializer llvm_init;
   codegen::CodeGenerator generator(filename);
