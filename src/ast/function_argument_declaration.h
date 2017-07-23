@@ -2,6 +2,7 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
+#include "visitor/visitor.h"
 
 namespace ast {
 

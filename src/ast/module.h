@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ast/value.h"
+#include "visitor/visitor.h"
 
 namespace ast {
 

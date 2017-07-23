@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lexer/token.h"
+
 namespace ast {
 
 class Identifier {

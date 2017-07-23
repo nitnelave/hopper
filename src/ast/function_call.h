@@ -5,6 +5,7 @@
 
 #include "ast/base_types.h"
 #include "ast/value.h"
+#include "visitor/visitor.h"
 
 namespace ast {
 class FunctionCall : public Value {

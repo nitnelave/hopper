@@ -3,6 +3,7 @@
 #include "ast/ast.h"
 #include "ast/value.h"
 #include "lexer/operators.h"
+#include "visitor/visitor.h"
 
 namespace ast {
 

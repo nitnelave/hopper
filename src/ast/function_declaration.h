@@ -3,12 +3,12 @@
 #include <memory>
 #include <vector>
 
-#include "ast/ast.h"
 #include "ast/base_types.h"
 #include "ast/function_argument_declaration.h"
 #include "ast/statement.h"
 #include "ast/value.h"
 #include "util/option.h"
+#include "visitor/visitor.h"
 
 namespace ast {
 

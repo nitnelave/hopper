@@ -1,4 +1,4 @@
-#include "ast/ast.h"
+#include "visitor/visitor.h"
 #include "ast/binary_operation.h"
 #include "ast/function_declaration.h"
 #include "ast/module.h"

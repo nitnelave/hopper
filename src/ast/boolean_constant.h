@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast/value.h"
+#include "visitor/visitor.h"
 
 namespace ast {
 
