@@ -7,7 +7,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "ast/ast.h"
+#include "visitor/visitor.h"
 
 namespace codegen {
 
