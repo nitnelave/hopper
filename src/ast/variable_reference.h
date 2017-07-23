@@ -14,12 +14,17 @@ class VariableReference : public Value {
 
   const Identifier& id() const { return id_; }
 
+  bool is_resolved() const { return resolution_.is_ok(); }
+
+  Option<Declaration*>& resolution() { return resolution_; }
+
   ~VariableReference() override = default;
 
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
   Identifier id_;
+  Option<Declaration*> resolution_ = none;
 };
 
 }  // namespace ast
