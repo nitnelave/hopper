@@ -49,7 +49,9 @@ class VariableReference;
 // class WhileBlock;
 
 /// Abstract node classes.
-class Value;
+class Declaration;
 class Statement;
+class TypeDeclaration;
+class Value;
 
 }  // namespace ast
