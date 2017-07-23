@@ -33,9 +33,8 @@ testing::AssertionResult walk_directory(const char* folder,
         if (!res) return res;
         break;
       case S_IFREG:
-        std::cout << "Opening test file " << full_name << '\n';
         res = tester(full_name);
-        if (!res) return res;
+        if (!res) return res << "\nIn file: " << full_name << '\n';
         break;
       default:
         break;
