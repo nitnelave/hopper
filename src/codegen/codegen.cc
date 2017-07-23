@@ -48,10 +48,8 @@ CodeGenerator::CodeGenerator(const std::string& name)
   // Print an error and exit if we couldn't find the requested target.
   // This generally occurs if we've forgotten to initialise the
   // TargetRegistry or we have a bogus target triple.
-  if (target == nullptr) {
-    errs() << error;
+  if (target == nullptr)
     throw std::runtime_error("Could not find Target for code generation");
-  }
 
   auto cpu = "generic";
   auto features = "";
