@@ -1,0 +1,3 @@
+val b = c;
+//      ^
+// ERROR: No variable named `c'

@@ -5,6 +5,7 @@
 #include "gflags/gflags.h"
 #include "gtest/gtest.h"
 #include "lexer/lexer.h"
+#include "name_resolution/visitor.h"
 #include "parser/parser.h"
 #include "pretty_printer/pretty_printer.h"
 #include "resources/resources_utils.h"
@@ -333,6 +334,13 @@ TEST(ResourcesTest, CodeGenerator) {
   EXPECT_TRUE(
       test_all_files_in_dir<transformer_test<
           get_transformed_ir<transform::FunctionValueBodyTransformer>>>("ir"));
+}
+
+TEST(ResourcesTest, NameResolver) {
+  EXPECT_TRUE(
+      test_all_files_in_dir<transformer_test<
+          get_transformed_pretty_printed_file<name_resolution::NameResolver>>>(
+          "name_resolution"));
 }
 
 }  // namespace test
