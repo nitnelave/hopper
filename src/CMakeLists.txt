@@ -7,6 +7,7 @@ include(name_resolution/CMakeLists.txt)
 include(parser/CMakeLists.txt)
 include(pretty_printer/CMakeLists.txt)
 include(transform/CMakeLists.txt)
+include(typechecker/CMakeLists.txt)
 include(util/CMakeLists.txt)
 include(visitor/CMakeLists.txt)
 
