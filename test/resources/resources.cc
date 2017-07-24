@@ -14,6 +14,7 @@
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
 #include "transform/function_value_body.h"
+#include "typechecker/typechecker.h"
 #include "visitor/error_visitor.h"
 
 DEFINE_string(test_resource_folder, "", "Location of the test resources");
@@ -365,6 +366,13 @@ TEST(ResourcesTest, NameResolver) {
       test_all_files_in_dir<transformer_test<
           get_transformed_pretty_printed_file<name_resolution::NameResolver>>>(
           "name_resolution"));
+}
+
+TEST(ResourcesTest, TypeChecker) {
+  EXPECT_TRUE(
+      (test_all_files_in_dir<transformer_test<
+          get_transformed_pretty_printed_file<transform::FunctionValueBodyTransformer, name_resolution::NameResolver, typechecker::TypeChecker>>>(
+          "type_checker")));
 }
 
 }  // namespace test
