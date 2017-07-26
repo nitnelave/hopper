@@ -232,6 +232,7 @@ Parser::parse_function_declaration() {
     RETURN_IF_ERROR(get_token());
     RETURN_OR_MOVE(type, parse_type());
   }
+  auto body_location = scoped_location();
   if (current_token().type() == TokenType::ASSIGN) {
     // fun my_fun() = 3;
     RETURN_IF_ERROR(get_token());
@@ -247,7 +248,7 @@ Parser::parse_function_declaration() {
         location.range(), std::move(fun_name), std::move(arguments),
         std::move(type), std::move(body));
   }
-  return ParseError("Expected function body", location.error_range());
+  return ParseError("Expected function body", body_location.error_range());
 }
 
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
