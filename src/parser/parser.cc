@@ -201,7 +201,7 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
     return std::make_unique<ast::ReturnStatement>(location.range(),
                                                   std::move(value));
   }
-  return ParseError("Could not parse as statement", location.error_range());
+  return ParseError("Could not parse as a statement", location.error_range());
 }
 
 ErrorOr<std::vector<std::unique_ptr<ast::Statement>>>
