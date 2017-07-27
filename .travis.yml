@@ -102,7 +102,7 @@ matrix:
         - make -j${JOBS} check
         - make -j${JOBS} gracc_coverage
       after_success:
-        - coveralls --include ${TRAVIS_BUILD_DIR}/src --gcov-options '\-lp' --root ${TRAVIS_BUILD_DIR} --build-root ${BUILD_DIR} --gcov ${TRAVIS_BUILD_DIR}/tools/llvm-gcov
+        - coveralls --include ${TRAVIS_BUILD_DIR}/src --gcov-options '\-lp' --root ${TRAVIS_BUILD_DIR} --build-root ${BUILD_DIR} --gcov ${TRAVIS_BUILD_DIR}/tools/llvm-gcov --exclude-lines-pattern "assert\(false"
 
     # Job #2, clang-tidy
     - addons:
