@@ -54,9 +54,21 @@ class Parser {
   ErrorOr<std::vector<std::unique_ptr<ast::Statement>>> parse_statement_list();
   ErrorOrPtr<ast::Statement> parse_statement();
   ErrorOr<ast::Type> parse_type();
-  ErrorOr<ast::Identifier> parse_type_identifier(bool simple = false);
-  ErrorOr<ast::Identifier> parse_value_identifier(bool simple = false);
-  ErrorOr<Option<ast::Identifier>> parse_identifier(bool simple = false);
+
+  enum class IdentifierType {
+    // Unqualified identifier, such the name of a variable in a declaration.
+    // e.g. "foobar"
+    SIMPLE,
+    // Qualified identifier, with potential module/class prefix.
+    // e.g. "Module::foobar"
+    QUALIFIED,
+  };
+  ErrorOr<ast::Identifier> parse_type_identifier(
+      IdentifierType type = IdentifierType::SIMPLE);
+  ErrorOr<ast::Identifier> parse_value_identifier(
+      IdentifierType type = IdentifierType::SIMPLE);
+  ErrorOr<Option<ast::Identifier>> parse_identifier(
+      IdentifierType type = IdentifierType::SIMPLE);
 
   const lexer::Token& current_token() const;
   MaybeError<> get_token();
