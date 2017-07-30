@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "ast/ast.h"
 #include "ast/statement.h"
 #include "ast/value.h"

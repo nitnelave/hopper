@@ -13,8 +13,6 @@
 #include "ast/block.h"
 #include "lexer/operators.h"
 
-#include <iostream>
-
 #define EXPECT_TOKEN(TYPE, MESSAGE)                       \
   if (current_token().type() != (TYPE))                   \
     return ParseError((MESSAGE), location.error_range()); \
@@ -116,7 +114,7 @@ Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
  */
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
   auto location = scoped_location();
-  std::cout << "parse value no op: " << std::endl;
+
   if (current_token().type() == TokenType::OPEN_PAREN) {
     RETURN_IF_ERROR(get_token());
     RETURN_OR_MOVE(auto value, parse_value());
@@ -247,7 +245,6 @@ Parser::parse_variable_declaration() {
  */
 Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   auto location = scoped_location();
-  std::cout << "parse statement: "  << std::endl;
 
   if (current_token().type() == TokenType::RETURN) {
     RETURN_IF_ERROR(get_token());
@@ -255,7 +252,7 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
       RETURN_IF_ERROR(get_token());
       return std::make_unique<ast::ReturnStatement>(location.range(), none);
     }
-    std::cout << "return statement" << std::endl;
+
     // Otherwise, expect value.
     Option<std::unique_ptr<ast::Value>> value;
     RETURN_OR_MOVE(value, parse_value());
