@@ -29,6 +29,7 @@ class CodeGenerator : public ast::ASTVisitor {
   void visit(ast::FunctionDeclaration* node) override;
   void visit(ast::IntConstant* node) override;
   void visit(ast::ReturnStatement* node) override;
+  void visit(ast::ValueStatement* node) override;
   // void visit(ast::VariableDeclaration* node) override;
   // void visit(ast::VariableReference* node) override;
 

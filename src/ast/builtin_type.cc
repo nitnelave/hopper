@@ -1,4 +1,5 @@
 #include "ast/builtin_type.h"
+
 namespace ast {
 namespace internals {
 const lexer::Range builtin_range{"<builtin>", {0, 0}, {0, 0}};
@@ -37,6 +38,8 @@ const TypeDeclaration* width_to_int_type(IntWidth width) {
     case IntWidth::W_64:
       return &int64;
   }
+
+  return nullptr;
 }
 }  // namespace types
 }  // namespace ast

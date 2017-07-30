@@ -12,6 +12,10 @@ fun test() = 3 + b;
 fun test2() : Int {
   return true;
 }
+fun test3() {
+  test();
+  return;
+}
 )";
 
 TEST(Visitor, TestVisitor) {

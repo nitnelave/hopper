@@ -8,6 +8,17 @@ TEST(BuiltinType, BuiltinRange) {
             lexer::Range("<builtin>", zero_pos, zero_pos).to_string());
 }
 
+TEST(BuiltinType, UnknownIntType) {
+  auto should_be_none = ast::types::int_type_to_width(nullptr);
+  EXPECT_FALSE(should_be_none.is_ok());
+}
+
+TEST(BuiltinType, UnknownWitdth) {
+  auto should_be_nullptr =
+      ast::types::width_to_int_type(static_cast<ast::types::IntWidth>(-1));
+  EXPECT_EQ(should_be_nullptr, nullptr);
+}
+
 TEST(BuiltinType, IntTypeWidth) {
 #define INT_WIDTHS(DO) \
   DO(8)                \
