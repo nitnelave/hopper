@@ -51,7 +51,7 @@ class Parser {
   ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration();
   ErrorOrPtr<ast::Value> parse_value(int parent_precedence = 0);
   ErrorOrPtr<ast::Value> parse_value_no_operator();
-  ErrorOr<std::vector<std::unique_ptr<ast::Statement>>> parse_statement_list();
+  ErrorOrPtr<ast::Statement> parse_statement_list();
   ErrorOrPtr<ast::Statement> parse_statement();
   ErrorOr<ast::Type> parse_type();
 

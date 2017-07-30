@@ -12,16 +12,10 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
   if (node->type().is_ok())
     out_ << " : " << node->type().value_or_die().to_string();
   out_ << ' ';
+
   if (node->body().is<FunctionDeclaration::StatementsBody>()) {
-    out_ << "{\n";
-    ++indent_;
-    for (const auto& statement :
-         node->body().get_unchecked<FunctionDeclaration::StatementsBody>()) {
-      statement->accept(*this);
-      out_ << '\n';
-    }
+      node->body().get_unchecked<FunctionDeclaration::StatementsBody>()->accept(*this);
     --indent_;
-    print_indent() << "}";
   } else {
     out_ << "= ";
     node->body().get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);

@@ -8,6 +8,7 @@
 #include "ast/function_argument_declaration.h"
 #include "ast/statement.h"
 #include "ast/value.h"
+#include "ast/block.h"
 #include "util/option.h"
 
 namespace ast {
@@ -17,7 +18,7 @@ class FunctionDeclaration : public ASTNode {
   using ArgumentList =
       std::vector<std::unique_ptr<FunctionArgumentDeclaration>>;
   using ValueBody = std::unique_ptr<Value>;
-  using StatementsBody = std::vector<std::unique_ptr<Statement>>;
+  using StatementsBody = std::unique_ptr<Statement>;
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type,
                       StatementsBody body)
@@ -47,8 +48,7 @@ class FunctionDeclaration : public ASTNode {
 
   void accept_body(ASTVisitor& visitor) {
     if (body_.is<StatementsBody>()) {
-      for (const auto& statement : body_.get_unchecked<StatementsBody>())
-        statement->accept(visitor);
+        body_.get_unchecked<StatementsBody>()->accept(visitor);
     } else {
       body_.get_unchecked<ValueBody>()->accept(visitor);
     }

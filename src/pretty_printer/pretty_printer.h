@@ -11,6 +11,8 @@
 #include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
+#include "ast/block.h"
+#include "ast/valued_statement.h"
 
 namespace ast {
 class PrettyPrinterVisitor : public ASTVisitor {
@@ -64,6 +66,23 @@ class PrettyPrinterVisitor : public ASTVisitor {
       node->value().value_or_die()->accept(*this);
     }
     out_ << ';';
+    out_ << "\n";
+  }
+
+  void visit(ValuedStatement* node) override {
+      print_indent();
+      node->value()->accept(*this);
+      out_ << ";\n";
+  }
+
+  void visit(Block* node) override {
+      print_indent() << "{\n";
+      indent_++;
+      for (auto const& statement : node->statements()) {
+          statement->accept(*this);
+      }
+      indent_--;
+      print_indent() << "}\n";
   }
 
  private:

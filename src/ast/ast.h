@@ -43,6 +43,7 @@ class ReturnStatement;
 // class UnaryOp;
 class VariableDeclaration;
 class VariableReference;
+class Block;
 // class WhenBlock;
 // class WhenCase;
 // class WhileBlock;
@@ -50,6 +51,7 @@ class VariableReference;
 /// Abstract node classes.
 class Value;
 class Statement;
+class ValuedStatement;
 
 class ASTVisitor {
  public:
@@ -64,6 +66,8 @@ class ASTVisitor {
   virtual void visit(ReturnStatement* node);
   virtual void visit(VariableDeclaration* node);
   virtual void visit(VariableReference* node);
+  virtual void visit(Block* node);
+  virtual void visit(ValuedStatement* node);
 };
 
 }  // namespace ast

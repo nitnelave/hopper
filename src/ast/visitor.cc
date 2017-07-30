@@ -4,6 +4,8 @@
 #include "ast/module.h"
 #include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
+#include "ast/block.h"
+#include "ast/valued_statement.h"
 
 namespace ast {
 
@@ -33,5 +35,11 @@ void ASTVisitor::visit(VariableDeclaration* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }
 void ASTVisitor::visit(VariableReference* /*unused*/) {}
+
+void ASTVisitor::visit(Block* /* unused */) {}
+
+void ASTVisitor::visit(ValuedStatement* node) {
+  node->value()->accept(*this);
+}
 
 }  // namespace ast
