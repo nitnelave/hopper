@@ -99,7 +99,7 @@ struct ValueTraits {
   static constexpr TypeIndex index =
       is_direct ? direct_index : ConvertibleType<ValueType, Types...>::index;
   static constexpr bool is_valid = index != invalid_value;
-  static constexpr TypeIndex tindex = is_valid ? sizeof...(Types)-index : 0;
+  static constexpr TypeIndex tindex = is_valid ? sizeof...(Types) - index : 0;
   using TargetType =
       typename std::tuple_element<tindex, std::tuple<void, Types...>>::type;
 };
@@ -195,7 +195,7 @@ class Variant {
 
  public:
   Variant() noexcept(std::is_nothrow_default_constructible<FirstType>::value)
-      : type_index_(sizeof...(Types)-1) {
+      : type_index_(sizeof...(Types) - 1) {
     static_assert(std::is_default_constructible<FirstType>::value,
                   "First type in Variant must be default constructible to "
                   "allow default construction of Variant.");
@@ -280,9 +280,10 @@ class Variant {
     return *this;
   }
 
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   bool is() const {
     return type_index_ == internals::DirectType<T, Types...>::index;
   }
@@ -298,27 +299,30 @@ class Variant {
   }
 
   // get<T>()
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   T& get() {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return get_unchecked<T>();  // NOLINT
     throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
   }
 
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   const T& get() const {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return get_unchecked<T>();  // NOLINT
     throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
   }
 
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   T consume() {
     if (type_index_ == internals::DirectType<T, Types...>::index) {
       return consume_unchecked<T>();
@@ -327,23 +331,26 @@ class Variant {
   }
 
   // get_unchecked<T>()
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   T& get_unchecked() {
     return *reinterpret_cast<T*>(&data_);  // NOLINT
   }
 
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   const T& get_unchecked() const {
     return *reinterpret_cast<const T*>(&data_);  // NOLINT
   }
 
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   T consume_unchecked() {
     T res = std::move(*reinterpret_cast<T*>(&data_));  // NOLINT
     HelperType::destroy(type_index_, &data_);
@@ -422,15 +429,16 @@ class Variant {
   }
 
   int which() const noexcept {
-    return static_cast<int>(sizeof...(Types)-type_index_ - 1);
+    return static_cast<int>(sizeof...(Types) - type_index_ - 1);
   }
 
-  template <typename T, typename std::enable_if<
-                            (internals::DirectType<T, Types...>::index !=
-                             internals::invalid_value)>::type* = nullptr>
+  template <
+      typename T,
+      typename std::enable_if<(internals::DirectType<T, Types...>::index !=
+                               internals::invalid_value)>::type* = nullptr>
   static constexpr int which() noexcept {
-    return static_cast<int>(
-        sizeof...(Types)-internals::DirectType<T, Types...>::index - 1);
+    return static_cast<int>(sizeof...(Types) -
+                            internals::DirectType<T, Types...>::index - 1);
   }
 
   ~Variant() noexcept  // no-throw destructor

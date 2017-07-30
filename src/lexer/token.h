@@ -208,9 +208,7 @@ struct Range {
       : file(std::move(file)), begin{line1, col1}, end{line2, col2} {}
 
   Range(std::string file, Position pos1, Position pos2)  // NOLINT: move
-      : file(std::move(file)),
-        begin(pos1),
-        end(pos2) {}
+      : file(std::move(file)), begin(pos1), end(pos2) {}
 
   Range(const Location& loc_begin, const Location& loc_end)
       : file(loc_begin.file),

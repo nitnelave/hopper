@@ -20,4 +20,3 @@ class ValuedStatement : public Statement {
 };
 
 }  // namespace ast
-

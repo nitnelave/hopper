@@ -4,15 +4,15 @@
 
 #include "ast/ast.h"
 #include "ast/binary_operation.h"
+#include "ast/block.h"
 #include "ast/boolean_constant.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/return_statement.h"
+#include "ast/valued_statement.h"
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
-#include "ast/block.h"
-#include "ast/valued_statement.h"
 
 namespace ast {
 class PrettyPrinterVisitor : public ASTVisitor {
@@ -70,19 +70,19 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(ValuedStatement* node) override {
-      print_indent();
-      node->value()->accept(*this);
-      out_ << ";\n";
+    print_indent();
+    node->value()->accept(*this);
+    out_ << ";\n";
   }
 
   void visit(Block* node) override {
-      print_indent() << "{\n";
-      indent_++;
-      for (auto const& statement : node->statements()) {
-          statement->accept(*this);
-      }
-      indent_--;
-      print_indent() << "}\n";
+    print_indent() << "{\n";
+    indent_++;
+    for (auto const& statement : node->statements()) {
+      statement->accept(*this);
+    }
+    indent_--;
+    print_indent() << "}\n";
   }
 
  private:

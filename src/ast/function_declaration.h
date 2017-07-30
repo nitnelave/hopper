@@ -5,10 +5,10 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
+#include "ast/block.h"
 #include "ast/function_argument_declaration.h"
 #include "ast/statement.h"
 #include "ast/value.h"
-#include "ast/block.h"
 #include "util/option.h"
 
 namespace ast {
@@ -48,7 +48,7 @@ class FunctionDeclaration : public ASTNode {
 
   void accept_body(ASTVisitor& visitor) {
     if (body_.is<StatementsBody>()) {
-        body_.get_unchecked<StatementsBody>()->accept(visitor);
+      body_.get_unchecked<StatementsBody>()->accept(visitor);
     } else {
       body_.get_unchecked<ValueBody>()->accept(visitor);
     }
