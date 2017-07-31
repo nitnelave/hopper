@@ -6,6 +6,7 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
+#include "ast/block_statement.h"
 #include "error/error.h"
 #include "lexer/lexer.h"
 #include "parser/scoped_location.h"
@@ -51,7 +52,7 @@ class Parser {
   ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration();
   ErrorOrPtr<ast::Value> parse_value(int parent_precedence = 0);
   ErrorOrPtr<ast::Value> parse_value_no_operator();
-  ErrorOrPtr<ast::Statement> parse_statement_list();
+  ErrorOrPtr<ast::BlockStatement> parse_statement_list();
   ErrorOrPtr<ast::Statement> parse_statement();
   ErrorOr<ast::Type> parse_type();
 

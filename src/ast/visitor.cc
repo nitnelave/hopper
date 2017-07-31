@@ -1,11 +1,11 @@
 #include "ast/ast.h"
 #include "ast/binary_operation.h"
+#include "ast/block_statement.h"
 #include "ast/function_declaration.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
+#include "ast/value_statement.h"
 #include "ast/variable_declaration.h"
-#include "ast/block.h"
-#include "ast/valued_statement.h"
 
 namespace ast {
 
@@ -36,9 +36,13 @@ void ASTVisitor::visit(VariableDeclaration* node) {
 }
 void ASTVisitor::visit(VariableReference* /*unused*/) {}
 
-void ASTVisitor::visit(Block* /* unused */) {}
+void ASTVisitor::visit(BlockStatement* node) {
+    for (const auto& statement : node->statements()) {
+        statement->accept(*this);
+    }
+}
 
-void ASTVisitor::visit(ValuedStatement* node) {
+void ASTVisitor::visit(ValueStatement* node) {
   node->value()->accept(*this);
 }
 

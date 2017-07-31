@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ast/ast.h"
-#include "ast/statement.h"
 
 namespace ast {
 

@@ -41,9 +41,10 @@ class Module;
 class ReturnStatement;
 // class ScopeBlock;
 // class UnaryOp;
+class BlockStatement;
+class ValueStatement;
 class VariableDeclaration;
 class VariableReference;
-class Block;
 // class WhenBlock;
 // class WhenCase;
 // class WhileBlock;
@@ -51,23 +52,22 @@ class Block;
 /// Abstract node classes.
 class Value;
 class Statement;
-class ValuedStatement;
 
 class ASTVisitor {
  public:
   virtual void visit(Assignment* node);
-  virtual void visit(BooleanConstant* node);
   virtual void visit(BinaryOp* node);
+  virtual void visit(BlockStatement* node);
+  virtual void visit(BooleanConstant* node);
   virtual void visit(FunctionArgumentDeclaration* node);
   virtual void visit(FunctionCall* node);
   virtual void visit(FunctionDeclaration* node);
   virtual void visit(IntConstant* node);
   virtual void visit(Module* node);
   virtual void visit(ReturnStatement* node);
+  virtual void visit(ValueStatement* node);
   virtual void visit(VariableDeclaration* node);
   virtual void visit(VariableReference* node);
-  virtual void visit(Block* node);
-  virtual void visit(ValuedStatement* node);
 };
 
 }  // namespace ast

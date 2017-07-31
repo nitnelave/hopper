@@ -5,9 +5,8 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
-#include "ast/block.h"
+#include "ast/block_statement.h"
 #include "ast/function_argument_declaration.h"
-#include "ast/statement.h"
 #include "ast/value.h"
 #include "util/option.h"
 
@@ -18,7 +17,7 @@ class FunctionDeclaration : public ASTNode {
   using ArgumentList =
       std::vector<std::unique_ptr<FunctionArgumentDeclaration>>;
   using ValueBody = std::unique_ptr<Value>;
-  using StatementsBody = std::unique_ptr<Statement>;
+  using StatementsBody = std::unique_ptr<BlockStatement>;
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type,
                       StatementsBody body)

@@ -11,8 +11,7 @@ class BlockStatement : public Statement {
  public:
   using StatementCollection = std::vector<std::unique_ptr<Statement>>;
 
-  BlockStatement(lexer::Range location,
-        StatementCollection statements)
+  BlockStatement(lexer::Range location, StatementCollection statements)
       : Statement(std::move(location)), statements_(std::move(statements)) {}
 
   ~BlockStatement() override = default;

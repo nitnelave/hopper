@@ -9,8 +9,8 @@
 #include "ast/return_statement.h"
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
-#include "ast/valued_statement.h"
-#include "ast/block.h"
+#include "ast/value_statement.h"
+#include "ast/block_statement.h"
 #include "lexer/operators.h"
 
 #define EXPECT_TOKEN(TYPE, MESSAGE)                       \
@@ -28,9 +28,9 @@ Parser::Parser(Lexer* lexer) : lexer_(lexer) {}
 
 ScopedLocation Parser::scoped_location() const { return ScopedLocation(this); }
 
-/*
- * <Identifier>
- */
+///
+/// <Identifier>
+///
 ErrorOr<ast::Identifier> Parser::parse_type_identifier(IdentifierType type) {
   auto location = scoped_location();
   RETURN_OR_MOVE(Option<Identifier> id, parse_identifier(type));
@@ -40,9 +40,9 @@ ErrorOr<ast::Identifier> Parser::parse_type_identifier(IdentifierType type) {
   return id.value_or_die();
 }
 
-/*
- * <Identifier>
- */
+///
+/// <Identifier>
+///
 ErrorOr<ast::Identifier> Parser::parse_value_identifier(IdentifierType type) {
   auto location = scoped_location();
   RETURN_OR_MOVE(Option<Identifier> id, parse_identifier(type));
@@ -52,9 +52,9 @@ ErrorOr<ast::Identifier> Parser::parse_value_identifier(IdentifierType type) {
   return id.value_or_die();
 }
 
-/*
- * <text>[::<text>][<VALUE>::...]
- */
+///
+/// (::)?[<Upper>::]*(<Upper>|<lower>)
+///
 ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(IdentifierType type) {
   auto location = scoped_location();
   bool absolute = false;
@@ -91,17 +91,17 @@ ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(IdentifierType type) {
   return none;
 }
 
-/*
- * <Identifier>
- */
+///
+/// <Identifier>
+///
 ErrorOr<ast::Type> Parser::parse_type() {
   RETURN_OR_MOVE(Identifier id, parse_type_identifier());
   return Type(id);
 }
 
-/*
- * <intValue>
- */
+///
+/// <intValue>
+///
 Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
   auto location = scoped_location();
   auto value = current_token().int_value();
@@ -109,9 +109,9 @@ Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
   return std::make_unique<ast::IntConstant>(location.range(), value);
 }
 
-/*
- * [(<Value>)|true|false|<IntConstant>|<Identifier>]
- */
+///
+/// [(<Value>)|true|false|<IntConstant>|<Identifier>]
+///
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
   auto location = scoped_location();
 
@@ -144,15 +144,15 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
   return ParseError("Expected value", location.error_range());
 }
 
-/*
- * <ValueNoOp> [(... <Value> COMMA ... )...] [ <Token> <Value> ]...
- */
+///
+/// <ValueNoOp> [(... <Value> COMMA ... )...] [ <Token> <Value> ]...
+///
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
   auto location = scoped_location();
   RETURN_OR_MOVE(auto value, parse_value_no_operator());
 
   // Parse function calls.
-  if (current_token().type() == TokenType::OPEN_PAREN) {
+  while (current_token().type() == TokenType::OPEN_PAREN) {
     RETURN_IF_ERROR(get_token());
     std::vector<std::unique_ptr<ast::Value>> arguments;
     while (current_token().type() != TokenType::CLOSE_PAREN) {
@@ -205,10 +205,10 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
   return std::move(value);
 }
 
-/*
- * Variable declaration:
- * (val|mut) <variable_name> [: <type>] [= <value>];
- */
+///
+/// Variable declaration:
+/// (val|mut) <variable_name> [: <type>] [= <value>];
+///
 Parser::ErrorOrPtr<ast::VariableDeclaration>
 Parser::parse_variable_declaration() {
   auto location = scoped_location();
@@ -233,20 +233,25 @@ Parser::parse_variable_declaration() {
     RETURN_OR_MOVE(value, parse_value());
   }
 
+  EXPECT_TOKEN(TokenType::SEMICOLON,
+          "Expected `;' at the end of a variable declaration");
+
   return std::make_unique<ast::VariableDeclaration>(
       location.range(), variable_name, std::move(type), std::move(value), mut);
 }
 
-/*
- * Statement:
- * ;
- * value;
- * return [value];
- */
+///
+/// Statement:
+/// value;
+/// return [value];
+///
 Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   auto location = scoped_location();
 
-  if (current_token().type() == TokenType::RETURN) {
+  if (current_token().type() == TokenType::OPEN_BRACE) {
+    RETURN_OR_MOVE(auto block, parse_statement_list());
+    return std::move(block);
+  } else if (current_token().type() == TokenType::RETURN) {
     RETURN_IF_ERROR(get_token());
     if (current_token().type() == TokenType::SEMICOLON) {
       RETURN_IF_ERROR(get_token());
@@ -264,49 +269,44 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
       RETURN_OR_MOVE(auto value, parse_value());
       EXPECT_TOKEN(TokenType::SEMICOLON,
               "Expected `;' at the end of the statement");
-      return std::make_unique<ast::ValuedStatement>(
+      return std::make_unique<ast::ValueStatement>(
               location.range(),
               std::move(value));
   }
   return ParseError("Could not parse as a statement", location.error_range());
 }
 
-/*
- * Statement list:
- * <Statement>
- * { <StatementList> ... }
- */
-Parser::ErrorOrPtr<ast::Statement>
+///
+/// Statement list:
+/// { <Statement> ... }
+///
+Parser::ErrorOrPtr<ast::BlockStatement>
 Parser::parse_statement_list() {
   auto location = scoped_location();
 
-  if (current_token().type() == TokenType::OPEN_BRACE) {
-      std::vector<std::unique_ptr<ast::Statement>> statements;
-      RETURN_IF_ERROR(get_token());
+  EXPECT_TOKEN(TokenType::OPEN_BRACE,
+          "Expected '{'");
 
-      while (current_token().type() != TokenType::CLOSE_BRACE) {
-          RETURN_OR_MOVE(auto sub_statement, parse_statement_list());
+  ast::BlockStatement::StatementCollection statements;
+  while (current_token().type() != TokenType::CLOSE_BRACE) {
+      RETURN_OR_MOVE(auto sub_statement, parse_statement());
 
-          statements.push_back(std::move(sub_statement));
-      }
-
-      EXPECT_TOKEN(TokenType::CLOSE_BRACE,
-              "Expected `}' to match the opening brace");
-
-      return std::make_unique<ast::Block>(
-              location.range(),
-              std::move(statements)
-              );
-  } else {
-      RETURN_OR_MOVE(auto statement, parse_statement());
-      return std::move(statement);
+      statements.push_back(std::move(sub_statement));
   }
+
+  EXPECT_TOKEN(TokenType::CLOSE_BRACE,
+          "Expected `}' to match the opening brace");
+
+  return std::make_unique<ast::BlockStatement>(
+          location.range(),
+          std::move(statements)
+          );
 }
 
-/*
- * Function declaration:
- * fun <ValueIdentifier> () [: <Type>] (= <Value>;|{<FunctionDeclaration>)
- */
+///
+/// Function declaration:
+/// fun <ValueIdentifier> () [: <Type>] (= <Value>;|<BlockStatement>)
+///
 Parser::ErrorOrPtr<ast::FunctionDeclaration>
 Parser::parse_function_declaration() {
   auto location = scoped_location();
@@ -323,26 +323,32 @@ Parser::parse_function_declaration() {
     RETURN_OR_MOVE(type, parse_type());
   }
 
-  if (current_token().type() == TokenType::ASSIGN) {
-    // fun my_fun() = 3;
-    RETURN_IF_ERROR(get_token());
-    RETURN_OR_MOVE(auto value, parse_value());
-    return std::make_unique<ast::FunctionDeclaration>(
-        location.range(), std::move(fun_name), std::move(arguments),
-        std::move(type), std::move(value));
-  } else {
+  auto body_location = scoped_location();
+  if (current_token().type() == TokenType::OPEN_BRACE) {
     RETURN_OR_MOVE(auto body, parse_statement_list());
     return std::make_unique<ast::FunctionDeclaration>(
         location.range(), std::move(fun_name), std::move(arguments),
         std::move(type), std::move(body));
   }
 
-  return ParseError("Expected ; at the end of function forwarding", location.error_range());
+  if (current_token().type() == TokenType::ASSIGN) {
+    // fun my_fun() = 3;
+    RETURN_IF_ERROR(get_token());
+    RETURN_OR_MOVE(auto value, parse_value());
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+            "Missing ';' at the end of function declaration")
+
+    return std::make_unique<ast::FunctionDeclaration>(
+        location.range(), std::move(fun_name), std::move(arguments),
+        std::move(type), std::move(value));
+  }
+
+  return ParseError("Expected function body", body_location.error_range());
 }
 
-/*
- * <VariableDeclaration>|<FunctionDeclaration>
- */
+///
+/// <VariableDeclaration>|<FunctionDeclaration>
+///
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   auto location = scoped_location();
   if (current_token().type() == TokenType::VAL ||

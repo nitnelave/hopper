@@ -5,7 +5,7 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/ast.h"
         "${CMAKE_CURRENT_LIST_DIR}/base_types.h"
         "${CMAKE_CURRENT_LIST_DIR}/binary_operation.h"
-        "${CMAKE_CURRENT_LIST_DIR}/block.h"
+        "${CMAKE_CURRENT_LIST_DIR}/block_statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/boolean_constant.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_argument_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_call.h"
@@ -15,7 +15,7 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/return_statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/value.h"
-        "${CMAKE_CURRENT_LIST_DIR}/valued_statement.h"
+        "${CMAKE_CURRENT_LIST_DIR}/value_statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/variable_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/variable_reference.h"
     )
