@@ -7,11 +7,11 @@ then
 fi
 
 CURRENT_DIR=$(dirname "$0")
-PROJECT_DIR=$(readlink -f "${CURRENT_DIR}/..")
+PROJECT_DIR=${CURRENT_DIR}/..
 
 FORMAT_CMD="clang-format -style=Google"
 
-FIND_CMD="find ${PROJECT_DIR}/src/ ${PROJECT_DIR}/test/ -regex '.*\.\(h\|cc\)' -type f"
+FIND_CMD="find ${PROJECT_DIR}/src/ ${PROJECT_DIR}/test/ -name '*.cc' -or -name '*.h'  -type f"
 
 if [ "$#" -eq 1 ]
 then
