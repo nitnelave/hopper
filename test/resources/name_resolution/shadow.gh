@@ -1,0 +1,4 @@
+val a = 3;
+val a = 2;
+// TODO: enable warning check
+// WARNING: Shadowing of a previously declared variable: a

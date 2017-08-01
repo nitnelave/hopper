@@ -1,0 +1,3 @@
+val a : Fail;
+//      ^^^^
+// ERROR: Could not resolve type: Fail
