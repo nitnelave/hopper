@@ -3,6 +3,7 @@ find_package(Threads REQUIRED)
 add_executable(${PROJECT_TEST_NAME} "main.cc")
 
 
+include(ast/CMakeLists.txt)
 include(codegen/CMakeLists.txt)
 include(error/CMakeLists.txt)
 include(lexer/CMakeLists.txt)

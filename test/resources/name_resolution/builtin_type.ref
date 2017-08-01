@@ -1,0 +1,5 @@
+val a1 : Bool;
+val a2 : Int8;
+val a3 : Int16;
+val a4 : Int32;
+val a5 : Int64;
