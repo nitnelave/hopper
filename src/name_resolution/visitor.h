@@ -4,6 +4,7 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
+#include "ast/builtin_type.h"
 #include "util/option.h"
 #include "visitor/error_visitor.h"
 
@@ -12,7 +13,11 @@ class NameResolver : public ast::ASTVisitor {
  public:
   using ErrorList = ast::ErrorList<ast::VisitorError>;
   explicit NameResolver(Option<NameResolver*> parent = none)
-      : parent_(std::move(parent)) {}
+      : parent_(std::move(parent)) {
+    for (auto type : ast::types::builtin_types) {
+      type_map_.emplace(type->id(), type);
+    }
+  }
 
   const ErrorList& error_list() const { return error_list_; }
 
