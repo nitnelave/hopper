@@ -2,14 +2,16 @@ BUILD_FOLDER=build
 TARGET=gracc
 NINJA=$(shell which ninja 2>&1)
 ifneq (${NINJA}, )
-  BUILD_COMMAND=${NINJA}
+  BUILD_BINARY=${NINJA}
   CMAKE_FLAGS=-GNinja -DCMAKE_MAKE_PROGRAM="${NINJA}"
   BUILD_FILE=${BUILD_FOLDER}/build.ninja
 else
-  BUILD_COMMAND=make
+  BUILD_BINARY=make
   CMAKE_FLAGS=""
   BUILD_FILE=${BUILD_FOLDER}/Makefile
 endif
+
+BUILD_COMMAND=${BUILD_BINARY} -j8
 
 CMAKE_FLAGS+="-DCMAKE_BUILD_TYPE=Debug"
 
@@ -31,5 +33,10 @@ test: cmake
 
 check: cmake
 	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} check
+
+coverage: BUILD_FOLDER=coverage
+
+coverage: test
+	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} gracc_coverage
 
 .PHONY: all ${TARGET} cmake test check
