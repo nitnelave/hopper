@@ -12,8 +12,6 @@
 
 // LCOV_EXCL_START: main is not tested
 
-DEFINE_bool(success, false, "Whether we successfully added a flag");
-
 std::string ir_filename(const std::string& filename) {
   auto last = filename.find_last_of(".");
   if (last == std::string::npos)
@@ -24,8 +22,6 @@ std::string ir_filename(const std::string& filename) {
 
 int main(int argc, char* argv[]) {
   gflags::GFlagsWrapper w(&argc, &argv, true);
-
-  if (FLAGS_success) std::cout << "Success!\n";
 
   codegen::LLVMInitializer llvm_initializer;
 
