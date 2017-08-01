@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "ast/type_declaration.h"
 #include "visitor/visitor.h"
 
@@ -27,12 +29,16 @@ enum class IntWidth {
   W_64,
 };
 
-extern const BuiltinType void_type;
-extern const BuiltinType boolean;
-extern const BuiltinType int8;
-extern const BuiltinType int16;
-extern const BuiltinType int32;
-extern const BuiltinType int64;
+// Conceptually they are const, but in practice we need them mutable for the
+// visitors.
+extern BuiltinType void_type;
+extern BuiltinType boolean;
+extern BuiltinType int8;
+extern BuiltinType int16;
+extern BuiltinType int32;
+extern BuiltinType int64;
+
+extern const std::vector<BuiltinType*> builtin_types;
 
 const TypeDeclaration* width_to_int_type(IntWidth width);
 Option<IntWidth> int_type_to_width(const TypeDeclaration* type);

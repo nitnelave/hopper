@@ -8,12 +8,15 @@ inline BuiltinType make_builtin(const std::string& name) {
 }  // namespace internals
 
 namespace types {
-const BuiltinType void_type = internals::make_builtin("Void");
-const BuiltinType boolean = internals::make_builtin("Bool");
-const BuiltinType int8 = internals::make_builtin("Int8");
-const BuiltinType int16 = internals::make_builtin("Int16");
-const BuiltinType int32 = internals::make_builtin("Int32");
-const BuiltinType int64 = internals::make_builtin("Int64");
+BuiltinType void_type = ::ast::internals::make_builtin("Void");
+BuiltinType boolean = ::ast::internals::make_builtin("Bool");
+BuiltinType int8 = ::ast::internals::make_builtin("Int8");
+BuiltinType int16 = ::ast::internals::make_builtin("Int16");
+BuiltinType int32 = ::ast::internals::make_builtin("Int32");
+BuiltinType int64 = ::ast::internals::make_builtin("Int64");
+const std::vector<BuiltinType*> builtin_types = {
+    &void_type, &boolean, &int8, &int16, &int32, &int64,
+};
 
 Option<IntWidth> int_type_to_width(const TypeDeclaration* type) {
   if (type == &int64) return IntWidth::W_64;
