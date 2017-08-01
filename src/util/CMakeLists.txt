@@ -1,6 +1,7 @@
 target_sources(${GRACC_LIBRARY}
     PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/logging.cc"
+        "${CMAKE_CURRENT_LIST_DIR}/gflags_utils.cc"
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/gflags_utils.h"
         "${CMAKE_CURRENT_LIST_DIR}/logging.h"
