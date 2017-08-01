@@ -2,6 +2,8 @@
 
 #include <gflags/gflags.h>
 
+#include "util/logging.h"
+
 namespace gflags {
 
 // LCOV_EXCL_START
@@ -12,6 +14,7 @@ class GFlagsWrapper {
  public:
   GFlagsWrapper(int* argc, char*** argv, bool keep_rest) {
     ParseCommandLineFlags(argc, argv, keep_rest);
+    initialize_logging();
   }
 
   ~GFlagsWrapper() { gflags::ShutDownCommandLineFlags(); }
