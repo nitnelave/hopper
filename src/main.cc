@@ -9,6 +9,7 @@
 #include "pretty_printer/pretty_printer.h"
 #include "transform/function_value_body.h"
 #include "util/gflags_utils.h"
+#include "util/logging.h"
 
 // LCOV_EXCL_START: main is not tested
 
@@ -20,7 +21,18 @@ std::string ir_filename(const std::string& filename) {
   return filename.substr(0, last + 1) + "ll";
 }
 
+std::string get_usage_string(const std::string& program_name) {
+  return std::string(R"(gHopper compiler.
+Version )") +
+         ghopper_version_string + R"(
+
+Usage: )" +
+         program_name + R"( [FLAGS] SOURCES)";
+}
+
 int main(int argc, char* argv[]) {
+  gflags::SetUsageMessage(get_usage_string(basename(argv[0])));  // NOLINT
+  gflags::SetVersionString(ghopper_version_string);
   gflags::GFlagsWrapper w(&argc, &argv, true);
 
   codegen::LLVMInitializer llvm_initializer;
@@ -28,6 +40,7 @@ int main(int argc, char* argv[]) {
   int exit_code = 0;
   for (int i = 1; i < argc; ++i) {
     std::string input = argv[i];  // NOLINT: "pointer arithmetics"
+    log(DEBUG) << "Processing file " << input;
     auto lexer = lexer::from_file(input);
     auto parser = parser::Parser(&lexer);
     auto result = parser.parse();

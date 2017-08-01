@@ -1,3 +1,10 @@
 // the configured options and settings for Hopper
-#define Hopper_VERSION_MAJOR @Hopper_VERSION_MAJOR@
-#define Hopper_VERSION_MINOR @Hopper_VERSION_MINOR@
+#include <string>
+
+constexpr int ghopper_version_major = @Hopper_VERSION_MAJOR@;
+constexpr int ghopper_version_minor = @Hopper_VERSION_MINOR@;
+constexpr int ghopper_version_patch = @Hopper_VERSION_PATCH@;
+
+constexpr char const* ghopper_release_marker = "@Hopper_RELEASE_MARKER@";
+
+constexpr char const* ghopper_version_string = "@Hopper_VERSION_MAJOR@.@Hopper_VERSION_MINOR@.@Hopper_VERSION_PATCH@@Hopper_RELEASE_MARKER@";
