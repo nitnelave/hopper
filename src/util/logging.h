@@ -4,6 +4,8 @@
 
 #include "gflags/gflags.h"
 
+// LCOV_EXCL_START: logging is not tested
+
 DECLARE_int32(verbosity);
 
 enum Severity {
@@ -68,3 +70,4 @@ internals::Logger check_or_die(bool condition);
 #else
 #define DCHECK(CONDITION) no_log()
 #endif
+// LCOV_EXCL_STOP

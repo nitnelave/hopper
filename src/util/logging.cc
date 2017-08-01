@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+// LCOV_EXCL_START: logging is not tested
+
 DEFINE_bool(logtostderr, false, "If true, debug messages go to stderr");
 DEFINE_int32(
     verbosity, WARNING,
@@ -50,3 +52,4 @@ internals::Logger log_fatal() {
 internals::Logger check(bool condition) {
   return internals::Logger(std::cerr, !condition, !condition);
 }
+// LCOV_EXCL_STOP
