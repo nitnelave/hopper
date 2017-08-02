@@ -1,0 +1,5 @@
+fun test() = 2 + 3;
+fun test2() = true || false;
+val a : Int32 = 2;
+val b : Int16 = 3;
+fun test3() = a + b;
