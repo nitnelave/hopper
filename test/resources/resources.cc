@@ -171,14 +171,19 @@ AssertionResult test_parser_resource(const std::string& filename) {
   return AssertionSuccess();
 }
 
+AssertionResult parsing_error_message(const std::string& filename,
+                                      const std::string& error) {
+  return AssertionFailure() << "Error while parsing " << filename << ":\n"
+                            << error << '\n';
+}
+
 Variant<AssertionResult, std::string> get_pretty_printed_file(
     const std::string& filename) {
   lexer::Lexer lex = lexer::from_file(filename);
   parser::Parser parser(&lex);
   auto result = parser.parse();
   if (!result.is_ok())
-    return AssertionFailure() << "Error while parsing " << filename
-                              << result.to_string() << '\n';
+    return parsing_error_message(filename, result.to_string());
   std::stringstream ss;
   ast::PrettyPrinterVisitor visitor(ss);
   result.value_or_die()->accept(visitor);
@@ -231,8 +236,7 @@ Variant<AssertionResult, std::string> get_transformed_pretty_printed_file(
   parser::Parser parser(&lex);
   auto result = parser.parse();
   if (!result.is_ok())
-    return AssertionFailure() << "Error while parsing " << filename
-                              << result.to_string() << '\n';
+    return parsing_error_message(filename, result.to_string());
   auto status =
       apply_all_transformers<Transformer...>(result.value_or_die().get());
   if (!status) return status;
@@ -249,8 +253,7 @@ Variant<AssertionResult, std::string> get_transformed_ir(
   parser::Parser parser(&lex);
   auto result = parser.parse();
   if (!result.is_ok())
-    return AssertionFailure() << "Error while parsing " << filename
-                              << result.to_string() << '\n';
+    return parsing_error_message(filename, result.to_string());
 
   auto status =
       apply_all_transformers<Transformer...>(result.value_or_die().get());
@@ -369,10 +372,11 @@ TEST(ResourcesTest, NameResolver) {
 }
 
 TEST(ResourcesTest, TypeChecker) {
-  EXPECT_TRUE(
-      (test_all_files_in_dir<transformer_test<
-          get_transformed_pretty_printed_file<transform::FunctionValueBodyTransformer, name_resolution::NameResolver, typechecker::TypeChecker>>>(
-          "type_checker")));
+  EXPECT_TRUE((test_all_files_in_dir<
+               transformer_test<get_transformed_pretty_printed_file<
+                   transform::FunctionValueBodyTransformer,
+                   name_resolution::NameResolver, typechecker::TypeChecker>>>(
+      "type_checker")));
 }
 
 }  // namespace test
