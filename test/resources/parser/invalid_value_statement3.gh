@@ -1,0 +1,10 @@
+fun test() {
+    {
+        1;
+    }
+    { 2 }
+//    ^^^
+// ERROR: Expected `;' at the end of the statement
+    return 3;
+}
+

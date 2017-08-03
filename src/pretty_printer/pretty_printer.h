@@ -10,6 +10,7 @@
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
 #include "ast/return_statement.h"
+#include "ast/value_statement.h"
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
 
@@ -64,6 +65,12 @@ class PrettyPrinterVisitor : public ASTVisitor {
       out_ << ' ';
       node->value().value_or_die()->accept(*this);
     }
+    out_ << ";\n";
+  }
+
+  void visit(ValueStatement* node) override {
+    print_indent();
+    node->value()->accept(*this);
     out_ << ";\n";
   }
 
