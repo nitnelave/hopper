@@ -4,6 +4,7 @@
 #include "ast/function_declaration.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
+#include "ast/value_statement.h"
 #include "ast/variable_declaration.h"
 
 namespace ast {
@@ -41,4 +42,7 @@ void ASTVisitor::visit(BlockStatement* node) {
     statement->accept(*this);
   }
 }
+
+void ASTVisitor::visit(ValueStatement* node) { node->value()->accept(*this); }
+
 }  // namespace ast
