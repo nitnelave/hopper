@@ -1,6 +1,7 @@
 #include "parser/parser.h"
 
 #include "ast/binary_operation.h"
+#include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
@@ -10,6 +11,14 @@
 #include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
 #include "lexer/operators.h"
+
+#define ASSERT_TOKEN(TYPE)                          \
+  if (current_token().type() != (TYPE))             \
+    return ParseError(                              \
+        "AssertionFailed. Please open an issue on " \
+        "https://github.com/nitnelave/hopper",      \
+        location.error_range());                    \
+  RETURN_IF_ERROR(get_token());
 
 #define EXPECT_TOKEN(TYPE, MESSAGE)                       \
   if (current_token().type() != (TYPE))                   \
@@ -203,23 +212,37 @@ Parser::parse_variable_declaration() {
     RETURN_IF_ERROR(get_token());
     RETURN_OR_MOVE(value, parse_value());
   }
-  // Then a semicolon.
+
   EXPECT_TOKEN(TokenType::SEMICOLON,
-               "Expected semicolon at the end of the statement");
+               "Expected `;' at the end of a variable declaration");
+
   return std::make_unique<ast::VariableDeclaration>(
       location.range(), variable_name, std::move(type), std::move(value), mut);
 }
 
+///
+/// Statement:
+/// value;
+/// return [value];
+///
 Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   auto location = scoped_location();
+
+  if (current_token().type() == TokenType::OPEN_BRACE) {
+    RETURN_OR_MOVE(auto block, parse_statement_list());
+    return std::move(block);
+  }
+
   if (current_token().type() == TokenType::RETURN) {
     RETURN_IF_ERROR(get_token());
     if (current_token().type() == TokenType::SEMICOLON) {
       RETURN_IF_ERROR(get_token());
       return std::make_unique<ast::ReturnStatement>(location.range(), none);
     }
+
     // Otherwise, expect value.
-    RETURN_OR_MOVE(auto value, parse_value());
+    Option<std::unique_ptr<ast::Value>> value;
+    RETURN_OR_MOVE(value, parse_value());
     EXPECT_TOKEN(TokenType::SEMICOLON,
                  "Expected `;' at the end of the statement");
     return std::make_unique<ast::ReturnStatement>(location.range(),
@@ -228,18 +251,27 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   return ParseError("Could not parse as a statement", location.error_range());
 }
 
-ErrorOr<std::vector<std::unique_ptr<ast::Statement>>>
-Parser::parse_statement_list() {
+///
+/// Statement list:
+/// { <Statement> ... }
+///
+Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_list() {
   auto location = scoped_location();
-  RETURN_IF_ERROR(get_token());
-  std::vector<std::unique_ptr<ast::Statement>> result;
+
+  ASSERT_TOKEN(TokenType::OPEN_BRACE);
+
+  ast::BlockStatement::StatementList statements;
   while (current_token().type() != TokenType::CLOSE_BRACE) {
-    RETURN_OR_MOVE(auto statement, parse_statement());
-    result.emplace_back(std::move(statement));
+    RETURN_OR_MOVE(auto sub_statement, parse_statement());
+
+    statements.push_back(std::move(sub_statement));
   }
+
   EXPECT_TOKEN(TokenType::CLOSE_BRACE,
                "Expected `}' to match the opening brace");
-  return std::move(result);
+
+  return std::make_unique<ast::BlockStatement>(location.range(),
+                                               std::move(statements));
 }
 
 Parser::ErrorOrPtr<ast::FunctionDeclaration>
@@ -257,22 +289,27 @@ Parser::parse_function_declaration() {
     RETURN_IF_ERROR(get_token());
     RETURN_OR_MOVE(type, parse_type());
   }
+
   auto body_location = scoped_location();
-  if (current_token().type() == TokenType::ASSIGN) {
-    // fun my_fun() = 3;
-    RETURN_IF_ERROR(get_token());
-    RETURN_OR_MOVE(std::unique_ptr<ast::Value> body, parse_value());
-    EXPECT_TOKEN(TokenType::SEMICOLON, "Expected `;' after function body");
-    return std::make_unique<ast::FunctionDeclaration>(
-        location.range(), std::move(fun_name), std::move(arguments),
-        std::move(type), std::move(body));
-  }
   if (current_token().type() == TokenType::OPEN_BRACE) {
     RETURN_OR_MOVE(auto body, parse_statement_list());
     return std::make_unique<ast::FunctionDeclaration>(
         location.range(), std::move(fun_name), std::move(arguments),
         std::move(type), std::move(body));
   }
+
+  if (current_token().type() == TokenType::ASSIGN) {
+    // fun my_fun() = 3;
+    RETURN_IF_ERROR(get_token());
+    RETURN_OR_MOVE(auto value, parse_value());
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+                 "Missing ';' at the end of function declaration")
+
+    return std::make_unique<ast::FunctionDeclaration>(
+        location.range(), std::move(fun_name), std::move(arguments),
+        std::move(type), std::move(value));
+  }
+
   return ParseError("Expected function body", body_location.error_range());
 }
 

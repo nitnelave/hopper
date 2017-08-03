@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "ast/base_types.h"
+#include "ast/block_statement.h"
 #include "ast/declaration.h"
 #include "ast/function_argument_declaration.h"
-#include "ast/statement.h"
 #include "ast/value.h"
 #include "util/option.h"
 #include "visitor/visitor.h"
@@ -18,7 +18,7 @@ class FunctionDeclaration : public Declaration {
   using ArgumentList =
       std::vector<std::unique_ptr<FunctionArgumentDeclaration>>;
   using ValueBody = std::unique_ptr<Value>;
-  using StatementsBody = std::vector<std::unique_ptr<Statement>>;
+  using StatementsBody = std::unique_ptr<BlockStatement>;
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type,
                       StatementsBody body)
@@ -40,8 +40,7 @@ class FunctionDeclaration : public Declaration {
 
   void accept_body(ASTVisitor& visitor) {
     if (body_.is<StatementsBody>()) {
-      for (const auto& statement : body_.get_unchecked<StatementsBody>())
-        statement->accept(visitor);
+      body_.get_unchecked<StatementsBody>()->accept(visitor);
     } else {
       body_.get_unchecked<ValueBody>()->accept(visitor);
     }

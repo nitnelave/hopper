@@ -1,0 +1,3 @@
+val a = Module::Module2::return;
+//      ^^^^^^^^^^^^^^^^^^^^^^^
+// ERROR: Expected value identifier

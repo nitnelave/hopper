@@ -4,6 +4,7 @@
 
 #include "ast/ast.h"
 #include "ast/binary_operation.h"
+#include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
@@ -63,7 +64,17 @@ class PrettyPrinterVisitor : public ASTVisitor {
       out_ << ' ';
       node->value().value_or_die()->accept(*this);
     }
-    out_ << ';';
+    out_ << ";\n";
+  }
+
+  void visit(BlockStatement* node) override {
+    print_indent() << "{\n";
+    ++indent_;
+    for (auto const& statement : node->statements()) {
+      statement->accept(*this);
+    }
+    --indent_;
+    print_indent() << "}";
   }
 
  private:
