@@ -28,7 +28,8 @@ then
   done
   exit $EXIT
 else
-  eval "${FIND_CMD} -exec $FORMAT_CMD -i {} \;"
+  for FILE in $(eval ${FIND_CMD}); do
+      echo "Formatting ${FILE}..."
+      $(eval ${FORMAT_CMD} -i "${FILE}")
+  done
 fi
-
-
