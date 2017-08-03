@@ -1,5 +1,5 @@
 fun test() {
   Int;
 //^^^
-// ERROR: Could not parse as a statement
+// ERROR: Expected value identifier
 }
