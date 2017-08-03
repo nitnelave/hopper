@@ -1,3 +1,42 @@
+/// Grammar:
+///
+/// TypeIndentifier:
+/// <Identifier>
+///
+/// ValueIdentifier:
+/// <Identifier>
+///
+/// Identifier:
+/// (::)?[<Upper>::]*(<Upper>|<lower>)
+///
+/// parse_type:
+/// <TypeIdentifier>
+///
+/// parse_int_constant:
+/// <intValue>
+///
+/// ValueNoOp:
+/// [(<Value>)|true|false|<IntConstant>|<ValueIdentifier>]
+///
+/// Value:
+/// <ValueNoOp> [(... <Value> COMMA ... )...] [ <Token> <Value> ]...
+///
+/// VariableDeclaration:
+/// (val|mut) <variable_name> [: <type>] [= <value>];
+///
+/// Statement:
+/// value;
+/// return [value];
+///
+/// Statement list:
+/// { <Statement> ... }
+///
+/// FunctionDeclaration:
+/// fun <ValueIdentifier> () [: <Type>] (= <Value>;|<BlockStatement>)
+///
+/// TopLevel:
+/// <VariableDeclaration>|<FunctionDeclaration>
+///
 #include "parser/parser.h"
 
 #include "ast/binary_operation.h"
@@ -38,9 +77,6 @@ Parser::Parser(Lexer* lexer) : lexer_(lexer) {}
 
 ScopedLocation Parser::scoped_location() const { return ScopedLocation(this); }
 
-///
-/// <Identifier>
-///
 ErrorOr<ast::Identifier> Parser::parse_type_identifier(IdentifierType type) {
   auto location = scoped_location();
   RETURN_OR_MOVE(Option<Identifier> id, parse_identifier(type));
@@ -50,9 +86,6 @@ ErrorOr<ast::Identifier> Parser::parse_type_identifier(IdentifierType type) {
   return id.value_or_die();
 }
 
-///
-/// <Identifier>
-///
 ErrorOr<ast::Identifier> Parser::parse_value_identifier(IdentifierType type) {
   auto location = scoped_location();
   RETURN_OR_MOVE(Option<Identifier> id, parse_identifier(type));
@@ -68,9 +101,6 @@ ErrorOr<ast::Identifier> Parser::parse_value_identifier(IdentifierType type) {
   return id.value_or_die();
 }
 
-///
-/// (::)?[<Upper>::]*(<Upper>|<lower>)
-///
 ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(IdentifierType type) {
   auto location = scoped_location();
   bool absolute = false;
@@ -107,17 +137,11 @@ ErrorOr<Option<ast::Identifier>> Parser::parse_identifier(IdentifierType type) {
   return none;
 }
 
-///
-/// <Identifier>
-///
 ErrorOr<ast::Type> Parser::parse_type() {
   RETURN_OR_MOVE(Identifier id, parse_type_identifier());
   return Type(id);
 }
 
-///
-/// <intValue>
-///
 Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
   auto location = scoped_location();
   auto value = current_token().int_value();
@@ -125,9 +149,6 @@ Parser::ErrorOrPtr<ast::IntConstant> Parser::parse_int_constant() {
   return std::make_unique<ast::IntConstant>(location.range(), value);
 }
 
-///
-/// [(<Value>)|true|false|<IntConstant>|<Identifier>]
-///
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
   auto location = scoped_location();
 
@@ -160,9 +181,6 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
   return ParseError("Expected value", location.error_range());
 }
 
-///
-/// <ValueNoOp> [(... <Value> COMMA ... )...] [ <Token> <Value> ]...
-///
 Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
   auto location = scoped_location();
   RETURN_OR_MOVE(auto value, parse_value_no_operator());
@@ -221,10 +239,6 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
   return std::move(value);
 }
 
-///
-/// Variable declaration:
-/// (val|mut) <variable_name> [: <type>] [= <value>];
-///
 Parser::ErrorOrPtr<ast::VariableDeclaration>
 Parser::parse_variable_declaration() {
   auto location = scoped_location();
@@ -256,11 +270,6 @@ Parser::parse_variable_declaration() {
       location.range(), variable_name, std::move(type), std::move(value), mut);
 }
 
-///
-/// Statement:
-/// value;
-/// return [value];
-///
 Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   auto location = scoped_location();
 
@@ -292,10 +301,6 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
                                                std::move(value));
 }
 
-///
-/// Statement list:
-/// { <Statement> ... }
-///
 Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_list() {
   auto location = scoped_location();
 
@@ -315,10 +320,6 @@ Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_list() {
                                                std::move(statements));
 }
 
-///
-/// Function declaration:
-/// fun <ValueIdentifier> () [: <Type>] (= <Value>;|<BlockStatement>)
-///
 Parser::ErrorOrPtr<ast::FunctionDeclaration>
 Parser::parse_function_declaration() {
   auto location = scoped_location();
@@ -358,9 +359,6 @@ Parser::parse_function_declaration() {
   return ParseError("Expected function body", body_location.error_range());
 }
 
-///
-/// <VariableDeclaration>|<FunctionDeclaration>
-///
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   auto location = scoped_location();
   if (current_token().type() == TokenType::VAL ||
