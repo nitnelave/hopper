@@ -2,6 +2,7 @@
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
 
+#include "ast/block_statement.h"
 #include "ast/function_declaration.h"
 #include "ast/return_statement.h"
 #include "ast/value.h"

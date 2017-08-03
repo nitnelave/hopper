@@ -1,5 +1,6 @@
 #include "visitor/visitor.h"
 #include "ast/binary_operation.h"
+#include "ast/block_statement.h"
 #include "ast/function_declaration.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
@@ -35,4 +36,9 @@ void ASTVisitor::visit(VariableDeclaration* node) {
 }
 void ASTVisitor::visit(VariableReference* /*unused*/) {}
 
+void ASTVisitor::visit(BlockStatement* node) {
+  for (const auto& statement : node->statements()) {
+    statement->accept(*this);
+  }
+}
 }  // namespace ast
