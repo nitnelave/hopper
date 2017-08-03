@@ -1,4 +1,5 @@
 #include <fstream>
+#include <string>
 
 #include "ast/module.h"
 #include "codegen/codegen.h"
@@ -31,18 +32,18 @@ bool parse_position_line(int lineno, const std::string& line,
     range.end = {-1, 1};
     return true;
   }
-  unsigned int i = 2;
-  while (i < line.size() && line[i] == ' ') ++i;
-  if (i == line.size() || line[i] != '^') return false;
-  int start = i;
-  ++i;
-  // Keep reading while it's a '^'.
-  for (; i < line.size() && line[i] == '^'; ++i) continue;
-  range.begin = {lineno - 1, start + 1};
+  auto start = line.find_first_of('^');
+  auto end = line.find_last_of('^');
+  if (start == std::string::npos) return false;
+
+  range.begin = {lineno - 1, static_cast<int>(start) + 1};
+
   if (ends_with(line, "to EOF"))
     range.end = {-1, 1};
+  else if (ends_with(line, "to NEXT_TOKEN"))
+    range.end = {-2, 1};
   else
-    range.end = {lineno - 1, static_cast<int>(i)};
+    range.end = {lineno - 1, static_cast<int>(end) + 1};
   return true;
 }
 
@@ -60,8 +61,10 @@ std::vector<ExpectedError> parse_expected_errors(const std::string& filename) {
   lexer::Range error_range{filename, {1, 1}, {1, 1}};
   std::string error_message;
   std::string line;
+  std::string previous_line;
   int lineno = 0;
   bool seen_position = false;
+  bool look_for_next_token = false;
   while (std::getline(input, line)) {
     ++lineno;
     if (seen_position) {
@@ -76,10 +79,33 @@ std::vector<ExpectedError> parse_expected_errors(const std::string& filename) {
       }
     } else if (parse_position_line(lineno, line, error_range)) {
       seen_position = true;
+
+      // Special case where we look for the next token on the same line.
+      if (error_range.end.line == -2) {
+        auto end_index =
+            previous_line.find_first_not_of(' ', error_range.begin.column);
+        if (end_index != std::string::npos) {
+          error_range.end.line = lineno - 1;
+          error_range.end.column = static_cast<int>(end_index) + 1;
+          look_for_next_token = false;
+        } else
+          look_for_next_token = true;
+      }
+
       continue;
+    } else if (look_for_next_token) {
+      auto next_token_index = line.find_first_not_of(' ');
+      if (next_token_index != std::string::npos) {
+        look_for_next_token = false;
+        result.back().range.end.line = lineno;
+        result.back().range.end.column = static_cast<int>(next_token_index) + 1;
+      }
     }
+
+    previous_line = line;
     seen_position = false;
   }
+
   for (auto& error : result) {
     // Replace EOF with the proper line number.
     if (error.range.begin.line == -1) error.range.begin.line = lineno + 1;
