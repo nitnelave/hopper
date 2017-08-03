@@ -1,4 +1,5 @@
 #include "ast/builtin_type.h"
+
 namespace ast {
 namespace internals {
 const lexer::Range builtin_range{"<builtin>", {0, 0}, {0, 0}};
@@ -23,7 +24,8 @@ Option<IntWidth> int_type_to_width(const TypeDeclaration* type) {
   if (type == &int32) return IntWidth::W_32;
   if (type == &int16) return IntWidth::W_16;
   if (type == &int8) return IntWidth::W_8;
-  return none;
+
+  assert(false && "Unreachable code");
 }
 
 const TypeDeclaration* width_to_int_type(IntWidth width) {
@@ -37,6 +39,8 @@ const TypeDeclaration* width_to_int_type(IntWidth width) {
     case IntWidth::W_64:
       return &int64;
   }
+
+  assert(false && "Unreachable code");
 }
 }  // namespace types
 }  // namespace ast
