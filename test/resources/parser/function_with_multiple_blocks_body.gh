@@ -1,0 +1,7 @@
+fun test() {
+    {
+        1;
+    }
+
+    return 5;
+}

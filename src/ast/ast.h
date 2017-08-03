@@ -42,6 +42,7 @@ class Module;
 class ReturnStatement;
 // class ScopeBlock;
 // class UnaryOp;
+class BlockStatement;
 class VariableDeclaration;
 class VariableReference;
 // class WhenBlock;
