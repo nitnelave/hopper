@@ -1,0 +1,4 @@
+fun test() {
+  3;
+  return;
+}
