@@ -46,14 +46,41 @@ class Parser {
  private:
   static constexpr unsigned int k_lookahead = 0;
 
+  /// TopLevel:
+  /// <VariableDeclaration>|<FunctionDeclaration>
   ErrorOrPtr<ast::ASTNode> parse_toplevel_declaration();
+
+  /// IntConstant:
+  /// <intValue>|<hexValue>|<octValue>|<binValue>
   ErrorOrPtr<ast::IntConstant> parse_int_constant();
+
+  /// VariableDeclaration:
+  /// (val|mut) <variable_name> [: <type>] [= <value>];
   ErrorOrPtr<ast::VariableDeclaration> parse_variable_declaration();
+
+  /// FunctionDeclaration:
+  /// fun <ValueIdentifier> () [: <Type>] (= <Value>;|<BlockStatement>)
   ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration();
+
+  /// Value:
+  /// <ValueNoOp> [([<Value>[COMMA <Value>]...])]... [<Operator> <Value> ]...
   ErrorOrPtr<ast::Value> parse_value(int parent_precedence = 0);
+
+  /// ValueNoOp:
+  /// [(<Value>)|true|false|<IntConstant>|<ValueIdentifier>]
   ErrorOrPtr<ast::Value> parse_value_no_operator();
+
+  /// Statement list:
+  /// { <Statement> ... }
   ErrorOrPtr<ast::BlockStatement> parse_statement_list();
+
+  /// Statement:
+  /// value;
+  /// return [value];
   ErrorOrPtr<ast::Statement> parse_statement();
+
+  /// Type:
+  /// <TypeIdentifier>
   ErrorOr<ast::Type> parse_type();
 
   enum class IdentifierType {
@@ -64,10 +91,19 @@ class Parser {
     // e.g. "Module::foobar"
     QUALIFIED,
   };
+
+  /// TypeIndentifier:
+  /// <UpperCaseIdentifier>
   ErrorOr<ast::Identifier> parse_type_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);
+
+  /// ValueIdentifier:
+  /// <LowerCaseIdentifier>
   ErrorOr<ast::Identifier> parse_value_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);
+
+  /// Identifier:
+  /// (::)?[<Upper>::]*(<Upper>|<lower>)
   ErrorOr<Option<ast::Identifier>> parse_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);
 
