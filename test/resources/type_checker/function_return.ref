@@ -1,0 +1,12 @@
+fun test1() : Void {
+}
+fun test2() : Void {
+  return;
+}
+fun test3() : Int64 {
+  return 3;
+  return 5;
+}
+fun test4() : Int64 {
+  return 3;
+}
