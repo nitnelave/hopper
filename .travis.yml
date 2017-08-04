@@ -37,6 +37,12 @@ apt_base_packages: &apt_base_packages
       - g++-5
       - gcc-5
 
+before_install_custom:
+  - sudo ln -s /usr/share/llvm-3.8 /usr/share/llvm
+
+before_install:
+  - *before_install_custom
+
 install:
   - JOBS=2
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
@@ -78,7 +84,7 @@ cmake_command: &cmake_command |
                             -Dgflags_DIR=${TRAVIS_BUILD_DIR}/gflags/gflags-master/build
                             -DENABLE_COVERAGE=${COVERAGE}"
       echo "CMake_options: ${CMAKE_OPTIONS}"
-      cmake ${CMAKE_OPTIONS} ..
+      cmake -DLLVM_DIR="/usr/share/llvm/cmake/" ${CMAKE_OPTIONS} ..
 
 matrix:
   include:
@@ -95,6 +101,7 @@ matrix:
             - llvm-3.8
             - valgrind
       before_install:
+        - *before_install_custom
         - pip install --user cpp-coveralls
       script:
         - *cmake_command
