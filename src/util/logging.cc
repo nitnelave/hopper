@@ -13,6 +13,8 @@ DEFINE_bool(warnings, false, "Set verbosity to warning (1)");
 DEFINE_bool(verbose, false, "Set verbosity to info (2)");
 DEFINE_bool(debug, false, "Set verbosity to debug (3)");
 
+using logging::Logger;
+
 namespace {
 bool validate_verbosity(const char* flag_name, gflags::int32 value) {
   if (value < ERROR || value > DEBUG) {
@@ -21,35 +23,34 @@ bool validate_verbosity(const char* flag_name, gflags::int32 value) {
   }
   return true;
 }
-
 }  // namespace
 
 DEFINE_validator(verbosity, &validate_verbosity);
 
+namespace logging {
 void initialize_logging() {
   if (FLAGS_quiet) gflags::SetCommandLineOption("verbosity", "0");
   if (FLAGS_warnings) gflags::SetCommandLineOption("verbosity", "1");
   if (FLAGS_verbose) gflags::SetCommandLineOption("verbosity", "2");
   if (FLAGS_debug) gflags::SetCommandLineOption("verbosity", "3");
 }
+}  // namespace logging
 
-// log(INFO) << "Just a joke";
-// log_if(INFO, a > 3) << "Nothing much";
+Logger log(Severity s) { return log_if(s, true); }
 
-internals::Logger log(Severity s) { return log_if(s, true); }
+Logger no_log() { return log_if(INFO, false); }
 
-internals::Logger no_log() { return log_if(INFO, false); }
-
-internals::Logger log_if(Severity s, bool condition) {
-  return internals::Logger(FLAGS_logtostderr ? std::cerr : std::cout,
+Logger log_if(Severity s, bool condition) {
+  return Logger(FLAGS_logtostderr ? std::cerr : std::cout,
                            s <= FLAGS_verbosity && condition);
 }
 
-internals::Logger log_fatal() {
-  return internals::Logger(std::cerr, true, true);
+Logger log_fatal() {
+  return Logger(std::cerr, true, true);
 }
 
-internals::Logger check(bool condition) {
-  return internals::Logger(std::cerr, !condition, !condition);
+Logger check(bool condition) {
+  // If condition is false, print messages and then crash.
+  return Logger(std::cerr, !condition, !condition);
 }
 // LCOV_EXCL_STOP
