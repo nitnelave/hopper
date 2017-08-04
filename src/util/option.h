@@ -18,8 +18,17 @@ class Option {
 
   Option(const NoneType& /*unused*/) : Option() {}  // NOLINT
 
+  // We need the explicit version otherwise the compiler generates a copy
+  // constructor.
+  Option(Option&& rhs) : variant_(std::move(rhs.variant_)){};  // NOLINT
   template <typename T, typename = typename std::is_convertible<T, Value>>
   Option(Option<T>&& rhs) : variant_(std::move(rhs.variant_)) {}  // NOLINT
+
+  // We need the explicit version otherwise the compiler generates a move
+  // constructor.
+  Option(const Option& rhs) : variant_(rhs.variant_){};  // NOLINT
+  template <typename T, typename = typename std::is_convertible<T, Value>>
+  Option(const Option<T>& rhs) : variant_(rhs.variant_) {}  // NOLINT
 
   Option(Value v) : variant_(std::move(v)) {}  // NOLINT
 
@@ -29,19 +38,28 @@ class Option {
   Value& value_or_die() { return variant_.template get<Value>(); }
   Value consume_value_or_die() { return variant_.template consume<Value>(); }
 
-  Option& operator=(Value v) {
-    variant_ = std::move(v);
+  template <typename T, typename = typename std::is_convertible<T, Value>>
+  Option& operator=(T v) {
+    variant_ = Value(std::move(v));
     return *this;
   }
 
-  template <typename T, typename = typename std::is_convertible<T, Value>>
-  Option& operator=(T v) {
-    variant_ = std::move(Value(v));
-    return *this;
-  }
+  // Need the explicit version.
+  Option& operator=(Option&& rhs) { return operator=<Value>(std::move(rhs)); }
 
   template <typename T, typename = typename std::is_convertible<T, Value>>
   Option& operator=(Option<T>&& rhs) {
+    if (this != &rhs) {
+      variant_ = std::move(rhs.variant_);
+    }
+    return *this;
+  }
+
+  // Need the explicit version.
+  Option& operator=(const Option& rhs) { return operator=<Value>(rhs); }
+
+  template <typename T, typename = typename std::is_convertible<T, Value>>
+  Option& operator=(const Option<T>& rhs) {
     if (this != &rhs) {
       variant_ = rhs.variant_;
     }
