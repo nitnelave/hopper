@@ -1,0 +1,9 @@
+fun test1() {}
+fun test2() { return; }
+fun test3() {
+  return 3;
+  return 5;
+}
+fun test4() : Int64 {
+  return 3;
+}
