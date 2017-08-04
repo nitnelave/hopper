@@ -1,5 +1,11 @@
-fun test() = 2 + 3;
-fun test2() = true || false;
+fun test() : Int64 {
+  return (2 + 3);
+}
+fun test2() : Bool {
+  return (true || false);
+}
 val a : Int32 = 2;
 val b : Int16 = 3;
-fun test3() = a + b;
+fun test3() : Int32 {
+  return (a + b);
+}
