@@ -216,12 +216,28 @@ class Variant {
     new (&data_) typename Traits::TargetType(std::forward<T>(val));
   }
 
+  // We need the explicit version otherwise the compiler generates a copy
+  // constructor.
+  Variant(const Variant& old)  // NOLINT
+      : type_index_(old.type_index_) {
+    HelperType::copy(old.type_index_, &old.data_, &data_);
+  }
+
   template <typename... Ts,
             typename = typename std::enable_if<internals::Disjunction<
                 std::is_constructible<Ts>...>::value>::type>
-  Variant(const Variant<Types...>& old)  // NOLINT
+  Variant(const Variant<Ts...>& old)  // NOLINT
       : type_index_(old.type_index_) {
     HelperType::copy(old.type_index_, &old.data_, &data_);
+  }
+
+  // We need the explicit version otherwise the compiler generates a move
+  // constructor.
+  Variant(Variant&& old)  // NOLINT
+      noexcept(internals::Conjunction<
+               std::is_nothrow_move_constructible<Types>...>::value)
+      : type_index_(old.type_index_) {
+    HelperType::move(old.type_index_, &old.data_, &data_);
   }
 
   template <typename... Ts,
@@ -245,7 +261,7 @@ class Variant {
     type_index_ = rhs.type_index_;
   }
 
-  void move_assign(Variant<Types...>&& rhs) {
+  void move_assign(Variant&& rhs) {
     HelperType::destroy(type_index_, &data_);
     type_index_ = internals::invalid_value;
     HelperType::move(rhs.type_index_, &rhs.data_, &data_);
@@ -253,12 +269,28 @@ class Variant {
   }
 
  public:
-  Variant<Types...>& operator=(Variant<Types...>&& other) noexcept {
+  // Need the explicit version.
+  Variant& operator=(Variant&& other) noexcept {
+    return operator=<Types...>(std::move(other));
+  }
+
+  template <typename... Ts,
+            typename = typename std::enable_if<internals::Disjunction<
+                std::is_convertible<Ts, Types>...>::value>::type>
+  Variant& operator=(Variant<Ts...>&& other) noexcept {
     if (this != &other) move_assign(std::move(other));
     return *this;
   }
 
-  Variant<Types...>& operator=(const Variant<Types...>& other) {
+  // Need the explicit version.
+  Variant& operator=(const Variant& other) noexcept {
+    return operator=<Types...>(other);
+  }
+
+  template <typename... Ts,
+            typename = typename std::enable_if<internals::Disjunction<
+                std::is_convertible<Ts, Types>...>::value>::type>
+  Variant& operator=(const Variant<Ts...>& other) {
     if (this != &other) copy_assign(other);
     return *this;
   }
@@ -266,16 +298,16 @@ class Variant {
   // conversions
   // move-assign
   template <typename T>
-  Variant<Types...>& operator=(T&& rhs) noexcept {
-    Variant<Types...> temp(std::forward<T>(rhs));
+  Variant& operator=(T&& rhs) noexcept {
+    Variant temp(std::forward<T>(rhs));
     move_assign(std::move(temp));
     return *this;
   }
 
   // copy-assign
   template <typename T>
-  Variant<Types...>& operator=(const T& rhs) {
-    Variant<Types...> temp(rhs);
+  Variant& operator=(const T& rhs) {
+    Variant temp(rhs);
     copy_assign(temp);
     return *this;
   }
