@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "ast/ast.h"
+#include "ast/base_types.h"
 #include "error/error.h"
 #include "lexer/token.h"
 #include "visitor/error_visitor.h"
@@ -18,8 +19,12 @@ class TypeChecker : public ast::ASTVisitor {
   void visit(ast::IntConstant* node) override;
   void visit(ast::BinaryOp* node) override;
   void visit(ast::FunctionDeclaration* node) override;
+  void visit(ast::ReturnStatement* node) override;
+  void visit(ast::VariableReference* node) override;
 
  private:
+  // We may have to turn that into a stack to support nested functions.
+  Option<ast::Type> function_return_type_ = none;
   ErrorList error_list_;
 };
 }  // namespace typechecker
