@@ -6,6 +6,7 @@
 #include "ast/builtin_type.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
+#include "ast/return_statement.h"
 #include "ast/variable_reference.h"
 
 namespace typechecker {
@@ -85,10 +86,11 @@ void TypeChecker::visit(ast::BinaryOp* node) {
   const auto& right_type = node->right_value().type().value_or_die();
   if (is_integer_operator(node->operation()) && is_integer(left_type) &&
       is_integer(right_type)) {
-    using namespace ast::types;
-    IntWidth result_width = std::max(
-        int_type_to_width(left_type.get_declaration()).value_or_die(),
-        int_type_to_width(right_type.get_declaration()).value_or_die());
+    ast::types::IntWidth result_width =
+        std::max(ast::types::int_type_to_width(left_type.get_declaration())
+                     .value_or_die(),
+                 ast::types::int_type_to_width(right_type.get_declaration())
+                     .value_or_die());
     node->type() = width_to_int_type(result_width);
   } else if (is_boolean_operator(node->operation()) && is_boolean(left_type) &&
              is_boolean(right_type)) {
@@ -102,18 +104,48 @@ void TypeChecker::visit(ast::BinaryOp* node) {
   }
 }
 
+void TypeChecker::visit(ast::ReturnStatement* node) {
+  size_t num_errors = error_list_.errors().size();
+  ASTVisitor::visit(node);
+  if (num_errors < error_list_.errors().size()) return;
+
+  Type t = [&]() {
+    if (node->value().is_ok()) {
+      const auto& value_type = node->value().value_or_die()->type();
+      assert(value_type.is_ok());
+      return value_type.value_or_die();
+    }
+    return Type(&ast::types::void_type);
+  }();
+  if (function_return_type_.is_ok()) {
+    if (function_return_type_.value_or_die() != t) {
+      error_list_.add_error(
+          node->location(),
+          "Invalid return type: the function returns `" +
+              function_return_type_.value_or_die().to_string() +
+              "', but the return value is of type `" + t.to_string() + "'");
+      return;
+    }
+  }
+  function_return_type_ = t;
+}
+
 void TypeChecker::visit(ast::FunctionDeclaration* node) {
   // Assumes we ran the FunctionValueBody transformer first.
   size_t num_errors = error_list_.errors().size();
-  for (auto& statement :
-       node->body().get<ast::FunctionDeclaration::StatementsBody>())
-    statement->accept(*this);
+
+  function_return_type_ = node->type();
+  // Visit the children.
+  ASTVisitor::visit(node);
   if (num_errors < error_list_.errors().size())
     // Errors while processing the body.
     return;
   // Visit all the statements, looking for return statements, collect the
   // types.
   if (node->type().is_ok()) return;
+  if (!function_return_type_.is_ok())
+    function_return_type_ = Type(&ast::types::void_type);
+  node->type() = function_return_type_;
 }
 
 }  // namespace typechecker
