@@ -1,5 +1,9 @@
 language: cpp
 
+# TODO: precise will be deprecated soon, the release target is trusty
+# but it makes cmake fails because of the llvm default package (3.5).
+dist: precise
+
 cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/llvm-3.8.1/install
