@@ -28,7 +28,7 @@ class GFlagsWrapper {
       FLAGS_helpmatch = "../src/";
     }
     gflags::HandleCommandLineHelpFlags();
-    initialize_logging();
+    logging::initialize_logging();
   }
 
   ~GFlagsWrapper() { gflags::ShutDownCommandLineFlags(); }
