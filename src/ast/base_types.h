@@ -60,6 +60,14 @@ class Type {
   Option<const TypeDeclaration*> type_;
 };
 
+inline bool operator==(const Type& t1, const Type& t2) {
+  if (t1.is_resolved() != t2.is_resolved()) return false;
+  if (t1.is_resolved()) return t1.get_declaration() == t2.get_declaration();
+  return t1.id() == t2.id();
+}
+
+inline bool operator!=(const Type& t1, const Type& t2) { return !(t1 == t2); }
+
 }  // namespace ast
 
 namespace std {
