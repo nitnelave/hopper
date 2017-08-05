@@ -219,9 +219,10 @@ Parser::parse_variable_declaration() {
     RETURN_OR_MOVE(value, parse_value());
   }
 
-  // Then a semicolon.
-  EXPECT_TOKEN(TokenType::SEMICOLON,
-               "Expected `;' at the end of a variable declaration");
+  if (!value.is_ok() && !type.is_ok()) {
+    return ParseError("Expected either a type, either a value to infer from",
+                      location.error_range());
+  }
 
   return std::make_unique<ast::VariableDeclaration>(
       location.range(), variable_name, std::move(type), std::move(value), mut);
@@ -279,6 +280,38 @@ Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_list() {
                                                std::move(statements));
 }
 
+ErrorOr<ast::FunctionDeclaration::ArgumentList>
+Parser::parse_function_arguments_declaration() {
+  ast::FunctionDeclaration::ArgumentList arguments;
+
+  if (current_token().type() == TokenType::CLOSE_PAREN) {
+    return std::move(arguments);
+  }
+
+  bool should_parse_argument = true;
+  while (should_parse_argument) {
+    auto location = scoped_location();
+    if (current_token().type() != TokenType::VAL &&
+        current_token().type() != TokenType::MUT) {
+      return ParseError("Expected function argument", location.error_range());
+    }
+
+    RETURN_OR_MOVE(auto val_decl, parse_variable_declaration());
+
+    arguments.push_back(std::make_unique<ast::FunctionArgumentDeclaration>(
+        location.range(), val_decl->id(),
+        std::move(val_decl->type().value_or_die()), val_decl->is_mutable()));
+
+    if (current_token().type() == TokenType::COMMA) {
+      RETURN_IF_ERROR(get_token());
+    } else {
+      should_parse_argument = false;
+    }
+  }
+
+  return std::move(arguments);
+}
+
 Parser::ErrorOrPtr<ast::FunctionDeclaration>
 Parser::parse_function_declaration() {
   auto location = scoped_location();
@@ -286,7 +319,7 @@ Parser::parse_function_declaration() {
   RETURN_OR_MOVE(Identifier fun_name,
                  parse_value_identifier(IdentifierType::SIMPLE));
   EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected `(' in function declaration");
-  std::vector<std::unique_ptr<ast::FunctionArgumentDeclaration>> arguments;
+  RETURN_OR_MOVE(auto arguments, parse_function_arguments_declaration());
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected `)' after argument list");
   // Then an optional type.
   Option<Type> type;
@@ -322,7 +355,13 @@ Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   auto location = scoped_location();
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
-    return parse_variable_declaration();
+    RETURN_OR_MOVE(auto val_decl, parse_variable_declaration());
+
+    // Then a semicolon.
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+                 "Expected `;' at the end of a variable declaration");
+
+    return std::move(val_decl);
   }
   if (current_token().type() == TokenType::FUN) {
     return parse_function_declaration();

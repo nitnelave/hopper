@@ -7,6 +7,7 @@
 #include "ast/ast.h"
 #include "ast/base_types.h"
 #include "ast/block_statement.h"
+#include "ast/function_declaration.h"
 #include "error/error.h"
 #include "lexer/lexer.h"
 #include "parser/scoped_location.h"
@@ -59,15 +60,20 @@ class Parser {
   ErrorOrPtr<ast::VariableDeclaration> parse_variable_declaration();
 
   /// FunctionDeclaration:
-  /// fun <ValueIdentifier> () [: <Type>] (= <Value>;|<BlockStatement>)
+  /// fun <ValueId> (<FuncArgsDecl>) [: <Type>] (= <Value>;|<BlockStatement>)
   ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration();
+
+  /// FuncArgsDecl:
+  /// [<Identifier>: <Type>][, <Identifier>: <Type>]...
+  ErrorOr<ast::FunctionDeclaration::ArgumentList>
+  parse_function_arguments_declaration();
 
   /// Value:
   /// <ValueNoOp> [([<Value>[COMMA <Value>]...])]... [<Operator> <Value> ]...
   ErrorOrPtr<ast::Value> parse_value(int parent_precedence = 0);
 
   /// ValueNoOp:
-  /// [(<Value>)|true|false|<IntConstant>|<ValueIdentifier>]
+  /// [(<Value>)|true|false|<IntConstant>|<ValueId>]
   ErrorOrPtr<ast::Value> parse_value_no_operator();
 
   /// Statement list:
@@ -97,7 +103,7 @@ class Parser {
   ErrorOr<ast::Identifier> parse_type_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);
 
-  /// ValueIdentifier:
+  /// ValueId:
   /// <LowerCaseIdentifier>
   ErrorOr<ast::Identifier> parse_value_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);

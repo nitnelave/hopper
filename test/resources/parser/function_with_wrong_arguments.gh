@@ -1,0 +1,5 @@
+fun test(val a: Int32, val b, val c: Int32) {
+//                     ^^^^^^
+// ERROR: Expected either a type, either a value to infer from
+  return a + b + c;
+}

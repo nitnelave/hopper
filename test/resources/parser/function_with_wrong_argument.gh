@@ -1,0 +1,5 @@
+fun test(val a) {
+//       ^^^^^^
+// ERROR: Expected either a type, either a value to infer from
+  return a;
+}
