@@ -30,13 +30,31 @@ void CodeGenerator::visit(ast::ValueStatement* node) {
 
 void CodeGenerator::visit(ast::FunctionDeclaration* node) {
   std::vector<Type*> param_types;  // fill by visiting.
+  for (std::size_t i = 0; i < node->arguments().size(); ++i) {
+    // TODO: put real type here.
+    param_types.push_back(IntegerType::get(context_, 32));
+  }
+
   ArrayRef<Type*> param_types_array(param_types);
+  // TODO: put real return type here.
   FunctionType* t = FunctionType::get(IntegerType::get(context_, 32),
                                       param_types_array, /*isVarArg=*/false);
   Constant* c = module_->getOrInsertFunction(node->id().short_name(), t);
 
   Function* llvm_function = cast<Function>(c);
   llvm_function->setCallingConv(CallingConv::C);
+
+  // Name the parameters.
+  auto llvm_arg = llvm_function->arg_begin();
+  auto gh_arg = std::begin(node->arguments());
+  for (; llvm_arg != llvm_function->arg_end(); llvm_arg++, gh_arg++) {
+    assert(gh_arg != std::end(node->arguments()));
+
+    llvm_arg->setName((*gh_arg)->id().short_name());
+    // TODO: put the argument on some stack to retrieve them later ?
+  }
+
+  // Create body of the function.
   BasicBlock* block = BasicBlock::Create(context_, "entry", llvm_function);
   ir_builder_.SetInsertPoint(block);
   assert(node->body().is<ast::FunctionDeclaration::StatementsBody>() &&

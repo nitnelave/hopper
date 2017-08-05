@@ -1,0 +1,5 @@
+fun main(a:): Int {
+//         ^
+// ERROR: Expected type identifier
+  return 1;
+}

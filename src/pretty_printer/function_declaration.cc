@@ -1,12 +1,19 @@
 #include "pretty_printer/pretty_printer.h"
 namespace ast {
 
+void PrettyPrinterVisitor::visit(FunctionArgumentDeclaration* node) {
+  out_ << node->id().short_name();
+  out_ << ": ";
+  out_ << node->type().id().short_name();
+}
+
 void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
   print_indent() << "fun " << node->id().to_string() << '(';
   bool print_comma = false;
   for (const auto& arg : node->arguments()) {
-    if (print_comma) out_ << ',';
+    if (print_comma) out_ << ", ";
     arg->accept(*this);
+    print_comma = true;
   }
   out_ << ')';
   if (node->type().is_ok())

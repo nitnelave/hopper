@@ -1,0 +1,5 @@
+fun main(a) {
+//       ^^
+// ERROR: Expected type after argument identifier
+  return a;
+}

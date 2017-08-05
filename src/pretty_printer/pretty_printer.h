@@ -33,6 +33,8 @@ class PrettyPrinterVisitor : public ASTVisitor {
 
   void visit(FunctionDeclaration* node) override;
 
+  void visit(FunctionArgumentDeclaration* node) override;
+
   void visit(FunctionCall* node) override {
     node->base().accept(*this);
     out_ << '(';

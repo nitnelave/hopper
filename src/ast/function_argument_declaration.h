@@ -18,6 +18,8 @@ class FunctionArgumentDeclaration : public ASTNode {
   const Type& type() const { return type_; }
 
  private:
+  void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
+
   Identifier id_;
   Type type_;
 };

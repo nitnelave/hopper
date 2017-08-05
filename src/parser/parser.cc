@@ -279,6 +279,38 @@ Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_list() {
                                                std::move(statements));
 }
 
+ErrorOr<ast::FunctionDeclaration::ArgumentList>
+Parser::parse_function_arguments_declaration() {
+  ast::FunctionDeclaration::ArgumentList arguments;
+
+  if (current_token().type() == TokenType::CLOSE_PAREN) {
+    return std::move(arguments);
+  }
+
+  bool should_parse_argument = true;
+  while (should_parse_argument) {
+    auto location = scoped_location();
+    auto identifier = parse_value_identifier();
+    if (!identifier.is_ok()) {
+      return ParseError("Expected function argument", location.error_range());
+    }
+
+    EXPECT_TOKEN(TokenType::COLON, "Expected type after argument identifier");
+    RETURN_OR_MOVE(auto type, parse_type());
+
+    arguments.push_back(std::make_unique<ast::FunctionArgumentDeclaration>(
+        location.range(), identifier.value_or_die(), std::move(type)));
+
+    if (current_token().type() == TokenType::COMMA) {
+      RETURN_IF_ERROR(get_token());
+    } else {
+      should_parse_argument = false;
+    }
+  }
+
+  return std::move(arguments);
+}
+
 Parser::ErrorOrPtr<ast::FunctionDeclaration>
 Parser::parse_function_declaration() {
   auto location = scoped_location();
@@ -286,7 +318,7 @@ Parser::parse_function_declaration() {
   RETURN_OR_MOVE(Identifier fun_name,
                  parse_value_identifier(IdentifierType::SIMPLE));
   EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected `(' in function declaration");
-  std::vector<std::unique_ptr<ast::FunctionArgumentDeclaration>> arguments;
+  RETURN_OR_MOVE(auto arguments, parse_function_arguments_declaration());
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected `)' after argument list");
   // Then an optional type.
   Option<Type> type;
