@@ -22,7 +22,7 @@ class NameResolver : public ast::ASTVisitor {
   const ErrorList& error_list() const { return error_list_; }
 
   // void visit(ast::FunctionDeclaration* node) override;
-  void visit(ast::VariableDeclaration* node) override;
+  void visit(ast::LocalVariableDeclaration* node) override;
   void visit(ast::VariableReference* node) override;
 
  private:

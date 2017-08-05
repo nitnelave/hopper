@@ -23,8 +23,6 @@ class VariableDeclaration : public Declaration {
   ~VariableDeclaration() override = default;
 
  private:
-  void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
-
   Option<std::unique_ptr<Value>> value_;
   bool mut_;
 };

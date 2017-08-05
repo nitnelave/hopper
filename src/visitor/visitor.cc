@@ -1,11 +1,12 @@
 #include "visitor/visitor.h"
+
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/function_declaration.h"
+#include "ast/local_variable_declaration.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
 #include "ast/value_statement.h"
-#include "ast/variable_declaration.h"
 
 namespace ast {
 
@@ -32,7 +33,7 @@ void ASTVisitor::visit(Module* node) {
 void ASTVisitor::visit(ReturnStatement* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }
-void ASTVisitor::visit(VariableDeclaration* node) {
+void ASTVisitor::visit(LocalVariableDeclaration* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }
 void ASTVisitor::visit(VariableReference* /*unused*/) {}

@@ -1,4 +1,4 @@
-val a;
+val a: Int;
 val b : Int;
 val c = 3;
 val c = 0o754;

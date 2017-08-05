@@ -9,9 +9,9 @@
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/int_constant.h"
+#include "ast/local_variable_declaration.h"
 #include "ast/return_statement.h"
 #include "ast/value_statement.h"
-#include "ast/variable_declaration.h"
 #include "ast/variable_reference.h"
 
 namespace ast {
@@ -19,7 +19,7 @@ class PrettyPrinterVisitor : public ASTVisitor {
  public:
   explicit PrettyPrinterVisitor(std::ostream& out) : out_(out) {}
 
-  void visit(VariableDeclaration* node) override {
+  void visit(LocalVariableDeclaration* node) override {
     print_indent() << (node->is_mutable() ? "mut" : "val") << ' ';
     out_ << node->id().to_string();
     if (node->type().is_ok())
@@ -32,6 +32,8 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(FunctionDeclaration* node) override;
+
+  void visit(FunctionArgumentDeclaration* node) override;
 
   void visit(FunctionCall* node) override {
     node->base().accept(*this);
