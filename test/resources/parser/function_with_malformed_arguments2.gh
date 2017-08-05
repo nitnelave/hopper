@@ -1,0 +1,5 @@
+fun test(val a:): Int32 {
+//             ^
+// ERROR: Expected type identifier
+  return 1;
+}

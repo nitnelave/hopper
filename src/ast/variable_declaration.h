@@ -14,7 +14,9 @@ class VariableDeclaration : public Declaration {
                       Option<std::unique_ptr<Value>> value, bool mut)
       : Declaration(std::move(location), std::move(id), std::move(type)),
         value_(std::move(value)),
-        mut_(mut) {}
+        mut_(mut) {
+    assert(type.is_ok() || value.is_ok());
+  }
 
   bool is_mutable() const { return mut_; }
 
@@ -23,8 +25,6 @@ class VariableDeclaration : public Declaration {
   ~VariableDeclaration() override = default;
 
  private:
-  void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
-
   Option<std::unique_ptr<Value>> value_;
   bool mut_;
 };

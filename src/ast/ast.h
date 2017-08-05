@@ -43,6 +43,7 @@ class ReturnStatement;
 // class ScopeBlock;
 // class UnaryOp;
 class BlockStatement;
+class LocalVariableDeclaration;
 class ValueStatement;
 class VariableDeclaration;
 class VariableReference;

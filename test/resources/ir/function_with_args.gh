@@ -1,0 +1,3 @@
+fun test(val a: Int32, mut b: Int32) {
+  return 2;
+}
