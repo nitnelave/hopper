@@ -1,11 +1,12 @@
 #include "name_resolution/visitor.h"
+
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
-#include "ast/variable_declaration.h"
+#include "ast/local_variable_declaration.h"
 #include "ast/variable_reference.h"
 
 namespace name_resolution {
-void NameResolver::visit(ast::VariableDeclaration* node) {
+void NameResolver::visit(ast::LocalVariableDeclaration* node) {
   ASTVisitor::visit(node);  // Recurse into the value.
   if (node->type().is_ok()) {
     auto& type = node->type().value_or_die();

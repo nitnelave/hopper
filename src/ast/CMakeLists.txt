@@ -9,6 +9,7 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/block_statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/boolean_constant.h"
         "${CMAKE_CURRENT_LIST_DIR}/declaration.h"
+        "${CMAKE_CURRENT_LIST_DIR}/local_variable_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_argument_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_call.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_declaration.h"

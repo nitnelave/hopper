@@ -1,0 +1,3 @@
+fun test(mut a: Int32) {
+  return a;
+}

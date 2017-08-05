@@ -5,6 +5,7 @@
 #include "ast/if_statement.h"
 #include "ast/return_statement.h"
 #include "ast/statement.h"
+#include "ast/variable_declaration.h"
 
 namespace transform {
 void FunctionValueBodyTransformer::visit(ast::FunctionDeclaration* node) {

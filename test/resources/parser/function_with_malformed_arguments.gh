@@ -1,0 +1,5 @@
+fun test(,) {
+//       ^
+// ERROR: Expected function argument
+  return 1;
+}
