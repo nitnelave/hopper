@@ -5,10 +5,10 @@
 #include "util/option.h"
 
 namespace ast {
-class Declaration : public ASTNode {
+class Declaration : public Statement {
  public:
   Declaration(lexer::Range location, Identifier id, Option<Type> type)
-      : ASTNode(std::move(location)),
+      : Statement(std::move(location)),
         id_(std::move(id)),
         type_(std::move(type)) {}
   ~Declaration() override = default;
