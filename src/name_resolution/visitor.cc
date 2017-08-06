@@ -6,10 +6,9 @@
 #include "ast/variable_reference.h"
 
 namespace name_resolution {
-void NameResolver::visit(ast::LocalVariableDeclaration* node) {
-  ASTVisitor::visit(node);  // Recurse into the value.
-  if (node->type().is_ok()) {
-    auto& type = node->type().value_or_die();
+void NameResolver::resolve_option_type(Option<ast::Type>* maybe_type) {
+  if (maybe_type->is_ok()) {
+    auto& type = maybe_type->value_or_die();
     if (!type.is_resolved()) {
       auto it = type_map_.find(type.id());
       if (it == type_map_.end()) {
@@ -20,6 +19,20 @@ void NameResolver::visit(ast::LocalVariableDeclaration* node) {
       type.set_resolution(it->second);
     }
   }
+}
+
+void NameResolver::visit(ast::LocalVariableDeclaration* node) {
+  ASTVisitor::visit(node);  // Recurse into the value.
+  visit_variable_declaration(node);
+}
+
+void NameResolver::visit(ast::FunctionArgumentDeclaration* node) {
+  ASTVisitor::visit(node);  // Recurse into the value.
+  visit_variable_declaration(node);
+}
+
+void NameResolver::visit_variable_declaration(ast::VariableDeclaration* node) {
+  resolve_option_type(&node->type());
   auto it = name_map_.find(node->id());
   if (it != name_map_.end())
     error_list_.add_warning(node->id().location(),
@@ -35,5 +48,10 @@ void NameResolver::visit(ast::VariableReference* node) {
                           "No variable named `" + node->id().to_string() + "'");
   else
     node->resolution() = it->second;
+}
+
+void NameResolver::visit(ast::FunctionDeclaration* node) {
+  resolve_option_type(&node->type());
+  ASTVisitor::visit(node);
 }
 }  // namespace name_resolution
