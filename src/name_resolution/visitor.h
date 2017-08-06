@@ -21,11 +21,12 @@ class NameResolver : public ast::ASTVisitor {
 
   const ErrorList& error_list() const { return error_list_; }
 
-  // void visit(ast::FunctionDeclaration* node) override;
+  void visit(ast::FunctionDeclaration* node) override;
   void visit(ast::VariableDeclaration* node) override;
   void visit(ast::VariableReference* node) override;
 
  private:
+  void resolve_option_type(Option<ast::Type>* maybe_type);
   ErrorList error_list_;
   std::unordered_map<ast::Identifier, ast::TypeDeclaration*> type_map_;
   std::unordered_map<ast::Identifier, ast::Declaration*> name_map_;
