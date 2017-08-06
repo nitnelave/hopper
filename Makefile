@@ -4,12 +4,14 @@ NINJA=$(shell which ninja 2>&1)
 ifneq (${NINJA}, )
   BUILD_BINARY=${NINJA}
   CMAKE_FLAGS=-GNinja -DCMAKE_MAKE_PROGRAM="${NINJA}"
-  BUILD_FILE=${BUILD_FOLDER}/build.ninja
+  BUILD_FILE=build.ninja
 else
   BUILD_BINARY=make
   CMAKE_FLAGS=""
-  BUILD_FILE=${BUILD_FOLDER}/Makefile
+  BUILD_FILE=Makefile
 endif
+
+.SECONDEXPANSION:
 
 BUILD_COMMAND=${BUILD_BINARY} -j8
 
@@ -20,23 +22,29 @@ all: ${TARGET}
 ${TARGET}: cmake
 	cd ${BUILD_FOLDER} && ${BUILD_COMMAND}
 
-cmake: ${BUILD_FILE}
+# Dirty hack to propagate the target-dependent value of BUILD_FOLDER
+cmake:
+	$(MAKE) CMAKE_FLAGS="$(CMAKE_FLAGS)" $(BUILD_FOLDER)/${BUILD_FILE}
 
-${BUILD_FILE}: ${BUILD_FOLDER}
-	cd ${BUILD_FOLDER} && cmake ${CMAKE_FLAGS} ..
+%/${BUILD_FILE}: %
+	cd $^ && cmake $(CMAKE_FLAGS) ..
 
 ${BUILD_FOLDER}:
 	mkdir -p $@
 
+build_coverage:
+	mkdir -p $@
+
 test: cmake
-	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} test
+	cd $(BUILD_FOLDER) && ${BUILD_COMMAND} test
 
 check: cmake
-	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} check
+	cd $(BUILD_FOLDER) && ${BUILD_COMMAND} check
 
-coverage: BUILD_FOLDER=coverage
+coverage: BUILD_FOLDER=build_coverage
+coverage: CMAKE_FLAGS+=-DENABLE_COVERAGE=ON
 
-coverage: test
+coverage: check
 	cd ${BUILD_FOLDER} && ${BUILD_COMMAND} gracc_coverage
 
-.PHONY: all ${TARGET} cmake test check
+.PHONY: all ${TARGET} cmake test check coverage
