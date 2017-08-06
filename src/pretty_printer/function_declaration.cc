@@ -16,7 +16,6 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
   if (node->body().is<FunctionDeclaration::StatementsBody>()) {
     node->body().get_unchecked<FunctionDeclaration::StatementsBody>()->accept(
         *this);
-    --indent_;
   } else {
     out_ << "= ";
     node->body().get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
