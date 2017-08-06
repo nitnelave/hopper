@@ -32,8 +32,8 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
     ++indent_;
     for (auto const& statement :
          node->body()
-             .get_unchecked<FunctionDeclaration::StatementsBody>()
-             ->statements()) {
+         .get_unchecked<FunctionDeclaration::StatementsBody>()
+         ->statements()) {
       statement->accept(*this);
     }
     --indent_;
