@@ -1,0 +1,11 @@
+fun test() {
+  if (condition) {
+    return 1;
+  } elseif (condition) {
+//  ^^^^^^^^^^^^^^^^^^^^
+// ERROR: Expected `;' at the end of the statement
+    return 2;
+  }
+
+  return 4;
+}

@@ -1,0 +1,9 @@
+fun test() {
+  if condition {
+//^^^^^^^^^^^^
+// ERROR: Expected '(' after 'if' keyword
+    return 3;
+  }
+
+  return 4;
+}

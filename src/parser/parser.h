@@ -74,6 +74,10 @@ class Parser {
   /// { <Statement> ... }
   ErrorOrPtr<ast::BlockStatement> parse_statement_list();
 
+  /// IfStmt:
+  /// if ( <Value> ) [else (<Statement|IfStmt)]
+  ErrorOrPtr<ast::IfStatement> parse_if_statement();
+
   /// Statement:
   /// value;
   /// return [value];

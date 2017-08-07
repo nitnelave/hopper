@@ -4,6 +4,8 @@
 
 namespace ast {
 
+class IfStatement;
+
 class ASTVisitor {
  public:
   virtual void visit(Assignment* node);
@@ -14,6 +16,7 @@ class ASTVisitor {
   virtual void visit(FunctionArgumentDeclaration* node);
   virtual void visit(FunctionCall* node);
   virtual void visit(FunctionDeclaration* node);
+  virtual void visit(IfStatement* node);
   virtual void visit(IntConstant* node);
   virtual void visit(Module* node);
   virtual void visit(ReturnStatement* node);
