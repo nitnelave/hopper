@@ -2,6 +2,7 @@
 
 #include "ast/block_statement.h"
 #include "ast/function_declaration.h"
+#include "ast/if_statement.h"
 #include "ast/return_statement.h"
 #include "ast/statement.h"
 

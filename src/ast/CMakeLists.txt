@@ -12,6 +12,7 @@ target_sources(${GRACC_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/function_argument_declaration.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_call.h"
         "${CMAKE_CURRENT_LIST_DIR}/function_declaration.h"
+        "${CMAKE_CURRENT_LIST_DIR}/if_statement.h"
         "${CMAKE_CURRENT_LIST_DIR}/int_constant.h"
         "${CMAKE_CURRENT_LIST_DIR}/module.h"
         "${CMAKE_CURRENT_LIST_DIR}/return_statement.h"

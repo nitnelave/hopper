@@ -5,6 +5,7 @@
 #include "ast/boolean_constant.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
+#include "ast/if_statement.h"
 #include "ast/int_constant.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
@@ -227,6 +228,35 @@ Parser::parse_variable_declaration() {
       location.range(), variable_name, std::move(type), std::move(value), mut);
 }
 
+Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
+  auto location = scoped_location();
+  ASSERT_TOKEN(TokenType::IF);
+
+  EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected '(' after 'if' keyword");
+  RETURN_OR_MOVE(auto condition, parse_value());
+  EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
+  RETURN_OR_MOVE(auto if_body, parse_statement());
+
+  Option<std::unique_ptr<ast::IfStatement>> else_statement = none;
+  if (current_token().type() == TokenType::ELSE) {
+    RETURN_IF_ERROR(get_token());
+
+    if (current_token().type() == TokenType::IF) {
+      RETURN_OR_MOVE(else_statement, parse_if_statement());
+    } else {
+      auto else_location = scoped_location();
+      RETURN_OR_MOVE(auto else_body, parse_statement());
+
+      else_statement = std::make_unique<ast::IfStatement>(
+          else_location.range(), none, std::move(else_body), none);
+    }
+  }
+
+  return std::make_unique<ast::IfStatement>(
+      location.range(), std::move(condition), std::move(if_body),
+      std::move(else_statement));
+}
+
 Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   auto location = scoped_location();
 
@@ -250,9 +280,13 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
                                                   std::move(value));
   }
 
+  if (current_token().type() == TokenType::IF) {
+    return parse_if_statement();
+  }
+
   auto value = parse_value();
   if (!value.is_ok()) {
-    return ParseError("Could not parse as a statement", location.range());
+    return ParseError("Could not parse as a statement", location.error_range());
   }
   EXPECT_TOKEN(TokenType::SEMICOLON,
                "Expected `;' at the end of the statement");

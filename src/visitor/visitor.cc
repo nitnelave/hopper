@@ -1,7 +1,9 @@
 #include "visitor/visitor.h"
+
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/function_declaration.h"
+#include "ast/if_statement.h"
 #include "ast/module.h"
 #include "ast/return_statement.h"
 #include "ast/value_statement.h"
@@ -24,6 +26,9 @@ void ASTVisitor::visit(FunctionDeclaration* node) {
   }
   node->accept_body(*this);
 }
+
+void ASTVisitor::visit(IfStatement* /* unused */) {}
+
 void ASTVisitor::visit(IntConstant* /*unused*/) {}
 void ASTVisitor::visit(Module* node) {
   for (const auto& declaration : node->top_level_declarations())

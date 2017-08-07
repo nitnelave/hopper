@@ -1,5 +1,9 @@
 fun test() {
-  Int;
-//^^^^
+   else {
+// ^^^^
 // ERROR: Could not parse as a statement
+    return 3;
+  }
+
+  return 4;
 }
