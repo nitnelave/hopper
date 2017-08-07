@@ -81,7 +81,7 @@ class PrettyPrinterVisitor : public ASTVisitor {
       statement->accept(*this);
     }
     --indent_;
-    print_indent() << "}";
+    print_indent() << "}\n";
   }
 
  private:
