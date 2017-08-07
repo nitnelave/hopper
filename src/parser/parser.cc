@@ -117,17 +117,20 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value_no_operator() {
                  "Expected a ')' to match the opening one");
     return std::move(value);
   }
+
   if (current_token().type() == TokenType::TRUE ||
       current_token().type() == TokenType::FALSE) {
     bool bool_value = current_token().type() == TokenType::TRUE;
     RETURN_IF_ERROR(get_token());
     return std::make_unique<ast::BooleanConstant>(location.range(), bool_value);
   }
+
   if (current_token().type() == TokenType::INT ||
       current_token().type() == TokenType::HEX ||
       current_token().type() == TokenType::OCT ||
-      current_token().type() == TokenType::BINARY_NUMBER)
+      current_token().type() == TokenType::BINARY_NUMBER) {
     return parse_int_constant();
+  }
 
   if (current_token().type() == TokenType::LOWER_CASE_IDENT ||
       current_token().type() == TokenType::UPPER_CASE_IDENT ||
@@ -218,6 +221,7 @@ Parser::ErrorOrPtr<Declaration> Parser::parse_variable_declaration() {
     RETURN_IF_ERROR(get_token());
     RETURN_OR_MOVE(type, parse_type());
   }
+
   // Then an optional value.
   Option<std::unique_ptr<ast::Value>> value;
   if (current_token().type() == TokenType::ASSIGN) {
@@ -288,6 +292,15 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
 
   if (current_token().type() == TokenType::IF) {
     return parse_if_statement();
+  }
+
+  if (current_token().type() == TokenType::VAL ||
+      current_token().type() == TokenType::MUT) {
+    return parse_variable_declaration();
+  }
+
+  if (current_token().type() == TokenType::FUN) {
+    return parse_function_declaration();
   }
 
   auto value = parse_value();
