@@ -234,6 +234,25 @@ Parser::ErrorOrPtr<Declaration> Parser::parse_variable_declaration() {
                                        std::move(type), std::move(value), mut);
 }
 
+Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_or_list() {
+  auto location = scoped_location();
+
+  std::unique_ptr<ast::BlockStatement> block;
+  if (current_token().type() == TokenType::OPEN_BRACE) {
+    RETURN_OR_MOVE(block, parse_statement_list());
+  } else {
+    RETURN_OR_MOVE(auto body, parse_statement());
+
+    ast::BlockStatement::StatementList statement_list;
+    statement_list.push_back(std::move(body));
+
+    block = std::make_unique<ast::BlockStatement>(location.range(),
+                                                  std::move(statement_list));
+  }
+
+  return std::move(block);
+}
+
 Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
   auto location = scoped_location();
   ASSERT_TOKEN(TokenType::IF);
@@ -241,7 +260,8 @@ Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
   EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected '(' after 'if' keyword");
   RETURN_OR_MOVE(auto condition, parse_value());
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
-  RETURN_OR_MOVE(auto if_body, parse_statement());
+
+  RETURN_OR_MOVE(auto if_body, parse_statement_or_list());
 
   Option<std::unique_ptr<ast::IfStatement>> else_statement = none;
   if (current_token().type() == TokenType::ELSE) {
@@ -251,7 +271,7 @@ Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
       RETURN_OR_MOVE(else_statement, parse_if_statement());
     } else {
       auto else_location = scoped_location();
-      RETURN_OR_MOVE(auto else_body, parse_statement());
+      RETURN_OR_MOVE(auto else_body, parse_statement_or_list());
 
       else_statement = std::make_unique<ast::IfStatement>(
           else_location.range(), none, std::move(else_body), none);
