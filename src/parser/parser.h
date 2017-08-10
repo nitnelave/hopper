@@ -119,6 +119,8 @@ class Parser {
   ErrorOr<Option<ast::Identifier>> parse_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);
 
+  ErrorOrPtr<ast::BlockStatement> parse_statement_as_list();
+
   const lexer::Token& current_token() const;
   MaybeError<> get_token();
   void unget_token();

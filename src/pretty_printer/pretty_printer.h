@@ -8,8 +8,10 @@
 #include "ast/boolean_constant.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
+#include "ast/if_statement.h"
 #include "ast/int_constant.h"
 #include "ast/local_variable_declaration.h"
+#include "ast/module.h"
 #include "ast/return_statement.h"
 #include "ast/value_statement.h"
 #include "ast/variable_reference.h"
@@ -19,8 +21,15 @@ class PrettyPrinterVisitor : public ASTVisitor {
  public:
   explicit PrettyPrinterVisitor(std::ostream& out) : out_(out) {}
 
+  void visit(Module* node) override {
+    for (auto const& decl : node->top_level_declarations()) {
+      decl->accept(*this);
+      out_ << "\n";
+    }
+  }
+
   void visit(LocalVariableDeclaration* node) override {
-    print_indent() << (node->is_mutable() ? "mut" : "val") << ' ';
+    out_ << (node->is_mutable() ? "mut" : "val") << ' ';
     out_ << node->id().to_string();
     if (node->type().is_ok())
       out_ << " : " << node->type().value_or_die().to_string();
@@ -28,7 +37,7 @@ class PrettyPrinterVisitor : public ASTVisitor {
       out_ << " = ";
       node->value().value_or_die()->accept(*this);
     }
-    out_ << ";\n";
+    out_ << ";";
   }
 
   void visit(FunctionDeclaration* node) override;
@@ -62,28 +71,44 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(ReturnStatement* node) override {
-    print_indent() << "return";
+    out_ << "return";
     if (node->value().is_ok()) {
       out_ << ' ';
       node->value().value_or_die()->accept(*this);
     }
-    out_ << ";\n";
+    out_ << ";";
   }
 
   void visit(ValueStatement* node) override {
-    print_indent();
     node->value()->accept(*this);
-    out_ << ";\n";
+    out_ << ";";
+  }
+
+  void visit(IfStatement* node) override {
+    if (node->condition().is_ok()) {
+      out_ << "if (";
+      node->condition().value_or_die()->accept(*this);
+      out_ << ") ";
+    }
+
+    node->body()->accept(*this);
+
+    if (node->else_statement().is_ok()) {
+      out_ << " else ";
+      node->else_statement().value_or_die()->accept(*this);
+    }
   }
 
   void visit(BlockStatement* node) override {
-    print_indent() << "{\n";
+    out_ << "{\n";
     ++indent_;
     for (auto const& statement : node->statements()) {
+      print_indent();
       statement->accept(*this);
+      out_ << '\n';
     }
     --indent_;
-    print_indent() << "}\n";
+    print_indent() << "}";
   }
 
  private:

@@ -34,7 +34,9 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
          node->body()
              .get_unchecked<FunctionDeclaration::StatementsBody>()
              ->statements()) {
+      print_indent();
       statement->accept(*this);
+      out_ << '\n';
     }
     --indent_;
     print_indent() << "}";
@@ -43,6 +45,5 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
     node->body().get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
     out_ << ';';
   }
-  out_ << '\n';
 }
 }  // namespace ast
