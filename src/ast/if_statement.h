@@ -13,7 +13,7 @@ namespace ast {
 class IfStatement : public Statement {
  public:
   IfStatement(lexer::Range location, Option<std::unique_ptr<Value>> condition,
-              std::unique_ptr<Statement> body,
+              std::unique_ptr<BlockStatement> body,
               Option<std::unique_ptr<IfStatement>> elseStatement)
       : Statement(std::move(location)),
         condition_(std::move(condition)),
@@ -21,7 +21,7 @@ class IfStatement : public Statement {
         else_statement_(std::move(elseStatement)) {}
 
   const Option<std::unique_ptr<Value>>& condition() const { return condition_; }
-  const std::unique_ptr<Statement>& body() const { return body_; }
+  const std::unique_ptr<BlockStatement>& body() const { return body_; }
   const Option<std::unique_ptr<IfStatement>>& else_statement() const {
     return else_statement_;
   }
@@ -32,7 +32,7 @@ class IfStatement : public Statement {
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
   Option<std::unique_ptr<Value>> condition_;
-  std::unique_ptr<Statement> body_;
+  std::unique_ptr<BlockStatement> body_;
   Option<std::unique_ptr<IfStatement>> else_statement_;
 };
 
