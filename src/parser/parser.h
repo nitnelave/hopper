@@ -119,6 +119,12 @@ class Parser {
   ErrorOr<Option<ast::Identifier>> parse_identifier(
       IdentifierType type = IdentifierType::QUALIFIED);
 
+  /// Calls parse_statement_list if an open brace is detected or parse_statement
+  /// otherwise.
+  /// In the case of the simple statement, a BlockStatement will be built out of
+  /// it.
+  ErrorOrPtr<ast::BlockStatement> parse_statement_or_list();
+
   const lexer::Token& current_token() const;
   MaybeError<> get_token();
   void unget_token();
