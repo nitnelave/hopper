@@ -296,7 +296,11 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
 
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
-    return parse_variable_declaration();
+    RETURN_OR_MOVE(auto var_decl,
+                   parse_variable_declaration<ast::LocalVariableDeclaration>());
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+                 "Expected `;' at the end of a variable declaration");
+    return std::move(var_decl);
   }
 
   if (current_token().type() == TokenType::FUN) {
