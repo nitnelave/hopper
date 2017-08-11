@@ -38,6 +38,11 @@ class Option {
   Value& value_or_die() { return variant_.template get<Value>(); }
   Value consume_value_or_die() { return variant_.template consume<Value>(); }
 
+  const Value& value_or(const Value& default_value) {
+    if (is_ok()) return variant_.template get_unchecked<Value>();
+    return default_value;
+  }
+
   template <typename T, typename = typename std::is_convertible<T, Value>>
   Option& operator=(T v) {
     variant_ = Value(std::move(v));
