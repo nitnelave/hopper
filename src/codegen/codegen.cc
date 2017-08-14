@@ -5,11 +5,8 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/TargetRegistry.h"
-#include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetOptions.h"
 #include "llvm/Target/TargetOptions.h"
 
 using namespace llvm;  // NOLINT
@@ -38,8 +35,7 @@ std::unique_ptr<raw_fd_ostream> get_ostream_for_file(
 
 CodeGenerator::CodeGenerator(const std::string& name)
     : module_(std::make_unique<Module>(name, context_)),
-      ir_builder_(context_, ConstantFolder()),
-      current_block_(nullptr) {
+      ir_builder_(context_, ConstantFolder()) {
   auto target_triple = sys::getDefaultTargetTriple();
   module_->setTargetTriple(target_triple);
   std::string error;

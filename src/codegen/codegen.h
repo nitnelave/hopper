@@ -37,7 +37,6 @@ class CodeGenerator : public ast::ASTVisitor {
 
   void visit(ast::Module* node) override {
     for (auto const& declaration : node->top_level_declarations()) {
-      current_block_ = nullptr;
       declaration->accept(*this);
     }
   }
@@ -55,14 +54,22 @@ class CodeGenerator : public ast::ASTVisitor {
   llvm::IRBuilder<> ir_builder_;
   // Return value of visitation of a value node.
   llvm::Value* gen_value_;
-  llvm::BasicBlock* current_block_;
+
+  // Current function holding the blocks.
   llvm::Function* current_function_;
+
+  // Name of the current function.
   std::string current_function_name_;
 
-  bool return_unhandled_ = false;
-};
+  // True if the statement has fully returned, false otherwise.
+  bool has_returned_ = false;
 
-#define CONSUME_UNHANDLED_RETURN(VAR) \
-  VAR = return_unhandled_;            \
-  return_unhandled_ = false;
+  bool consume_return_value() {
+    bool has_returned = has_returned_;
+    has_returned_ = false;
+    assert(has_returned_ == false &&
+           "After consuming, has_returned_ should be false");
+    return has_returned;
+  }
+};
 }  // namespace codegen
