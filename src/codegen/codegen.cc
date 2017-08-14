@@ -38,7 +38,8 @@ std::unique_ptr<raw_fd_ostream> get_ostream_for_file(
 
 CodeGenerator::CodeGenerator(const std::string& name)
     : module_(std::make_unique<Module>(name, context_)),
-      ir_builder_(context_, ConstantFolder()) {
+      ir_builder_(context_, ConstantFolder()),
+      current_block_(nullptr) {
   auto target_triple = sys::getDefaultTargetTriple();
   module_->setTargetTriple(target_triple);
   std::string error;
