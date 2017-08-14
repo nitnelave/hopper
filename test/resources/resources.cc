@@ -177,6 +177,11 @@ AssertionResult parsing_error_message(const std::string& filename,
                             << error << '\n';
 }
 
+AssertionResult codegen_error_message(const std::string& ,
+                                      const std::string& error) {
+  return AssertionFailure() << error;
+}
+
 Variant<AssertionResult, std::string> get_pretty_printed_file(
     const std::string& filename) {
   lexer::Lexer lex = lexer::from_file(filename);
@@ -262,6 +267,11 @@ Variant<AssertionResult, std::string> get_transformed_ir(
   codegen::LLVMInitializer llvm_init;
   codegen::CodeGenerator generator(filename);
   result.value_or_die()->accept(generator);
+
+  if (!generator.warnings().empty()) {
+    return codegen_error_message(filename, generator.warnings().front().to_string());
+  }
+
   llvm::raw_string_ostream out(ir);
   generator.print(out);
   return crop_llvm_header(ir);
@@ -322,10 +332,10 @@ AssertionResult transformer_test(const std::string& filename) {
         first_pass.get_unchecked<AssertionResult>().failure_message();
     std::stringstream ss;
     for (const auto& err : expected_errors) {
-      ss << err.message << " in " << err.range.to_string();
+      ss << err.message << "\n At " << err.range.to_string();
     }
     return AssertionResult(ss.str() == actual_message)
-           << "Expected: " + ss.str() + "\nGot:\n" + actual_message;
+           << "Expected:\n" + ss.str() + "\nGot:\n" + actual_message;
   }
   return AssertionSuccess();
 }

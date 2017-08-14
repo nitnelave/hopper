@@ -1,0 +1,6 @@
+fun main() {
+  return 1;
+  return 2;
+//^^^^^^^^^
+// ERROR: The statement won't be executed because the function already returned
+}

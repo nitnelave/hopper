@@ -13,7 +13,7 @@ class VisitorError : public GenericError {
       : GenericError(message), range_(range) {}
 
   std::string to_string() const override {
-    return message() + " in " + range_.to_string();
+    return message() + "\n At " + range_.to_string();
   }
 
   const lexer::Range& location() { return range_; }
