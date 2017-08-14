@@ -165,17 +165,16 @@ class MaybeError {
   // Inherit the constructors.
   template <typename E>
   MaybeError(  // NOLINT: explicit
-      E&& value, typename std::enable_if<
-                     std::is_constructible<Err, E&&>::value>::type* /*unused*/
-                 = nullptr)
+      E&& value,
+      typename std::enable_if<
+          std::is_constructible<Err, E&&>::value>::type* /*unused*/ = nullptr)
       : error_or_(std::make_unique<Err>(std::forward<E>(value))) {}
 
   template <typename E>
   MaybeError(  // NOLINT: explicit
       MaybeError<E>&& other,
       typename std::enable_if<
-          std::is_constructible<Err, E&&>::value>::type* /*unused*/
-      = nullptr)
+          std::is_constructible<Err, E&&>::value>::type* /*unused*/ = nullptr)
       : error_or_(std::move(other.error_or_)) {}
 
   template <typename E, typename = typename std::enable_if<
