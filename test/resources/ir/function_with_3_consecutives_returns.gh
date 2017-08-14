@@ -1,0 +1,7 @@
+fun main() {
+  return 1;
+  return 2;
+//^^^^^^^^^
+// ERROR: Unreachable code
+  return 3;
+}

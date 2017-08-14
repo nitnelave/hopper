@@ -1,7 +1,7 @@
 fun test() {
    else {
 // ^^^^
-// ERROR: Could not parse as a statement
+// ERROR: A 'else' statement should follow a 'if' statement
     return 3;
   }
 
