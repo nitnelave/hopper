@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <memory>
 
 #include "llvm/IR/BasicBlock.h"
@@ -9,6 +10,8 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "ast/module.h"
+#include "error/error.h"
+#include "visitor/error_visitor.h"
 #include "visitor/visitor.h"
 
 namespace codegen {
@@ -23,6 +26,8 @@ std::unique_ptr<llvm::raw_fd_ostream> get_ostream_for_file(
 
 class CodeGenerator : public ast::ASTVisitor {
  public:
+  using ErrorList = ast::ErrorList<ast::VisitorError>;
+
   explicit CodeGenerator(const std::string& name);
   // void visit(ast::Assignment* node) override;
   // void visit(ast::BinaryOp* node) override;
@@ -48,6 +53,8 @@ class CodeGenerator : public ast::ASTVisitor {
 
   void print(llvm::raw_ostream& out) const;
 
+  const ErrorList& error_list() const { return error_list_; }
+
  private:
   llvm::LLVMContext context_;
   std::unique_ptr<llvm::Module> module_;
@@ -63,6 +70,8 @@ class CodeGenerator : public ast::ASTVisitor {
 
   // True if the statement has fully returned, false otherwise.
   bool has_returned_ = false;
+
+  ErrorList error_list_;
 
   bool consume_return_value() {
     bool has_returned = has_returned_;
