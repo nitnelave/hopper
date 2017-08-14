@@ -14,17 +14,18 @@ class IfStatement : public Statement {
  public:
   using ConditionList = std::vector<std::unique_ptr<Value>>;
   using BodyList = std::vector<std::unique_ptr<BlockStatement>>;
-  IfStatement(lexer::Range location, ConditionList conditions, BodyList bodies,
-              Option<std::unique_ptr<BlockStatement>> else_statement)
+  IfStatement(lexer::Range location, Option<std::unique_ptr<Value>> condition,
+              std::unique_ptr<BlockStatement> body,
+              Option<std::unique_ptr<IfStatement>> else_statement)
       : Statement(std::move(location)),
-        conditions_(std::move(conditions)),
-        bodies_(std::move(bodies)),
+        condition_(std::move(condition)),
+        body_(std::move(body)),
         else_statement_(std::move(else_statement)) {
-    assert(conditions.size() == bodies.size());
+    assert(condition.is_ok() || !else_statement.is_ok());
   }
 
-  const ConditionList& conditions() const { return conditions_; }
-  const BodyList& bodies() const { return bodies_; }
+  const Option<std::unique_ptr<Value>>& condition() const { return condition_; }
+  const std::unique_ptr<BlockStatement>& body() const { return body_; }
   const Option<std::unique_ptr<IfStatement>>& else_statement() const {
     return else_statement_;
   }
@@ -34,8 +35,8 @@ class IfStatement : public Statement {
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
-  ConditionList conditions_;
-  BodyList bodies_;
+  Option<std::unique_ptr<Value>> condition_;
+  std::unique_ptr<BlockStatement> body_;
   Option<std::unique_ptr<IfStatement>> else_statement_;
 };
 

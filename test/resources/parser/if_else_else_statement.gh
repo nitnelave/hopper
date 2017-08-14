@@ -5,7 +5,7 @@ fun main() {
     return 1;
   } else {
 //  ^^^^
-// ERROR: You can't have two else statements in a if-elseif-else block
+// ERROR: A 'else' statement should follow a 'if' statement
     return 3;
   }
 }
