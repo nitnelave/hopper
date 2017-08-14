@@ -1,0 +1,11 @@
+fun main() {
+  if (cond) {
+    1;
+  } else {
+    return 1;
+  } else {
+//  ^^^^
+// ERROR: You can't have two else statements in a if-elseif-else block
+    return 3;
+  }
+}

@@ -1,0 +1,10 @@
+define i32 @main() {
+main:
+  br i1 true, label %main1, label %if.end
+
+main1:                                            ; preds = %main
+  br label %if.end
+
+if.end:                                           ; preds = %main, %main1
+  ret i32 2
+}
