@@ -5,6 +5,6 @@ main:
 main1:                                            ; preds = %main
   br label %if.end
 
-if.end:                                           ; preds = %main, %main1
+if.end:                                           ; preds = %main1, %main
   ret i32 2
 }

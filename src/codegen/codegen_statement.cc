@@ -7,6 +7,7 @@
 #include "ast/if_statement.h"
 #include "ast/return_statement.h"
 #include "ast/value.h"
+#include "util/option.h"
 
 namespace codegen {
 
@@ -17,13 +18,12 @@ void CodeGenerator::visit(ast::BlockStatement* node) {
       BasicBlock::Create(context_, current_function_name_, current_function_);
   ir_builder_.SetInsertPoint(current_block);
 
-  current_block_ = current_block;
   for (auto const& statement : node->statements()) {
     statement->accept(*this);
 
     // TODO: plug the SSA code here for PHI nodes.
 
-    if (return_unhandled_) {
+    if (has_returned_) {
       return;
     }
   }
@@ -38,103 +38,83 @@ void CodeGenerator::visit(ast::ReturnStatement* node) {
     ir_builder_.CreateRetVoid();
   }
 
-  return_unhandled_ = true;
+  has_returned_ = true;
 }
 
 void CodeGenerator::visit(ast::IfStatement* node) {
-  assert(current_block_ != nullptr);
-  auto current_block = ir_builder_.GetInsertBlock();
+  auto if_start_block = ir_builder_.GetInsertBlock();
+  Option<BasicBlock*> ifend_block = none;
 
-  auto condition = std::cbegin(node->conditions());
-  auto body = std::cbegin(node->bodies());
-
-  // We need to store all the blocks that doesn't return in all cases
-  // so that we make them jump to the end of the 'if'.
-  std::vector<BasicBlock*> blocks_with_continuation;
-
-  // We generate the first block of code for the 'if' statement.
-  (*condition++)->accept(*this);
-  auto condition_value = gen_value_;
-  (*body++)->accept(*this);
-  CONSUME_UNHANDLED_RETURN(auto has_returned);
-  if (!has_returned) {
-    blocks_with_continuation.push_back(current_block_);
-  }
-
-  BasicBlock* last_block = current_block_;
-  BasicBlock* jump_block = current_block;
-  while (condition != std::end(node->conditions())) {
-    BasicBlock* merge_block =
-        BasicBlock::Create(context_, "if.elseif", current_function_);
-
-    // We create the jump instuctions.
-    ir_builder_.SetInsertPoint(jump_block);
-    auto equality =
-        ir_builder_.CreateICmpNE(condition_value, ir_builder_.getInt32(0));
-    ir_builder_.CreateCondBr(equality, last_block, merge_block);
-
-    // We create the new block of code for the 'else if' stmt.
-    (*body++)->accept(*this);
-    last_block = current_block_;
-
-    CONSUME_UNHANDLED_RETURN(auto has_returned);
-    if (!has_returned) {
-      blocks_with_continuation.push_back(current_block_);
-    }
-
-    // We get the Value of the current condition for the next conditional jump.
-    (*condition++)->accept(*this);
+  Option<Value*> condition_value = none;
+  if (node->condition().is_ok()) {
+    node->condition().value_or_die()->accept(*this);
     condition_value = gen_value_;
-
-    jump_block = merge_block;
   }
 
+  // We generate the if block.
+  node->body()->accept(*this);
+  auto if_body_returned = consume_return_value();
+  BasicBlock* if_block = ir_builder_.GetInsertBlock();
+
+  bool else_body_returned = false;
+  Option<BasicBlock*> else_block = none;
+  Option<BasicBlock*> ifelse_block = none;
+
+  // We generate the else block if needed.
   if (node->else_statement().is_ok()) {
-    // Create the 'else' block code.
+    ifend_block = BasicBlock::Create(context_, "if.else", current_function_);
+    ifelse_block = ifend_block;
+
+    ir_builder_.SetInsertPoint(ifend_block.value_or_die());
     node->else_statement().value_or_die()->accept(*this);
-
-    // Jump to it with condition.
-    ir_builder_.SetInsertPoint(jump_block);
-    auto equality =
-        ir_builder_.CreateICmpNE(condition_value, ir_builder_.getInt32(0));
-    ir_builder_.CreateCondBr(equality, last_block, current_block_);
-
-    CONSUME_UNHANDLED_RETURN(auto has_returned);
-    if (!has_returned) {
-      blocks_with_continuation.push_back(current_block_);
-    }
-
-    last_block = current_block_;
+    else_body_returned = consume_return_value();
+    else_block = ir_builder_.GetInsertBlock();
   }
 
-  // The continuation of the 'if'.
-  BasicBlock* if_end_block =
-      BasicBlock::Create(context_, "if.end", current_function_);
+  bool else_only_returned =
+      !condition_value.is_ok() && if_body_returned && !else_block.is_ok();
+  bool if_or_elseif_returned =
+      if_body_returned && else_body_returned && else_block.is_ok();
+  has_returned_ = if_or_elseif_returned || else_only_returned;
 
-  // We jump to the continuation if some blocks
-  // doesn't returns in all cases.
-  for (auto const& block : blocks_with_continuation) {
-    ir_builder_.SetInsertPoint(block);
-    ir_builder_.CreateBr(if_end_block);
+  // We check if the statement returned in all cases. If it didn't, the we need
+  // to create the 'if continuation' so that the execution continue after
+  // passing
+  // the if statement. For instance:
+  // if (cond) return; // We need to continue as there is an implicit else case.
+  // if (cond) return; else return; // We don't need to continue as we already
+  // returned in all cases.
+  // if (cond) return; else if (cond) return; // Same here, implicit else.
+  if (!has_returned_) {
+    ifend_block = BasicBlock::Create(context_, "if.end", current_function_);
   }
 
-  ir_builder_.SetInsertPoint(jump_block);
-  // We check if we didn't finished on a 'else if' stmt or if
-  // there is an end to the 'if'.
-  if (!blocks_with_continuation.empty() || !node->else_statement().is_ok()) {
-    if (!node->else_statement().is_ok()) {
-      auto equality =
-          ir_builder_.CreateICmpNE(condition_value, ir_builder_.getInt32(0));
-      ir_builder_.CreateCondBr(equality, last_block, if_end_block);
-    }
-
-    ir_builder_.SetInsertPoint(if_end_block);
-    current_block_ = if_end_block;
+  // We make the jump from the if start block to the bodies.
+  ir_builder_.SetInsertPoint(if_start_block);
+  if (condition_value.is_ok()) {
+    auto equality = ir_builder_.CreateICmpNE(condition_value.value_or_die(),
+                                             ir_builder_.getInt32(0));
+    // Handle the if alone, or the if else.
+    ir_builder_.CreateCondBr(equality, if_block,
+                             ifelse_block.value_or(ifend_block.value_or_die()));
   } else {
-    // All the 'if' cases returned, we delete the if.end block
-    // and tells the class there is no need to continue from this block.
-    DeleteDeadBlock(if_end_block);
-    return_unhandled_ = true;
+    // Handle the else alone.
+    ir_builder_.CreateBr(if_block);
   }
+
+  // We jump from the bodies to if.end if needed.
+  if (has_returned_) return;
+
+  if (!if_body_returned) {
+    ir_builder_.SetInsertPoint(if_block);
+    ir_builder_.CreateBr(ifend_block.value_or_die());
+  }
+
+  if (!else_body_returned && else_block.is_ok()) {
+    ir_builder_.SetInsertPoint(else_block.value_or_die());
+    ir_builder_.CreateBr(ifend_block.value_or_die());
+  }
+
+  ir_builder_.SetInsertPoint(ifend_block.value_or_die());
 }
 }  // namespace codegen

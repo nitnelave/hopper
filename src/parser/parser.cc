@@ -1,7 +1,5 @@
 #include "parser/parser.h"
 
-#include <iostream>
-
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
@@ -268,37 +266,21 @@ Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
   RETURN_OR_MOVE(auto if_body, parse_statement_or_list());
 
-  ast::IfStatement::ConditionList conditions;
-  ast::IfStatement::BodyList bodies;
-
-  conditions.push_back(std::move(condition));
-  bodies.push_back(std::move(if_body));
-
-  Option<std::unique_ptr<ast::BlockStatement>> else_statement = none;
-  while (current_token().type() == TokenType::ELSE) {
-    auto location = scoped_location();
+  Option<std::unique_ptr<ast::IfStatement>> else_statement = none;
+  if (current_token().type() == TokenType::ELSE) {
     RETURN_IF_ERROR(get_token());
     if (current_token().type() == TokenType::IF) {
-      RETURN_IF_ERROR(get_token());
-      EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected '(' after 'if' keyword");
-      RETURN_OR_MOVE(auto condition, parse_value());
-      EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
-      RETURN_OR_MOVE(auto if_body, parse_statement_or_list());
-
-      conditions.push_back(std::move(condition));
-      bodies.push_back(std::move(if_body));
+      RETURN_OR_MOVE(else_statement, parse_if_statement());
     } else {
-      if (else_statement.is_ok()) {
-        return ParseError(
-            "You can't have two else statements in a if-elseif-else block",
-            location.range());
-      }
-      RETURN_OR_MOVE(else_statement, parse_statement_or_list());
+      auto else_location = scoped_location();
+      RETURN_OR_MOVE(auto else_body, parse_statement_or_list());
+      else_statement = std::make_unique<ast::IfStatement>(
+          else_location.range(), none, std::move(else_body), none);
     }
   }
 
   return std::make_unique<ast::IfStatement>(
-      location.range(), std::move(conditions), std::move(bodies),
+      location.range(), std::move(condition), std::move(if_body),
       std::move(else_statement));
 }
 
@@ -327,6 +309,11 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
 
   if (current_token().type() == TokenType::IF) {
     return parse_if_statement();
+  }
+
+  if (current_token().type() == TokenType::ELSE) {
+    return ParseError("A 'else' statement should follow a 'if' statement",
+                      location.error_range());
   }
 
   if (current_token().type() == TokenType::VAL ||
