@@ -60,7 +60,7 @@ class CodeGenerator : public ast::ASTVisitor {
   std::unique_ptr<llvm::Module> module_;
   llvm::IRBuilder<> ir_builder_;
   // Return value of visitation of a value node.
-  llvm::Value* gen_value_;
+  Option<llvm::Value*> gen_value_;
 
   // Current function holding the blocks.
   llvm::Function* current_function_;
