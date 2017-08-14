@@ -48,3 +48,4 @@ std::vector<internals::result_of_t<Mapper(In)>> convert_vector(
   convert_vector((INPUT), [](const auto& __ARG__) { return LAMBDA; })
 
 std::string crop_first_lines(const std::string& text, int number_of_lines);
+std::string crop_llvm_header(const std::string& text);
