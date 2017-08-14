@@ -85,21 +85,29 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(IfStatement* node) override {
-    auto body = std::cbegin(node->bodies());
-    std::string delimiter = "";
+    // auto body = std::cbegin(node->bodies());
+    // std::string delimiter = "";
 
-    for (auto const& condition : node->conditions()) {
-      out_ << delimiter;
-
+    if (node->condition().is_ok()) {
       out_ << "if (";
-      condition->accept(*this);
+      node->condition().value_or_die()->accept(*this);
       out_ << ") ";
-
-      (*body)->accept(*this);
-
-      delimiter = " else ";
-      body++;
     }
+
+    node->body()->accept(*this);
+
+    // for (auto const& condition : node->conditions()) {
+    //  out_ << delimiter;
+
+    //  out_ << "if (";
+    //  condition->accept(*this);
+    //  out_ << ") ";
+
+    //  (*body)->accept(*this);
+
+    //  delimiter = " else ";
+    //  body++;
+    //}
 
     if (node->else_statement().is_ok()) {
       out_ << " else ";

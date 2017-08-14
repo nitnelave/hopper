@@ -264,7 +264,7 @@ Variant<AssertionResult, std::string> get_transformed_ir(
   result.value_or_die()->accept(generator);
   llvm::raw_string_ostream out(ir);
   generator.print(out);
-  return crop_first_lines(ir, 4);
+  return crop_llvm_header(ir);
 }
 
 AssertionResult test_pretty_printer(const std::string& filename) {
