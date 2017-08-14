@@ -1,5 +1,7 @@
 #include "parser/parser.h"
 
+#include <iostream>
+
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
@@ -264,26 +266,39 @@ Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
   EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected '(' after 'if' keyword");
   RETURN_OR_MOVE(auto condition, parse_value());
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
-
   RETURN_OR_MOVE(auto if_body, parse_statement_or_list());
 
-  Option<std::unique_ptr<ast::IfStatement>> else_statement = none;
-  if (current_token().type() == TokenType::ELSE) {
+  ast::IfStatement::ConditionList conditions;
+  ast::IfStatement::BodyList bodies;
+
+  conditions.push_back(std::move(condition));
+  bodies.push_back(std::move(if_body));
+
+  Option<std::unique_ptr<ast::BlockStatement>> else_statement = none;
+  while (current_token().type() == TokenType::ELSE) {
     RETURN_IF_ERROR(get_token());
-
     if (current_token().type() == TokenType::IF) {
-      RETURN_OR_MOVE(else_statement, parse_if_statement());
-    } else {
-      auto else_location = scoped_location();
-      RETURN_OR_MOVE(auto else_body, parse_statement_or_list());
+      RETURN_IF_ERROR(get_token());
+      EXPECT_TOKEN(TokenType::OPEN_PAREN, "Expected '(' after 'if' keyword");
+      RETURN_OR_MOVE(auto condition, parse_value());
+      EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
+      RETURN_OR_MOVE(auto if_body, parse_statement_or_list());
 
-      else_statement = std::make_unique<ast::IfStatement>(
-          else_location.range(), none, std::move(else_body), none);
+      conditions.push_back(std::move(condition));
+      bodies.push_back(std::move(if_body));
+    } else {
+      auto location = scoped_location();
+      if (else_statement.is_ok()) {
+        return ParseError(
+            "You can't have two else statements in a if-elseif-else block",
+            location.range());
+      }
+      RETURN_OR_MOVE(else_statement, parse_statement_or_list());
     }
   }
 
   return std::make_unique<ast::IfStatement>(
-      location.range(), std::move(condition), std::move(if_body),
+      location.range(), std::move(conditions), std::move(bodies),
       std::move(else_statement));
 }
 
