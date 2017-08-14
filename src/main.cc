@@ -65,6 +65,10 @@ int main(int argc, char* argv[]) {
       auto out = codegen::get_ostream_for_file(ir_filename(input));
       // Print the IR to a file.
       generator.print(*out);
+
+      for (auto const& warning : generator.warnings()) {
+        std::cerr << warning.to_string() << std::endl;
+      }
     }
   }
 

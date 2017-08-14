@@ -18,13 +18,17 @@ void CodeGenerator::visit(ast::BlockStatement* node) {
       BasicBlock::Create(context_, current_function_name_, current_function_);
   ir_builder_.SetInsertPoint(current_block);
 
+  bool already_returned = false;
   for (auto const& statement : node->statements()) {
-    statement->accept(*this);
-
-    // TODO: plug the SSA code here for PHI nodes.
-
-    if (has_returned_) {
-      return;
+    if (already_returned) {
+      warning_messages_.push_back(
+          CodeGenWarning("The statement won't be executed because the function "
+                         "already returned",
+                         statement->location()));
+    } else {
+      statement->accept(*this);
+      // TODO: plug the SSA code here for PHI nodes.
+      already_returned = has_returned_;
     }
   }
 }

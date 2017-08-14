@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <memory>
 
 #include "llvm/IR/BasicBlock.h"
@@ -9,6 +10,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "ast/module.h"
+#include "error/error.h"
 #include "visitor/visitor.h"
 
 namespace codegen {
@@ -20,6 +22,21 @@ struct LLVMInitializer {
 
 std::unique_ptr<llvm::raw_fd_ostream> get_ostream_for_file(
     const std::string& filename);
+
+class CodeGenWarning : public GenericError {
+ public:
+  explicit CodeGenWarning(const std::string& message,
+                          const lexer::Range& location)
+      : GenericError(location_line(message, location)) {}
+
+  static std::string location_line(const std::string& message,
+                                   const lexer::Range& location) {
+    std::stringstream ss;
+    ss << message << "\n At " << location.to_string();
+    return ss.str();
+  }
+  ~CodeGenWarning() override = default;
+};
 
 class CodeGenerator : public ast::ASTVisitor {
  public:
@@ -48,6 +65,8 @@ class CodeGenerator : public ast::ASTVisitor {
 
   void print(llvm::raw_ostream& out) const;
 
+  std::list<CodeGenWarning> warnings() const { return warning_messages_; }
+
  private:
   llvm::LLVMContext context_;
   std::unique_ptr<llvm::Module> module_;
@@ -63,6 +82,8 @@ class CodeGenerator : public ast::ASTVisitor {
 
   // True if the statement has fully returned, false otherwise.
   bool has_returned_ = false;
+
+  std::list<CodeGenWarning> warning_messages_;
 
   bool consume_return_value() {
     bool has_returned = has_returned_;
