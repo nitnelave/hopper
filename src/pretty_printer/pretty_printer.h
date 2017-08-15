@@ -45,7 +45,7 @@ class PrettyPrinterVisitor : public ASTVisitor {
   void visit(FunctionArgumentDeclaration* node) override;
 
   void visit(FunctionCall* node) override {
-    node->base().accept(*this);
+    node->base()->accept(*this);
     out_ << '(';
     auto delimiter = "";
     for (auto& arg : node->arguments()) {

@@ -13,12 +13,12 @@ class FunctionCall : public Value {
   using ArgumentList = std::vector<std::unique_ptr<Value>>;
   FunctionCall(lexer::Range range, std::unique_ptr<Value> base,
                ArgumentList args)
-      : Value(std::move(range)),
+      : Value(std::move(range), ValueType::RESULT),
         base_(std::move(base)),
         args_(std::move(args)) {}
 
   // The base of the function, or what comes before the arguments.
-  Value& base() { return *base_; }
+  Value* base() { return base_.get(); }
 
   ArgumentList& arguments() { return args_; }
 

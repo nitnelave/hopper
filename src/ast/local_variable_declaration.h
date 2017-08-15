@@ -16,7 +16,7 @@ class LocalVariableDeclaration : public VariableDeclaration {
       : VariableDeclaration(std::move(location), std::move(id), std::move(type),
                             std::move(value), mut) {}
 
-  ~LocalVariableDeclaration() override = default;
+  virtual ~LocalVariableDeclaration() override = default;
 
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }

@@ -72,4 +72,103 @@ void CodeGenerator::print(raw_ostream& out) const {
   llvm::verifyModule(*module_);
   out << *module_;
 }
+
+void CodeGenerator::add_variable_scope_level() { scoped_variables_.push({}); }
+
+void CodeGenerator::remove_variable_scope_level() {
+  assert(!scoped_variables_.empty() &&
+         "There should be at least one scope level");
+  for (auto const& var : scoped_variables_.top()) {
+    auto var_itr = variables_.find(var);
+    assert(var_itr != std::end(variables_) && "The variable should be present");
+
+    // Remove one scope.
+    var_itr->second.pop();
+
+    // No more scope available.
+    if (var_itr->second.empty()) {
+      variables_.erase(var_itr);
+    }
+  }
+
+  scoped_variables_.pop();
+}
+
+AllocaInst* CodeGenerator::add_variable_to_scope(const std::string& var_name) {
+  auto current_scope = scoped_variables_.top();
+
+  assert(current_scope.find(var_name) == std::end(current_scope) &&
+         "Binding visitor should have detected that behavior");
+
+  auto var_itr = variables_.find(var_name);
+  if (var_itr != std::end(variables_)) {
+    // TODO: add the warning.
+    // error_list_.add_warning(node->location(), "Variable declaration shadowing
+    // another one");
+  } else {
+    variables_[var_name] = {};
+  }
+
+  current_scope.insert(var_name);
+  // TODO: real types
+  auto alloca =
+      ir_builder_.CreateAlloca(IntegerType::get(context_, 32), 0, var_name);
+  variables_[var_name].push(alloca);
+  return alloca;
+}
+
+void CodeGenerator::add_function_scope_level(const std::string& fun_name, Function* llvm_function) {
+  scoped_fun_args_.push({});
+
+  add_function_to_scope(fun_name, llvm_function);
+  add_function_args_to_scope(llvm_function);
+}
+
+void CodeGenerator::remove_function_scope_level() {
+  assert(!scoped_fun_args_.empty() &&
+         "There should be at least one scope level");
+  for (auto const& var : scoped_fun_args_.top()) {
+    auto var_itr = function_args_.find(var);
+    assert(var_itr != std::end(function_args_) && "The variable should be present");
+
+    // Remove one scope.
+    var_itr->second.pop();
+
+    // No more scope available.
+    if (var_itr->second.empty()) {
+      function_args_.erase(var_itr);
+    }
+  }
+
+  scoped_fun_args_.pop();
+}
+
+void CodeGenerator::add_function_to_scope(const std::string& fun_name,
+                                          Function* function) {
+  if (functions_.find(fun_name) != std::end(functions_)) {
+    // TODO: issue warning that we are shadowing one.
+  } else {
+    functions_[fun_name] = {};
+  }
+
+  functions_[fun_name].push(function);
+}
+
+void CodeGenerator::add_function_args_to_scope(Function* function) {
+  for (auto& arg : function->args()) {
+    Value* arg_value = &arg;
+    auto arg_name = arg_value->getName().str();
+
+    scoped_fun_args_.top().insert(arg_name);
+
+    if (function_args_.find(arg_name) != std::end(function_args_)) {
+      // TODO: issue warning for shadowing.
+    } else {
+      function_args_[arg_name] = {};
+    }
+
+    function_args_[arg_name].push(arg_value);
+  }
+}
+
 }  // namespace codegen
