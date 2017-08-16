@@ -196,7 +196,7 @@ struct Location {
 };
 
 struct Range {
-  const std::string file;
+  std::string file;
   struct Position {
     int line;
     int column;
