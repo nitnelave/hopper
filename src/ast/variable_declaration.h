@@ -22,7 +22,7 @@ class VariableDeclaration : public Declaration {
 
   const Option<std::unique_ptr<Value>>& value() const { return value_; }
 
-  ~VariableDeclaration() override = default;
+  virtual ~VariableDeclaration() override = default;
 
  private:
   Option<std::unique_ptr<Value>> value_;

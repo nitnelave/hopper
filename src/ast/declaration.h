@@ -2,6 +2,7 @@
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
+#include "ast/statement.h"
 #include "util/option.h"
 
 namespace ast {
@@ -11,7 +12,7 @@ class Declaration : public Statement {
       : Statement(std::move(location)),
         id_(std::move(id)),
         type_(std::move(type)) {}
-  ~Declaration() override = default;
+  virtual ~Declaration() override = default;
 
   const Identifier& id() const { return id_; }
 
