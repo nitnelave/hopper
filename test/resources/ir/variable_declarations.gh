@@ -1,0 +1,12 @@
+fun test(val a: Int32): Int32 {
+  val b: Int32 = a;
+  return b;
+}
+
+fun main() {
+  val a: Int32 = 1;
+  if (1) {
+    val b: Int32 = a;
+    val c: Int32 = b;
+  }
+}
