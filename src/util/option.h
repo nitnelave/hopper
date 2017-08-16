@@ -34,6 +34,8 @@ class Option {
 
   bool is_ok() const noexcept { return variant_.template is<Value>(); }
 
+  void reset() noexcept { variant_ = none; }
+
   const Value& value_or_die() const { return variant_.template get<Value>(); }
   Value& value_or_die() { return variant_.template get<Value>(); }
   Value consume_value_or_die() { return variant_.template consume<Value>(); }

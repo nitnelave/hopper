@@ -1,0 +1,6 @@
+@a = common global i32
+
+define i32 @main() {
+main:
+  ret i32* @a
+}
