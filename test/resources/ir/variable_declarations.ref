@@ -1,0 +1,26 @@
+define i32 @test(i32 %a) {
+test:
+  %b = alloca i32
+  store i32 %a, i32* %b
+  %0 = load i32, i32* %b
+  ret i32 %0
+}
+
+define i32 @main() {
+main:
+  %a = alloca i32
+  store i32 1, i32* %a
+  br i1 true, label %if.true, label %if.end
+
+if.true:                                          ; preds = %main
+  %b = alloca i32
+  %0 = load i32, i32* %a
+  store i32 %0, i32* %b
+  %c = alloca i32
+  %1 = load i32, i32* %b
+  store i32 %1, i32* %c
+  br label %if.end
+
+if.end:                                           ; preds = %if.true, %main
+  ret void
+}

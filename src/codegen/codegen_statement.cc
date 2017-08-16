@@ -15,9 +15,14 @@ namespace codegen {
 using namespace llvm;  // NOLINT
 
 void CodeGenerator::visit(ast::BlockStatement* node) {
+  auto current_function = current_function_;
   for (auto const& statement : node->statements()) {
     CHECK(!has_returned_);
     statement->accept(*this);
+
+    // Restore state of node.
+    current_function_ = current_function;
+    gen_value_.reset();
     // TODO: plug the SSA code here for PHI nodes.
   }
 }
@@ -46,7 +51,7 @@ void CodeGenerator::visit(ast::IfStatement* node) {
 
   // We generate the if block.
   BasicBlock* if_block =
-      BasicBlock::Create(context_, "if.true", current_function_);
+      BasicBlock::Create(context_, "if.true", current_function_.value_or_die());
   ir_builder_.SetInsertPoint(if_block);
   node->body()->accept(*this);
   auto if_body_returned = consume_return_value();
@@ -58,7 +63,8 @@ void CodeGenerator::visit(ast::IfStatement* node) {
 
   // We generate the else block if needed.
   if (node->else_statement().is_ok()) {
-    else_block = BasicBlock::Create(context_, "if.else", current_function_);
+    else_block = BasicBlock::Create(context_, "if.else",
+                                    current_function_.value_or_die());
     ir_builder_.SetInsertPoint(else_block.value_or_die());
     node->else_statement().value_or_die()->accept(*this);
     else_body_returned = consume_return_value();
@@ -78,7 +84,8 @@ void CodeGenerator::visit(ast::IfStatement* node) {
   // if (cond) return; else if (cond) return; // Same here, implicit else.
   Option<BasicBlock*> ifend_block = none;
   if (!has_returned_) {
-    ifend_block = BasicBlock::Create(context_, "if.end", current_function_);
+    ifend_block = BasicBlock::Create(context_, "if.end",
+                                     current_function_.value_or_die());
   }
 
   CHECK(else_block.is_ok() || ifend_block.is_ok())
