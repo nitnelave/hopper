@@ -9,6 +9,8 @@
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
 
+#include "ast/function_declaration.h"
+
 using namespace llvm;  // NOLINT
 
 namespace codegen {
@@ -72,4 +74,5 @@ void CodeGenerator::print(raw_ostream& out) const {
   llvm::verifyModule(*module_);
   out << *module_;
 }
+
 }  // namespace codegen
