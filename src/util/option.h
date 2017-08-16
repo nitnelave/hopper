@@ -63,6 +63,11 @@ class Option {
   // Need the explicit version.
   Option& operator=(const Option& rhs) { return operator=<Value>(rhs); }
 
+  Option& operator=(const NoneType& /*unused*/) {
+    variant_ = none;
+    return *this;
+  }
+
   template <typename T, typename = typename std::is_convertible<T, Value>>
   Option& operator=(const Option<T>& rhs) {
     if (this != &rhs) {

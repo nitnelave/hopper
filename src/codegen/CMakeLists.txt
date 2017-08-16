@@ -4,6 +4,7 @@ target_sources(${GRACC_LLVM_LIBRARY}
         "${CMAKE_CURRENT_LIST_DIR}/codegen_function.cc"
         "${CMAKE_CURRENT_LIST_DIR}/codegen_statement.cc"
         "${CMAKE_CURRENT_LIST_DIR}/codegen_value.cc"
+        "${CMAKE_CURRENT_LIST_DIR}/codegen_variable.cc"
     PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/codegen.h"
     )
