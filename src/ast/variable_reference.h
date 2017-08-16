@@ -10,7 +10,7 @@ namespace ast {
 class VariableReference : public Value {
  public:
   VariableReference(lexer::Range location, Identifier id)
-      : Value(std::move(location)), id_(std::move(id)) {}
+      : Value(std::move(location), ValueType::VARIABLE), id_(std::move(id)) {}
 
   const Identifier& id() const { return id_; }
 

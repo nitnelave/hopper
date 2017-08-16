@@ -8,7 +8,7 @@ namespace ast {
 class BooleanConstant : public Value {
  public:
   BooleanConstant(lexer::Range range, bool value)
-      : Value(std::move(range)), value_(value) {}
+      : Value(std::move(range), ValueType::CONSTANT), value_(value) {}
 
   bool value() const { return value_; }
 
