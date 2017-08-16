@@ -7,6 +7,8 @@ namespace ast {
 class Statement : public ASTNode {
  public:
   explicit Statement(lexer::Range location) : ASTNode(std::move(location)) {}
+
+  ~Statement() override = default;
 };
 
 }  // namespace ast

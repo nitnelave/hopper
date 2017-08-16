@@ -1,14 +1,17 @@
+#include "codegen/codegen.h"
+
 #include "llvm/IR/CallingConv.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
 
 #include "ast/block_statement.h"
+#include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/return_statement.h"
 #include "ast/value.h"
 #include "ast/value_statement.h"
 #include "ast/variable_declaration.h"
-#include "codegen/codegen.h"
+#include "ast/variable_reference.h"
 
 namespace codegen {
 
@@ -42,13 +45,20 @@ void CodeGenerator::visit(ast::FunctionDeclaration* node) {
   auto llvm_arg = llvm_function->arg_begin();
   auto gh_arg = std::begin(node->arguments());
   for (; llvm_arg != llvm_function->arg_end(); llvm_arg++, gh_arg++) {
-    llvm_arg->setName((*gh_arg)->id().short_name());
+    llvm_arg->setName((*gh_arg)->id().to_string());
     // TODO: put the argument on some stack to retrieve them later ?
   }
 
+  // Create body of the function.
+  add_variable_scope_level();
+  add_function_scope_level(node->id().to_string(), llvm_function, node);
   assert(node->body().is<ast::FunctionDeclaration::StatementsBody>() &&
          "FunctionDeclaration body was not transformed, still a value");
   node->accept_body(*this);
+  remove_variable_scope_level();
+  remove_function_scope_level();
+
+  consume_return_value();
 }
 
 }  // namespace codegen
