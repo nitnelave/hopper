@@ -9,6 +9,8 @@
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
 
+#include "ast/function_declaration.h"
+
 using namespace llvm;  // NOLINT
 
 namespace codegen {
@@ -72,4 +74,89 @@ void CodeGenerator::print(raw_ostream& out) const {
   llvm::verifyModule(*module_);
   out << *module_;
 }
+
+namespace {
+template <typename ScopeType, typename Symbols>
+void remove_scope_level(ScopeType& stacked_scopes, Symbols& symbols) {
+  assert(!stacked_scopes.empty() && "There should be at least one scope level");
+  auto current_scope = stacked_scopes.top();
+  for (auto const& symbol : current_scope) {
+    auto sym_itr = symbols.find(symbol);
+    assert(sym_itr != std::end(symbols) && "The symbol should be present");
+
+    // Remove one scope.
+    sym_itr->second.pop();
+
+    // No more scope available.
+    if (sym_itr->second.empty()) {
+      symbols.erase(sym_itr);
+    }
+  }
+
+  stacked_scopes.pop();
+}
+
+template <typename ScopeType, typename Symbols, typename SymbolType>
+SymbolType add_var_to_scope(ScopeType& stacked_scopes, Symbols& symbols,
+                            const std::string& sym_name,
+                            std::function<SymbolType()> sym_factory) {
+  auto current_scope = stacked_scopes.top();
+  assert(current_scope.find(sym_name) == std::end(current_scope) &&
+         "Binding visitor should have detected that behavior");
+
+  current_scope.insert(sym_name);
+  // TODO: real types
+  auto symbol = sym_factory();
+  symbols[sym_name].push(symbol);
+  return symbol;
+}
+}  // namespace
+
+void CodeGenerator::add_variable_scope_level() { scoped_variables_.push({}); }
+
+void CodeGenerator::remove_variable_scope_level() {
+  remove_scope_level<ScopedVariables, Variables>(scoped_variables_, variables_);
+}
+
+AllocaInst* CodeGenerator::add_variable_to_scope(const std::string& var_name) {
+  return add_var_to_scope<ScopedVariables, Variables, AllocaInst*>(
+      scoped_variables_, variables_, var_name, [this, &var_name]() {
+        return ir_builder_.CreateAlloca(IntegerType::get(context_, 32), nullptr,
+                                        var_name);
+      });
+}
+
+void CodeGenerator::add_function_scope_level(const std::string& fun_name,
+                                             Function* llvm_function,
+                                             ast::FunctionDeclaration* node) {
+  scoped_fun_args_.push({});
+
+  add_function_to_scope(fun_name, llvm_function);
+  add_function_args_to_scope(llvm_function, node);
+}
+
+void CodeGenerator::remove_function_scope_level() {
+  remove_scope_level<ScopedFunctionsArgs, FunctionsArgs>(scoped_fun_args_,
+                                                         function_args_);
+}
+
+void CodeGenerator::add_function_to_scope(const std::string& fun_name,
+                                          Function* function) {
+  functions_[fun_name].push(function);
+}
+
+void CodeGenerator::add_function_args_to_scope(Function* function,
+                                               ast::FunctionDeclaration* node) {
+  auto ast_arg = std::begin(node->arguments());
+  for (auto& arg : function->args()) {
+    Value* arg_value = &arg;
+    auto arg_name = arg_value->getName().str();
+
+    add_var_to_scope<ScopedFunctionsArgs, FunctionsArgs, Value*>(
+        scoped_fun_args_, function_args_, arg_name,
+        [arg_value]() { return arg_value; });
+    ast_arg++;
+  }
+}
+
 }  // namespace codegen
