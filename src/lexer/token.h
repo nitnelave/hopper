@@ -196,13 +196,17 @@ struct Location {
 };
 
 struct Range {
-  const std::string file;
+  std::string file;
   struct Position {
     int line;
     int column;
   };
   Position begin;
   Position end;
+
+  Range() = default;
+
+  Range(const Range&) = default;
 
   Range(std::string file, int line1, int col1, int line2, int col2)
       : file(std::move(file)), begin{line1, col1}, end{line2, col2} {}

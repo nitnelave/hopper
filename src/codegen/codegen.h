@@ -2,6 +2,9 @@
 
 #include <list>
 #include <memory>
+#include <stack>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/IRBuilder.h"
@@ -25,9 +28,14 @@ std::unique_ptr<llvm::raw_fd_ostream> get_ostream_for_file(
     const std::string& filename);
 
 class CodeGenerator : public ast::VisitorWithErrors<> {
- public:
-  using ErrorList = ast::ErrorList<ast::VisitorError>;
+  using Variables =
+      std::unordered_map<ast::Declaration*, llvm::AllocaInst*>;
+  using Functions =
+      std::unordered_map<ast::Declaration*, llvm::Function*>;
+  using FunctionsArgs =
+      std::unordered_map<ast::Declaration*, llvm::Value*>;
 
+ public:
   explicit CodeGenerator(const std::string& name);
   // void visit(ast::Assignment* node) override;
   // void visit(ast::BinaryOp* node) override;
@@ -46,8 +54,8 @@ class CodeGenerator : public ast::VisitorWithErrors<> {
     }
   }
 
-  // void visit(ast::VariableDeclaration* node) override;
-  // void visit(ast::VariableReference* node) override;
+  void visit(ast::LocalVariableDeclaration* node) override;
+  void visit(ast::VariableReference* node) override;
 
   llvm::Module& get_module();
 
@@ -59,6 +67,10 @@ class CodeGenerator : public ast::VisitorWithErrors<> {
   llvm::IRBuilder<> ir_builder_;
   // Return value of visitation of a value node.
   Option<llvm::Value*> gen_value_;
+
+  Variables variables_;
+  Functions functions_;
+  FunctionsArgs functions_args_;
 
   // Current function holding the blocks.
   llvm::Function* current_function_;
