@@ -1,0 +1,9 @@
+fun main() {
+  val a = 3;
+  if (true) {
+    val b = 2;
+    return;
+  }
+  val c = 1;
+  return;
+}

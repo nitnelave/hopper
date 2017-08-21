@@ -60,4 +60,6 @@ void ASTVisitor::visit(BlockStatement* node) {
 
 void ASTVisitor::visit(ValueStatement* node) { node->value()->accept(*this); }
 
+void ASTVisitor::visit(VariableDestruction* /*unused*/) {}
+
 }  // namespace ast

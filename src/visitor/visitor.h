@@ -24,6 +24,7 @@ class ASTVisitor {
   virtual void visit(UnreachableStatement* node);
   virtual void visit(ValueStatement* node);
   virtual void visit(VariableReference* node);
+  virtual void visit(VariableDestruction* node);
 };
 
 }  // namespace ast

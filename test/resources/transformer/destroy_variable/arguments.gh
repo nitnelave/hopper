@@ -1,0 +1,12 @@
+fun toto(val arg1 : Int32, val arg2 : Int8) {
+  val a = 3;
+  if (true) {
+    val b = 2;
+    {
+      val d = 3;
+    }
+    return;
+  }
+  val c = 1;
+  return;
+}
