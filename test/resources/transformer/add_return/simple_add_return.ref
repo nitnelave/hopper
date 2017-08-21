@@ -1,0 +1,28 @@
+fun test() : Void {
+  return;
+}
+fun test2() : Void {
+  (1 + 2);
+  return;
+}
+fun test3() : Void {
+  (1 + 2);
+  {
+    return;
+  }
+  return;
+}
+fun test4() : Void {
+  (1 + 2);
+  return;
+}
+fun test5() : Int64 {
+  return 3;
+}
+fun test6() : Int64 {
+  if (true) {
+    return 3;
+  } else {
+    return 4;
+  }
+}
