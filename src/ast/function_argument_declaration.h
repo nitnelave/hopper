@@ -12,8 +12,9 @@ class FunctionArgumentDeclaration : public VariableDeclaration {
   FunctionArgumentDeclaration(lexer::Range location, Identifier id,
                               Option<Type> type,
                               Option<std::unique_ptr<Value>> value, bool mut)
-      : VariableDeclaration(std::move(location), std::move(id), std::move(type),
-                            std::move(value), mut) {}
+      : VariableDeclaration(
+            std::move(location), NodeType::FUNCTION_ARGUMENT_DECLARATION,
+            std::move(id), std::move(type), std::move(value), mut) {}
 
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }

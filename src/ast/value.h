@@ -8,7 +8,8 @@ namespace ast {
 
 class Value : public ASTNode {
  public:
-  explicit Value(lexer::Range location) : ASTNode(std::move(location)) {}
+  explicit Value(lexer::Range location, NodeType node_type)
+      : ASTNode(std::move(location), node_type) {}
   ~Value() override = default;
 
   Option<Type>& type() { return type_; }

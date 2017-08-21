@@ -13,7 +13,7 @@ class BinaryOp : public Value {
  public:
   BinaryOp(lexer::Range location, std::unique_ptr<Value> left,
            BinaryOperator op, std::unique_ptr<Value> right)
-      : Value(std::move(location)),
+      : Value(std::move(location), NodeType::BINARY_OP),
         left_(std::move(left)),
         op_(op),
         right_(std::move(right)) {}

@@ -13,7 +13,8 @@ extern const lexer::Range builtin_range;
 class BuiltinType : public TypeDeclaration {
  public:
   explicit BuiltinType(Identifier id)
-      : TypeDeclaration(internals::builtin_range, std::move(id)) {}
+      : TypeDeclaration(internals::builtin_range, NodeType::BUILTIN_TYPE,
+                        std::move(id)) {}
 
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
