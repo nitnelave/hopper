@@ -1,0 +1,6 @@
+fun test() {
+  return 3;
+  1 + 2;
+//^^^^^^
+// ERROR: Unreachable code
+}

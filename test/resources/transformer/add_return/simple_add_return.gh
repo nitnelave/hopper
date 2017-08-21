@@ -1,0 +1,25 @@
+fun test() {}
+fun test2() {
+  1+2;
+}
+
+fun test3() {
+  1 + 2;
+  {
+    return;
+  }
+}
+fun test4() {
+  1 + 2;
+  return;
+}
+fun test5() {
+  return 3;
+}
+fun test6() {
+  if (true) {
+    return 3;
+  } else {
+    return 4;
+  }
+}

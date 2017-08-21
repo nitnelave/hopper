@@ -9,8 +9,8 @@ namespace ast {
 
 class VisitorError : public GenericError {
  public:
-  VisitorError(const lexer::Range& range, const std::string& message)
-      : GenericError(message), range_(range) {}
+  VisitorError(lexer::Range range, const std::string& message)
+      : GenericError(message), range_(std::move(range)) {}
 
   std::string to_string() const override {
     return message() + "\n At " + range_.to_string();
@@ -19,7 +19,7 @@ class VisitorError : public GenericError {
   const lexer::Range& location() { return range_; }
 
  private:
-  const lexer::Range& range_;
+  lexer::Range range_;
 };
 
 template <typename Err = VisitorError>
