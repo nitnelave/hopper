@@ -41,6 +41,9 @@ test: cmake
 check: cmake
 	cd $(BUILD_FOLDER) && ${BUILD_COMMAND} check
 
+clean: cmake
+	cd $(BUILD_FOLDER) && ${BUILD_COMMAND} clean
+
 coverage: BUILD_FOLDER=build_coverage
 coverage: CMAKE_FLAGS+=-DENABLE_COVERAGE=ON
 
