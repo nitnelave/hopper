@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "ast/ast.h"
 #include "ast/base_types.h"
@@ -14,19 +15,17 @@ class IfStatement : public Statement {
  public:
   using ConditionList = std::vector<std::unique_ptr<Value>>;
   using BodyList = std::vector<std::unique_ptr<BlockStatement>>;
-  IfStatement(lexer::Range location, Option<std::unique_ptr<Value>> condition,
+  IfStatement(lexer::Range location, std::unique_ptr<Value> condition,
               std::unique_ptr<BlockStatement> body,
-              Option<std::unique_ptr<IfStatement>> else_statement)
+              Option<std::unique_ptr<BlockStatement>> else_statement)
       : Statement(std::move(location)),
         condition_(std::move(condition)),
         body_(std::move(body)),
-        else_statement_(std::move(else_statement)) {
-    assert(condition.is_ok() || !else_statement.is_ok());
-  }
+        else_statement_(std::move(else_statement)) {}
 
-  const Option<std::unique_ptr<Value>>& condition() const { return condition_; }
+  const std::unique_ptr<Value>& condition() const { return condition_; }
   const std::unique_ptr<BlockStatement>& body() const { return body_; }
-  const Option<std::unique_ptr<IfStatement>>& else_statement() const {
+  const Option<std::unique_ptr<BlockStatement>>& else_statement() const {
     return else_statement_;
   }
 
@@ -35,9 +34,9 @@ class IfStatement : public Statement {
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
-  Option<std::unique_ptr<Value>> condition_;
+  std::unique_ptr<Value> condition_;
   std::unique_ptr<BlockStatement> body_;
-  Option<std::unique_ptr<IfStatement>> else_statement_;
+  Option<std::unique_ptr<BlockStatement>> else_statement_;
 };
 
 }  // namespace ast

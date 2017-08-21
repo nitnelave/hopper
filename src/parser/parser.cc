@@ -266,22 +266,16 @@ Parser::ErrorOrPtr<ast::IfStatement> Parser::parse_if_statement() {
   EXPECT_TOKEN(TokenType::CLOSE_PAREN, "Expected ')' before 'if' body");
   RETURN_OR_MOVE(auto if_body, parse_statement_or_list());
 
-  Option<std::unique_ptr<ast::IfStatement>> else_statement = none;
   if (current_token().type() == TokenType::ELSE) {
     RETURN_IF_ERROR(get_token());
-    if (current_token().type() == TokenType::IF) {
-      RETURN_OR_MOVE(else_statement, parse_if_statement());
-    } else {
-      auto else_location = scoped_location();
-      RETURN_OR_MOVE(auto else_body, parse_statement_or_list());
-      else_statement = std::make_unique<ast::IfStatement>(
-          else_location.range(), none, std::move(else_body), none);
-    }
+    RETURN_OR_MOVE(auto else_statement, parse_statement_or_list());
+    return std::make_unique<ast::IfStatement>(
+        location.range(), std::move(condition), std::move(if_body),
+        std::move(else_statement));
   }
 
   return std::make_unique<ast::IfStatement>(
-      location.range(), std::move(condition), std::move(if_body),
-      std::move(else_statement));
+      location.range(), std::move(condition), std::move(if_body), none);
 }
 
 Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {

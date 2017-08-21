@@ -1,25 +1,22 @@
 define i32 @main() {
 main:
-  br i1 true, label %main1, label %if.else
+  br i1 true, label %if.true, label %if.else
 
-main1:                                            ; preds = %main
+if.true:                                          ; preds = %main
   ret i32 1
 
 if.else:                                          ; preds = %main
-  br i1 true, label %main2, label %if.else3
+  br i1 true, label %if.true1, label %if.else2
 
-main2:                                            ; preds = %if.else
+if.true1:                                         ; preds = %if.else
   br label %if.end
 
-if.else3:                                         ; preds = %if.else
-  br label %main4
-
-main4:                                            ; preds = %if.else3
+if.else2:                                         ; preds = %if.else
   ret i32 4
 
-if.end:                                           ; preds = %main2
-  br label %if.end5
+if.end:                                           ; preds = %if.true1
+  br label %if.end3
 
-if.end5:                                          ; preds = %if.end
+if.end3:                                          ; preds = %if.end
   ret i32 5
 }
