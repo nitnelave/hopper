@@ -34,6 +34,10 @@ class FunctionDeclaration : public Declaration {
         arguments_(std::move(arguments)),
         body_(std::move(body)) {}
 
+  const std::string& name() {
+    return id().to_string();
+  }
+
   const ArgumentList& arguments() const { return arguments_; }
 
   Variant<StatementsBody, ValueBody>& body() { return body_; }

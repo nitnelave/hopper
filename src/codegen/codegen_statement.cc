@@ -15,16 +15,10 @@ namespace codegen {
 using namespace llvm;  // NOLINT
 
 void CodeGenerator::visit(ast::BlockStatement* node) {
-  bool already_returned = false;
   for (auto const& statement : node->statements()) {
-    if (already_returned) {
-      error_list_.add_warning(statement->location(), "Unreachable code");
-      break;
-    } else {
-      statement->accept(*this);
-      // TODO: plug the SSA code here for PHI nodes.
-      already_returned = has_returned_;
-    }
+    CHECK(!has_returned_);
+    statement->accept(*this);
+    // TODO: plug the SSA code here for PHI nodes.
   }
 }
 
