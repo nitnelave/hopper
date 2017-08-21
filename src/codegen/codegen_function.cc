@@ -48,6 +48,9 @@ void CodeGenerator::visit(ast::FunctionDeclaration* node) {
 
   assert(node->body().is<ast::FunctionDeclaration::StatementsBody>() &&
          "FunctionDeclaration body was not transformed, still a value");
+  BasicBlock* body_block =
+      BasicBlock::Create(context_, current_function_name_, current_function_);
+  ir_builder_.SetInsertPoint(body_block);
   node->accept_body(*this);
 }
 

@@ -7,6 +7,7 @@
 #include "ast/if_statement.h"
 #include "ast/return_statement.h"
 #include "ast/value.h"
+#include "util/logging.h"
 #include "util/option.h"
 
 namespace codegen {
@@ -14,10 +15,6 @@ namespace codegen {
 using namespace llvm;  // NOLINT
 
 void CodeGenerator::visit(ast::BlockStatement* node) {
-  auto current_block =
-      BasicBlock::Create(context_, current_function_name_, current_function_);
-  ir_builder_.SetInsertPoint(current_block);
-
   bool already_returned = false;
   for (auto const& statement : node->statements()) {
     if (already_returned) {
@@ -45,39 +42,37 @@ void CodeGenerator::visit(ast::ReturnStatement* node) {
 
 void CodeGenerator::visit(ast::IfStatement* node) {
   auto if_start_block = ir_builder_.GetInsertBlock();
-  Option<BasicBlock*> ifend_block = none;
 
-  Option<Value*> condition_value = none;
-  if (node->condition().is_ok()) {
-    node->condition().value_or_die()->accept(*this);
-    condition_value = gen_value_.value_or_die();
-  }
+  node->condition()->accept(*this);
+  CHECK(gen_value_.is_ok()) << "If condition with no value";
+  Value* condition_value = gen_value_.value_or_die();
+  // Create the initial comparison.
+  auto equality =
+      ir_builder_.CreateICmpNE(condition_value, ir_builder_.getInt32(0));
 
   // We generate the if block.
+  BasicBlock* if_block =
+      BasicBlock::Create(context_, "if.true", current_function_);
+  ir_builder_.SetInsertPoint(if_block);
   node->body()->accept(*this);
   auto if_body_returned = consume_return_value();
-  BasicBlock* if_block = ir_builder_.GetInsertBlock();
+  BasicBlock* end_if_block = ir_builder_.GetInsertBlock();
 
   bool else_body_returned = false;
   Option<BasicBlock*> else_block = none;
-  Option<BasicBlock*> ifelse_block = none;
+  Option<BasicBlock*> end_else_block = none;
 
   // We generate the else block if needed.
   if (node->else_statement().is_ok()) {
-    ifend_block = BasicBlock::Create(context_, "if.else", current_function_);
-    ifelse_block = ifend_block;
-
-    ir_builder_.SetInsertPoint(ifend_block.value_or_die());
+    else_block = BasicBlock::Create(context_, "if.else", current_function_);
+    ir_builder_.SetInsertPoint(else_block.value_or_die());
     node->else_statement().value_or_die()->accept(*this);
     else_body_returned = consume_return_value();
-    else_block = ir_builder_.GetInsertBlock();
+    end_else_block = ir_builder_.GetInsertBlock();
   }
 
-  bool else_only_returned =
-      !condition_value.is_ok() && if_body_returned && !else_block.is_ok();
-  bool if_or_elseif_returned =
-      if_body_returned && else_body_returned && else_block.is_ok();
-  has_returned_ = if_or_elseif_returned || else_only_returned;
+  // The if has returned only if both bodies have returned.
+  has_returned_ = if_body_returned && else_body_returned;
 
   // We check if the statement returned in all cases. If it didn't, the we need
   // to create the 'if continuation' so that the execution continue after
@@ -87,36 +82,36 @@ void CodeGenerator::visit(ast::IfStatement* node) {
   // if (cond) return; else return; // We don't need to continue as we already
   // returned in all cases.
   // if (cond) return; else if (cond) return; // Same here, implicit else.
+  Option<BasicBlock*> ifend_block = none;
   if (!has_returned_) {
     ifend_block = BasicBlock::Create(context_, "if.end", current_function_);
   }
 
+  CHECK(else_block.is_ok() || ifend_block.is_ok())
+      << "No else, but no end generated.";
   // We make the jump from the if start block to the bodies.
+  // Handle the if alone, or the if else.
   ir_builder_.SetInsertPoint(if_start_block);
-  if (condition_value.is_ok()) {
-    auto equality = ir_builder_.CreateICmpNE(condition_value.value_or_die(),
-                                             ir_builder_.getInt32(0));
-    // Handle the if alone, or the if else.
-    ir_builder_.CreateCondBr(equality, if_block,
-                             ifelse_block.value_or(ifend_block.value_or_die()));
-  } else {
-    // Handle the else alone.
-    ir_builder_.CreateBr(if_block);
-  }
+  ir_builder_.CreateCondBr(equality, if_block,
+                           else_block.is_ok() ? else_block.value_or_die()
+                                              : ifend_block.value_or_die());
 
   // We jump from the bodies to if.end if needed.
-  if (has_returned_) return;
+  if (!has_returned_) {
+    assert(ifend_block.is_ok());
+    const auto& ifend = ifend_block.value_or_die();
+    if (!if_body_returned) {
+      ir_builder_.SetInsertPoint(end_if_block);
+      ir_builder_.CreateBr(ifend);
+    }
 
-  if (!if_body_returned) {
-    ir_builder_.SetInsertPoint(if_block);
-    ir_builder_.CreateBr(ifend_block.value_or_die());
+    if (!else_body_returned && else_block.is_ok()) {
+      assert(end_else_block.is_ok());
+      ir_builder_.SetInsertPoint(end_else_block.value_or_die());
+      ir_builder_.CreateBr(ifend);
+    }
+
+    ir_builder_.SetInsertPoint(ifend);
   }
-
-  if (!else_body_returned && else_block.is_ok()) {
-    ir_builder_.SetInsertPoint(else_block.value_or_die());
-    ir_builder_.CreateBr(ifend_block.value_or_die());
-  }
-
-  ir_builder_.SetInsertPoint(ifend_block.value_or_die());
 }
 }  // namespace codegen
