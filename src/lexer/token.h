@@ -227,6 +227,8 @@ struct Range {
   }
 };
 
+inline Range invalid_range() { return Range("<invalid>", 0, 0, 0, 0); }
+
 inline std::ostream& operator<<(std::ostream& os, const Location& loc) {
   return os << loc.to_string();
 }
