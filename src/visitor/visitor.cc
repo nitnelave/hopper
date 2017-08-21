@@ -27,7 +27,12 @@ void ASTVisitor::visit(FunctionDeclaration* node) {
   node->accept_body(*this);
 }
 
-void ASTVisitor::visit(IfStatement* /* unused */) {}
+void ASTVisitor::visit(IfStatement* node) {
+  node->condition()->accept(*this);
+  node->body()->accept(*this);
+  if (node->else_statement().is_ok())
+    node->else_statement().value_or_die()->accept(*this);
+}
 
 void ASTVisitor::visit(IntConstant* /*unused*/) {}
 void ASTVisitor::visit(Module* node) {

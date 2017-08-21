@@ -1,8 +1,8 @@
 define i32 @main() {
 main:
-  br i1 true, label %main1, label %if.end
+  br i1 true, label %if.true, label %if.end
 
-main1:                                            ; preds = %main
+if.true:                                          ; preds = %main
   ret i32 1
 
 if.end:                                           ; preds = %main

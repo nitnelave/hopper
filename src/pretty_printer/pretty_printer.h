@@ -85,11 +85,9 @@ class PrettyPrinterVisitor : public ASTVisitor {
   }
 
   void visit(IfStatement* node) override {
-    if (node->condition().is_ok()) {
-      out_ << "if (";
-      node->condition().value_or_die()->accept(*this);
-      out_ << ") ";
-    }
+    out_ << "if (";
+    node->condition()->accept(*this);
+    out_ << ") ";
 
     node->body()->accept(*this);
 
