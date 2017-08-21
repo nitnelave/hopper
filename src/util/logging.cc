@@ -47,7 +47,7 @@ Logger log_if(Severity s, bool condition) {
 
 Logger log_fatal() { return Logger(std::cerr, true, true); }
 
-Logger check(bool condition) {
+Logger check_or_die(bool condition) {
   // If condition is false, print messages and then crash.
   return Logger(std::cerr, !condition, !condition);
 }
