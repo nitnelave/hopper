@@ -13,6 +13,11 @@ fun test2() : Int {
   return true;
 }
 fun test3() {
+  if (true) {
+    return;
+  } else {
+    return;
+  }
   test();
   return;
 }
