@@ -1,0 +1,12 @@
+fun main() {
+  val a = 3;
+  val b = 3;
+  {
+    val c = 4;
+    val d = 5;
+    {
+      val e = 6;
+    }
+    return;
+  }
+}

@@ -15,6 +15,7 @@
 #include "ast/return_statement.h"
 #include "ast/unreachable.h"
 #include "ast/value_statement.h"
+#include "ast/variable_destruction.h"
 #include "ast/variable_reference.h"
 
 namespace ast {
@@ -100,6 +101,10 @@ class PrettyPrinterVisitor : public ASTVisitor {
 
   void visit(UnreachableStatement* /*unused*/) override {
     out_ << "//unreachable//";
+  }
+
+  void visit(VariableDestruction* node) override {
+    out_ << "//destroy " << node->declaration()->id().to_string() << "//";
   }
 
   void visit(BlockStatement* node) override {
