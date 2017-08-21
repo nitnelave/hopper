@@ -7,8 +7,9 @@
 namespace ast {
 class Declaration : public Statement {
  public:
-  Declaration(lexer::Range location, Identifier id, Option<Type> type)
-      : Statement(std::move(location)),
+  Declaration(lexer::Range location, NodeType node_type, Identifier id,
+              Option<Type> type)
+      : Statement(std::move(location), node_type),
         id_(std::move(id)),
         type_(std::move(type)) {}
   ~Declaration() override = default;

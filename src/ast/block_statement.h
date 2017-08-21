@@ -14,11 +14,12 @@ class BlockStatement : public Statement {
   using StatementList = std::vector<std::unique_ptr<Statement>>;
 
   BlockStatement(lexer::Range location, StatementList statements)
-      : Statement(std::move(location)), statements_(std::move(statements)) {}
+      : Statement(std::move(location), NodeType::BLOCK_STATEMENT),
+        statements_(std::move(statements)) {}
 
   ~BlockStatement() override = default;
 
-  StatementList const& statements() const { return statements_; }
+  StatementList& statements() { return statements_; }
 
  private:
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }

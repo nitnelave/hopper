@@ -18,7 +18,7 @@ class IfStatement : public Statement {
   IfStatement(lexer::Range location, std::unique_ptr<Value> condition,
               std::unique_ptr<BlockStatement> body,
               Option<std::unique_ptr<BlockStatement>> else_statement)
-      : Statement(std::move(location)),
+      : Statement(std::move(location), NodeType::IF_STATEMENT),
         condition_(std::move(condition)),
         body_(std::move(body)),
         else_statement_(std::move(else_statement)) {}

@@ -22,13 +22,15 @@ class FunctionDeclaration : public Declaration {
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type,
                       StatementsBody body)
-      : Declaration(std::move(location), std::move(id), std::move(type)),
+      : Declaration(std::move(location), NodeType::FUNCTION_DECLARATION,
+                    std::move(id), std::move(type)),
         arguments_(std::move(arguments)),
         body_(std::move(body)) {}
 
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type, ValueBody body)
-      : Declaration(std::move(location), std::move(id), std::move(type)),
+      : Declaration(std::move(location), NodeType::FUNCTION_DECLARATION,
+                    std::move(id), std::move(type)),
         arguments_(std::move(arguments)),
         body_(std::move(body)) {}
 

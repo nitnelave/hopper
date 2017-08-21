@@ -13,7 +13,7 @@ class FunctionCall : public Value {
   using ArgumentList = std::vector<std::unique_ptr<Value>>;
   FunctionCall(lexer::Range range, std::unique_ptr<Value> base,
                ArgumentList args)
-      : Value(std::move(range)),
+      : Value(std::move(range), NodeType::FUNCTION_CALL),
         base_(std::move(base)),
         args_(std::move(args)) {}
 

@@ -13,7 +13,8 @@ namespace ast {
 class ReturnStatement : public Statement {
  public:
   ReturnStatement(lexer::Range location, Option<std::unique_ptr<Value>> value)
-      : Statement(std::move(location)), value_(std::move(value)) {}
+      : Statement(std::move(location), NodeType::RETURN_STATEMENT),
+        value_(std::move(value)) {}
 
   const Option<std::unique_ptr<Value>>& value() const { return value_; }
 

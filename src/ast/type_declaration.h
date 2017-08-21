@@ -6,8 +6,8 @@
 namespace ast {
 class TypeDeclaration : ASTNode {
  public:
-  TypeDeclaration(lexer::Range location, Identifier id)
-      : ASTNode(std::move(location)), id_(std::move(id)) {}
+  TypeDeclaration(lexer::Range location, NodeType node_type, Identifier id)
+      : ASTNode(std::move(location), node_type), id_(std::move(id)) {}
   const Identifier& id() const { return id_; }
 
  private:

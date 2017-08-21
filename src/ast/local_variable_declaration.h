@@ -13,8 +13,9 @@ class LocalVariableDeclaration : public VariableDeclaration {
   LocalVariableDeclaration(lexer::Range location, Identifier id,
                            Option<Type> type,
                            Option<std::unique_ptr<Value>> value, bool mut)
-      : VariableDeclaration(std::move(location), std::move(id), std::move(type),
-                            std::move(value), mut) {}
+      : VariableDeclaration(std::move(location),
+                            NodeType::LOCAL_VARIABLE_DECLARATION, std::move(id),
+                            std::move(type), std::move(value), mut) {}
 
   ~LocalVariableDeclaration() override = default;
 

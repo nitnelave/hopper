@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ast/ast.h"
 
 namespace ast {
@@ -7,7 +9,8 @@ namespace ast {
 class ValueStatement : public Statement {
  public:
   explicit ValueStatement(lexer::Range location, std::unique_ptr<Value> value)
-      : Statement(std::move(location)), value_(std::move(value)) {}
+      : Statement(std::move(location), NodeType::VALUE_STATEMENT),
+        value_(std::move(value)) {}
 
   const std::unique_ptr<Value>& value() const { return value_; }
 

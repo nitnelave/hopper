@@ -10,9 +10,11 @@ namespace ast {
 
 class VariableDeclaration : public Declaration {
  public:
-  VariableDeclaration(lexer::Range location, Identifier id, Option<Type> type,
-                      Option<std::unique_ptr<Value>> value, bool mut)
-      : Declaration(std::move(location), std::move(id), std::move(type)),
+  VariableDeclaration(lexer::Range location, NodeType node_type, Identifier id,
+                      Option<Type> type, Option<std::unique_ptr<Value>> value,
+                      bool mut)
+      : Declaration(std::move(location), node_type, std::move(id),
+                    std::move(type)),
         value_(std::move(value)),
         mut_(mut) {
     assert(type.is_ok() || value.is_ok());
