@@ -10,6 +10,7 @@ cache:
     - ${TRAVIS_BUILD_DIR}/gtest
     - ${TRAVIS_BUILD_DIR}/gflags
     - ${TRAVIS_BUILD_DIR}/lcov
+    - ${TRAVIS_BUILD_DIR}/boost
 
 git:
   depth: 3
@@ -68,6 +69,15 @@ install:
     fi
 
 
+boost_install_includes: &boost_install_includes |
+  if [ ! -d ${TRAVIS_BUILD_DIR}/boost ]; then
+    tmp=$(mktemp -d)
+    cd $tmp
+    wget -q https://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.gz
+    tar xf boost* boost_1_65_0/boost/
+    mv boost_1_65_0/boost ${TRAVIS_BUILD_DIR}
+  fi
+
 
 cmake_command: &cmake_command |
       mkdir -p "${BUILD_DIR}"
@@ -80,7 +90,8 @@ cmake_command: &cmake_command |
                             -DCMAKE_CXX_FLAGS=${CXXFLAGS}
                             -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest
                             -Dgflags_DIR=${TRAVIS_BUILD_DIR}/gflags/gflags-master/build
-                            -DENABLE_COVERAGE=${COVERAGE}"
+                            -DENABLE_COVERAGE=${COVERAGE}
+                            -DBOOST_INCLUDEDIR=${TRAVIS_BUILD_DIR}"
       echo "CMake_options: ${CMAKE_OPTIONS}"
       cmake ${CMAKE_OPTIONS} ..
 
@@ -100,6 +111,7 @@ matrix:
             - valgrind
       before_install:
         - pip install --user cpp-coveralls
+        - *boost_install_includes
       script:
         - *cmake_command
         - make -j${JOBS} gracc
@@ -117,6 +129,7 @@ matrix:
             - clang-tidy-3.8
             - python
       script:
+        - *boost_install_includes
         - *cmake_command
         - |
           make -j${JOBS} googletest
@@ -130,6 +143,7 @@ matrix:
             - *apt_base_packages
             - clang-format-3.8
       script:
+        - *boost_install_includes
         - *cmake_command
         - ${TRAVIS_BUILD_DIR}/tools/clang-format.sh --check
 
