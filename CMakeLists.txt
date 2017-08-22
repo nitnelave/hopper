@@ -30,6 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wno-long-long \
     -pedantic \
     -Werror \
+    -fno-rtti \
     ")
 
 set(TEST_FLAGS "--test_resource_folder=${PROJECT_TEST_RESOURCE_DIR}")
@@ -38,7 +39,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(gflags REQUIRED)
 find_package(LLVM REQUIRED CONFIG)
-include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
+find_package(Boost REQUIRED)
+include_directories(SYSTEM ${LLVM_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 # configure a header file to pass some of the CMake settings
