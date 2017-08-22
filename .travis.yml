@@ -10,7 +10,7 @@ cache:
     - ${TRAVIS_BUILD_DIR}/gtest
     - ${TRAVIS_BUILD_DIR}/gflags
     - ${TRAVIS_BUILD_DIR}/lcov
-    - ${TRAVIS_BUILD_DIR}/boost
+    - ${TRAVIS_BUILD_DIR}/boost_cache
 
 git:
   depth: 3
@@ -70,12 +70,12 @@ install:
 
 
 boost_install_includes: &boost_install_includes |
-  if [ ! -d ${TRAVIS_BUILD_DIR}/boost ]; then
+  if [ ! -d ${TRAVIS_BUILD_DIR}/boost_cache/boost ]; then
     tmp=$(mktemp -d)
     cd $tmp
     wget -q https://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.gz
     tar xf boost* boost_1_65_0/boost/
-    mv boost_1_65_0/boost ${TRAVIS_BUILD_DIR}
+    mv boost_1_65_0/boost ${TRAVIS_BUILD_DIR}/boost_cache
   fi
 
 
@@ -91,7 +91,7 @@ cmake_command: &cmake_command |
                             -DGTEST_INSTALL_PATH=${TRAVIS_BUILD_DIR}/gtest
                             -Dgflags_DIR=${TRAVIS_BUILD_DIR}/gflags/gflags-master/build
                             -DENABLE_COVERAGE=${COVERAGE}
-                            -DBOOST_INCLUDEDIR=${TRAVIS_BUILD_DIR}"
+                            -DBOOST_INCLUDEDIR=${TRAVIS_BUILD_DIR}/boost_cache"
       echo "CMake_options: ${CMAKE_OPTIONS}"
       cmake ${CMAKE_OPTIONS} ..
 
