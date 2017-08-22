@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/type_index.hpp>
 #include <cassert>
 #include <cstddef>  // size_t
 #include <functional>
@@ -336,7 +337,7 @@ class Variant {
   T& get() {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return get_unchecked<T>();  // NOLINT
-    throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
+    throw BadVariantAccess(std::string("in get<") + boost::typeindex::type_id<T>().pretty_name() + ">()");
   }
 
   template <typename T, typename std::enable_if<
@@ -345,7 +346,7 @@ class Variant {
   const T& get() const {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return get_unchecked<T>();  // NOLINT
-    throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
+    throw BadVariantAccess(std::string("in get<") + boost::typeindex::type_id<T>().pretty_name() + ">()");
   }
 
   template <typename T, typename std::enable_if<
@@ -355,7 +356,7 @@ class Variant {
     if (type_index_ == internals::DirectType<T, Types...>::index) {
       return consume_unchecked<T>();
     }
-    throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
+    throw BadVariantAccess(std::string("in get<") + boost::typeindex::type_id<T>().pretty_name() + ">()");
   }
 
   // get_unchecked<T>()
@@ -392,7 +393,7 @@ class Variant {
   T& get() {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return get_unchecked<T>();
-    throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
+    throw BadVariantAccess(std::string("in get<") + boost::typeindex::type_id<T>().pretty_name() + ">()");
   }
 
   template <typename T,
@@ -403,7 +404,7 @@ class Variant {
   const T& get() const {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return get_unchecked<T>();
-    throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
+    throw BadVariantAccess(std::string("in get<") + boost::typeindex::type_id<T>().pretty_name() + ">()");
   }
 
   template <
@@ -414,7 +415,7 @@ class Variant {
   T consume() {
     if (type_index_ == internals::DirectType<T, Types...>::index)
       return consume_unchecked<T>();
-    throw BadVariantAccess(std::string("in get<") + typeid(T).name() + ">()");
+    throw BadVariantAccess(std::string("in get<") + boost::typeindex::type_id<T>().pretty_name() + ">()");
   }
 
   // get_unchecked<T>() - T stored as std::reference_wrapper<T>
