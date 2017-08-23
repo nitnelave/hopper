@@ -24,7 +24,7 @@ struct LLVMInitializer {
 std::unique_ptr<llvm::raw_fd_ostream> get_ostream_for_file(
     const std::string& filename);
 
-class CodeGenerator : public ast::ASTVisitor {
+class CodeGenerator : public ast::VisitorWithErrors<> {
  public:
   using ErrorList = ast::ErrorList<ast::VisitorError>;
 
@@ -53,8 +53,6 @@ class CodeGenerator : public ast::ASTVisitor {
 
   void print(llvm::raw_ostream& out) const;
 
-  const ErrorList& error_list() const { return error_list_; }
-
  private:
   llvm::LLVMContext context_;
   std::unique_ptr<llvm::Module> module_;
@@ -70,8 +68,6 @@ class CodeGenerator : public ast::ASTVisitor {
 
   // True if the statement has fully returned, false otherwise.
   bool has_returned_ = false;
-
-  ErrorList error_list_;
 
   bool consume_return_value() {
     bool has_returned = has_returned_;

@@ -96,18 +96,17 @@ void TypeChecker::visit(ast::BinaryOp* node) {
              is_boolean(right_type)) {
     node->type() = &ast::types::boolean;
   } else {
-    error_list_.add_error(node->location(),
-                          "Invalid operand types for binary operation `" +
-                              to_string(node->operation()) + "': `" +
-                              left_type.to_string() + "' and `" +
-                              right_type.to_string() + "'");
+    add_error(node->location(), "Invalid operand types for binary operation `" +
+                                    to_string(node->operation()) + "': `" +
+                                    left_type.to_string() + "' and `" +
+                                    right_type.to_string() + "'");
   }
 }
 
 void TypeChecker::visit(ast::ReturnStatement* node) {
-  size_t num_errors = error_list_.errors().size();
+  size_t num_errors = error_list().errors().size();
   ASTVisitor::visit(node);
-  if (num_errors < error_list_.errors().size()) return;
+  if (num_errors < error_list().errors().size()) return;
 
   const Type value_type = [&]() {
     if (node->value().is_ok()) {
@@ -119,12 +118,11 @@ void TypeChecker::visit(ast::ReturnStatement* node) {
   }();
   if (function_return_type_.is_ok()) {
     if (function_return_type_.value_or_die() != value_type) {
-      error_list_.add_error(
-          node->location(),
-          "Invalid return type: the function returns `" +
-              function_return_type_.value_or_die().to_string() +
-              "', but the return value is of type `" + value_type.to_string() +
-              "'");
+      add_error(node->location(),
+                "Invalid return type: the function returns `" +
+                    function_return_type_.value_or_die().to_string() +
+                    "', but the return value is of type `" +
+                    value_type.to_string() + "'");
       return;
     }
   }
@@ -133,12 +131,12 @@ void TypeChecker::visit(ast::ReturnStatement* node) {
 
 void TypeChecker::visit(ast::FunctionDeclaration* node) {
   // Assumes we ran the FunctionValueBody transformer first.
-  size_t num_errors = error_list_.errors().size();
+  size_t num_errors = error_list().errors().size();
 
   function_return_type_ = node->type();
   // Visit the children.
   ASTVisitor::visit(node);
-  if (num_errors < error_list_.errors().size())
+  if (num_errors < error_list().errors().size())
     // Errors while processing the body.
     return;
   // Visit all the statements, looking for return statements, collect the

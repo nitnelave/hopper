@@ -30,7 +30,7 @@ void VoidFunctionReturnAdder::visit(ast::BlockStatement* node) {
        ++stmt_it) {
     const auto& statement = *stmt_it;
     if (has_returned_) {
-      error_list_.add_error(statement->location(), "Unreachable code");
+      add_error(statement->location(), "Unreachable code");
       statements.erase(stmt_it, statements.end());
       break;
     }
@@ -46,7 +46,6 @@ void VoidFunctionReturnAdder::visit(ast::FunctionDeclaration* node) {
   CHECK(type.is_resolved()) << "Function return type not resolved: "
                             << node->name();
 
-
   using StatementsBody = ast::FunctionDeclaration::StatementsBody;
   CHECK(node->body().is<StatementsBody>())
       << "Function should have a statements body:" << node->name();
@@ -61,8 +60,8 @@ void VoidFunctionReturnAdder::visit(ast::FunctionDeclaration* node) {
       statements->statements().emplace_back(
           std::make_unique<ast::ReturnStatement>(lexer::invalid_range(), none));
     } else {
-      error_list_.add_error(node->location(),
-                            "Reached the end of a function not returning void");
+      add_error(node->location(),
+                "Reached the end of a function not returning void");
     }
   }
 }
