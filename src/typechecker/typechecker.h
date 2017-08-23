@@ -9,11 +9,9 @@
 #include "visitor/error_visitor.h"
 
 namespace typechecker {
-class TypeChecker : public ast::ASTVisitor {
+class TypeChecker : public ast::VisitorWithErrors<> {
  public:
   using ErrorList = ast::ErrorList<ast::VisitorError>;
-
-  const ErrorList& error_list() const { return error_list_; }
 
   void visit(ast::BooleanConstant* node) override;
   void visit(ast::IntConstant* node) override;
@@ -25,6 +23,5 @@ class TypeChecker : public ast::ASTVisitor {
  private:
   // We may have to turn that into a stack to support nested functions.
   Option<ast::Type> function_return_type_ = none;
-  ErrorList error_list_;
 };
 }  // namespace typechecker

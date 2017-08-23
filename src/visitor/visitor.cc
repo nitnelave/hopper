@@ -11,6 +11,10 @@
 
 namespace ast {
 
+// We can use directly `visit` instead of `accept` when we know the concrete
+// type. If the type is changed to an abstract one, it will fail to compile, so
+// we are safe.
+
 void ASTVisitor::visit(Assignment* /*unused*/) {}
 void ASTVisitor::visit(BooleanConstant* /*unused*/) {}
 void ASTVisitor::visit(BinaryOp* node) {
@@ -22,16 +26,16 @@ void ASTVisitor::visit(FunctionArgumentDeclaration* /*unused*/) {}
 void ASTVisitor::visit(FunctionCall* /*unused*/) {}
 void ASTVisitor::visit(FunctionDeclaration* node) {
   for (const auto& argument : node->arguments()) {
-    argument->accept(*this);
+    visit(argument.get());
   }
   node->accept_body(*this);
 }
 
 void ASTVisitor::visit(IfStatement* node) {
   node->condition()->accept(*this);
-  node->body()->accept(*this);
+  visit(node->body().get());
   if (node->else_statement().is_ok())
-    node->else_statement().value_or_die()->accept(*this);
+    visit(node->else_statement().value_or_die().get());
 }
 
 void ASTVisitor::visit(IntConstant* /*unused*/) {}
