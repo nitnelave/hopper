@@ -23,6 +23,7 @@ enum class NodeType {
   RETURN_STATEMENT,
   SCOPE_BLOCK,
   UNARY_OP,
+  UNREACHABLE,
   VALUE_STATEMENT,
   VARIABLE_DESTRUCTION,
   VARIABLE_REFERENCE,
@@ -75,6 +76,7 @@ class Module;
 class ReturnStatement;
 // class ScopeBlock;
 // class UnaryOp;
+class UnreachableStatement;
 class ValueStatement;
 class VariableDestruction;
 class VariableReference;

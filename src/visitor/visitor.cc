@@ -50,6 +50,7 @@ void ASTVisitor::visit(LocalVariableDeclaration* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }
 void ASTVisitor::visit(VariableReference* /*unused*/) {}
+void ASTVisitor::visit(UnreachableStatement* /*unused*/) {}
 
 void ASTVisitor::visit(BlockStatement* node) {
   for (const auto& statement : node->statements()) {

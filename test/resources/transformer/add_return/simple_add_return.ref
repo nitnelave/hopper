@@ -10,6 +10,7 @@ fun test3() : Void {
   {
     return;
   }
+  //unreachable//
 }
 fun test4() : Void {
   (1 + 2);
@@ -24,4 +25,5 @@ fun test6() : Int64 {
   } else {
     return 4;
   }
+  //unreachable//
 }

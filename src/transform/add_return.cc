@@ -5,6 +5,7 @@
 #include "ast/function_declaration.h"
 #include "ast/if_statement.h"
 #include "ast/return_statement.h"
+#include "ast/unreachable.h"
 #include "ast/variable_declaration.h"
 #include "util/logging.h"
 
@@ -55,6 +56,11 @@ void VoidFunctionReturnAdder::visit(ast::FunctionDeclaration* node) {
   if (has_returned_) {
     CHECK(!statements->statements().empty()) << "Empty function that returned: "
                                              << node->name();
+    if (statements->statements().back()->node_type() !=
+        ast::NodeType::RETURN_STATEMENT) {
+      statements->statements().emplace_back(
+          std::make_unique<ast::UnreachableStatement>(lexer::invalid_range()));
+    }
   } else {
     if (type.get_declaration() == &ast::types::void_type) {
       statements->statements().emplace_back(
