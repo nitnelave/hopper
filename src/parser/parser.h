@@ -59,16 +59,22 @@ class Parser {
   /// VariableDeclaration:
   /// (val|mut) <variable_name> [: <type>] [= <value>];
   template <class Declaration>
-  ErrorOrPtr<Declaration> parse_variable_declaration();
+  ErrorOrPtr<Declaration> parse_variable_declaration(
+      ast::CallingConvention calling_convention);
 
   /// FunctionDeclaration:
   /// fun <ValueId> (<FuncArgsDecl>) [: <Type>] (= <Value>;|<BlockStatement>)
-  ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration();
+  ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration(
+      ast::CallingConvention calling_convention);
 
   /// FuncArgsDecl:
   /// [<Identifier>: <Type>][, <Identifier>: <Type>]...
   ErrorOr<ast::FunctionDeclaration::ArgumentList>
   parse_function_arguments_declaration();
+
+  ErrorOrPtr<ast::Declaration> parse_extern_declaration();
+
+  ErrorOr<ast::CallingConvention> parse_calling_convention();
 
   /// Value:
   /// <ValueNoOp> [([<Value>[COMMA <Value>]...])]... [<Operator> <Value> ]...

@@ -1,5 +1,7 @@
 #include "parser/parser.h"
 
+#include <iostream>
+
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
@@ -201,7 +203,8 @@ Parser::ErrorOrPtr<ast::Value> Parser::parse_value(int parent_precedence) {
 }
 
 template <class Declaration>
-Parser::ErrorOrPtr<Declaration> Parser::parse_variable_declaration() {
+Parser::ErrorOrPtr<Declaration> Parser::parse_variable_declaration(
+    ast::CallingConvention calling_convention) {
   static_assert(std::is_base_of<ast::VariableDeclaration, Declaration>::value,
                 "parse_variable_declaration is intended to parse "
                 "VariableDeclaration classes");
@@ -235,7 +238,8 @@ Parser::ErrorOrPtr<Declaration> Parser::parse_variable_declaration() {
   }
 
   return std::make_unique<Declaration>(location.range(), variable_name,
-                                       std::move(type), std::move(value), mut);
+                                       std::move(type), std::move(value), mut,
+                                       calling_convention);
 }
 
 Parser::ErrorOrPtr<ast::BlockStatement> Parser::parse_statement_or_list() {
@@ -313,14 +317,15 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
     RETURN_OR_MOVE(auto var_decl,
-                   parse_variable_declaration<ast::LocalVariableDeclaration>());
+                   parse_variable_declaration<ast::LocalVariableDeclaration>(
+                       ast::CallingConvention::Normal));
     EXPECT_TOKEN(TokenType::SEMICOLON,
                  "Expected `;' at the end of a variable declaration");
     return std::move(var_decl);
   }
 
   if (current_token().type() == TokenType::FUN) {
-    return parse_function_declaration();
+    return parse_function_declaration(ast::CallingConvention::Normal);
   }
 
   auto value = parse_value();
@@ -365,12 +370,14 @@ Parser::parse_function_arguments_declaration() {
     auto location = scoped_location();
     if (current_token().type() != TokenType::VAL &&
         current_token().type() != TokenType::MUT) {
-      return ParseError("Expected function argument", location.error_range());
+      return ParseError(
+          "Expected 'val' or 'mut' to declare a function argument",
+          location.error_range());
     }
 
-    RETURN_OR_MOVE(
-        auto val_decl,
-        parse_variable_declaration<ast::FunctionArgumentDeclaration>());
+    RETURN_OR_MOVE(auto val_decl,
+                   parse_variable_declaration<ast::FunctionArgumentDeclaration>(
+                       ast::CallingConvention::Normal));
     arguments.push_back(std::move(val_decl));
 
     if (current_token().type() == TokenType::COMMA) {
@@ -383,8 +390,8 @@ Parser::parse_function_arguments_declaration() {
   return std::move(arguments);
 }
 
-Parser::ErrorOrPtr<ast::FunctionDeclaration>
-Parser::parse_function_declaration() {
+Parser::ErrorOrPtr<ast::FunctionDeclaration> Parser::parse_function_declaration(
+    ast::CallingConvention calling_convention) {
   auto location = scoped_location();
   EXPECT_TOKEN(TokenType::FUN, "Function declarations must start with `fun'");
   RETURN_OR_MOVE(Identifier fun_name,
@@ -404,7 +411,7 @@ Parser::parse_function_declaration() {
     RETURN_OR_MOVE(auto body, parse_statement_list());
     return std::make_unique<ast::FunctionDeclaration>(
         location.range(), std::move(fun_name), std::move(arguments),
-        std::move(type), std::move(body));
+        std::move(type), std::move(body), calling_convention);
   }
 
   if (current_token().type() == TokenType::ASSIGN) {
@@ -416,18 +423,69 @@ Parser::parse_function_declaration() {
 
     return std::make_unique<ast::FunctionDeclaration>(
         location.range(), std::move(fun_name), std::move(arguments),
-        std::move(type), std::move(value));
+        std::move(type), std::move(value), calling_convention);
   }
 
-  return ParseError("Expected function body", body_location.error_range());
+  // Normal calling convention means it's not an external and it should have a
+  // body.
+  if (calling_convention == ast::CallingConvention::Normal) {
+    return ParseError("Expected function body", body_location.error_range());
+  }
+
+  return std::make_unique<ast::FunctionDeclaration>(
+      location.range(), std::move(fun_name), std::move(arguments),
+      std::move(type), calling_convention);
+}
+
+Parser::ErrorOrPtr<ast::Declaration> Parser::parse_extern_declaration() {
+  ASSERT_TOKEN(TokenType::EXTERN);
+
+  RETURN_OR_MOVE(auto calling_convention, parse_calling_convention());
+
+  if (current_token().type() == TokenType::VAL ||
+      current_token().type() == TokenType::MUT) {
+    return parse_variable_declaration<ast::LocalVariableDeclaration>(
+        std::move(calling_convention));
+  }
+
+  return parse_function_declaration(std::move(calling_convention));
+}
+
+ErrorOr<ast::CallingConvention> Parser::parse_calling_convention() {
+  auto location = scoped_location();
+
+  if (current_token().type() == TokenType::STRING) {
+    auto string_value = current_token().text();
+    RETURN_IF_ERROR(get_token());
+
+    if (string_value == "C") {
+      return ast::CallingConvention::C;
+    }
+    // TODO: would be nice to define special convention with some mapping for
+    // other languages.
+    return ParseError("Expected 'C' as calling convention", location.range());
+  }
+
+  return ast::CallingConvention::C;
 }
 
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   auto location = scoped_location();
+
+  if (current_token().type() == TokenType::EXTERN) {
+    RETURN_OR_MOVE(auto extern_decl, parse_extern_declaration());
+
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+                 "Expected `;' at the end of an extern declaration");
+
+    return std::move(extern_decl);
+  }
+
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
     RETURN_OR_MOVE(auto val_decl,
-                   parse_variable_declaration<ast::LocalVariableDeclaration>());
+                   parse_variable_declaration<ast::LocalVariableDeclaration>(
+                       ast::CallingConvention::Normal));
 
     // Then a semicolon.
     EXPECT_TOKEN(TokenType::SEMICOLON,
@@ -436,7 +494,7 @@ Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
     return std::move(val_decl);
   }
   if (current_token().type() == TokenType::FUN) {
-    return parse_function_declaration();
+    return parse_function_declaration(ast::CallingConvention::Normal);
   }
   return ParseError("Expected top-level declaration", location.error_range());
 }

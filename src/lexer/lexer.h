@@ -42,6 +42,9 @@ class Lexer {
   ErrorOr<Token, LexError> read_base(const Location& beginning, TokenType tt,
                                      int base);
 
+  // Consume characters until a valid double quote is met.
+  ErrorOr<Token, LexError> read_string(const Location& beginning);
+
   // Consume a valid identifier, stopping at the first non-alphanumeric (or
   // '_') character, and returns a token of type tt (should be LOWER_CASE_IDENT
   // or UPPER_CASE_IDENT).

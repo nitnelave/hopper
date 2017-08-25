@@ -12,9 +12,9 @@ class VariableDeclaration : public Declaration {
  public:
   VariableDeclaration(lexer::Range location, NodeType node_type, Identifier id,
                       Option<Type> type, Option<std::unique_ptr<Value>> value,
-                      bool mut)
+                      bool mut, CallingConvention calling_convention)
       : Declaration(std::move(location), node_type, std::move(id),
-                    std::move(type)),
+                    std::move(type), calling_convention),
         value_(std::move(value)),
         mut_(mut) {
     assert(type.is_ok() || value.is_ok());
