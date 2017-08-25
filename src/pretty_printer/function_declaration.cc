@@ -27,12 +27,16 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
     out_ << " : " << node->type().value_or_die().to_string();
   out_ << ' ';
 
-  if (node->body().is<FunctionDeclaration::StatementsBody>()) {
+  if (node->body().is<NoneType>()) {
+    return;
+  }
+
+  const auto& body = node->body();
+  if (body.is<FunctionDeclaration::StatementsBody>()) {
     out_ << "{\n";
     ++indent_;
     for (auto const& statement :
-         node->body()
-             .get_unchecked<FunctionDeclaration::StatementsBody>()
+         body.get_unchecked<FunctionDeclaration::StatementsBody>()
              ->statements()) {
       print_indent();
       statement->accept(*this);
@@ -42,7 +46,7 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
     print_indent() << "}";
   } else {
     out_ << "= ";
-    node->body().get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
+    body.get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
     out_ << ';';
   }
 }

@@ -1,3 +1,1 @@
 val a = "test";
-//      ^
-// ERROR: String is unimplemented
