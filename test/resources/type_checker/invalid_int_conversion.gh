@@ -1,0 +1,32 @@
+fun main() {
+  val a : Int8 = 300;
+//^^^^^^^^^^^^^^^^^^
+// ERROR: Invalid variable declaration: a variable of type `Int8' cannot contain a value of type `Int32'
+  val b : Int16 = 70000;
+//^^^^^^^^^^^^^^^^^^^^^
+// ERROR: Invalid variable declaration: a variable of type `Int16' cannot contain a value of type `Int32'
+  val c : Int32 = 5000000000;
+//^^^^^^^^^^^^^^^^^^^^^^^^^^
+// ERROR: Invalid variable declaration: a variable of type `Int32' cannot contain a value of type `Int64'
+}
+
+fun test1() : Int8 {
+  if (true)
+    return 3;
+  else
+    return 300;
+//  ^^^^^^^^^^^
+// ERROR: Invalid return type: the function returns `Int8', but the return value is of type `Int32'
+}
+
+fun test2() : Int16 {
+  return 70000;
+//^^^^^^^^^^^^^
+// ERROR: Invalid return type: the function returns `Int16', but the return value is of type `Int32'
+}
+
+fun test3() : Int32 {
+  return 5000000000;
+//^^^^^^^^^^^^^^^^^^
+// ERROR: Invalid return type: the function returns `Int32', but the return value is of type `Int64'
+}

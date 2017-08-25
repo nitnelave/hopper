@@ -19,6 +19,7 @@ class TypeChecker : public ast::VisitorWithErrors<> {
   void visit(ast::FunctionDeclaration* node) override;
   void visit(ast::ReturnStatement* node) override;
   void visit(ast::VariableReference* node) override;
+  void visit(ast::LocalVariableDeclaration* node) override;
 
  private:
   // We may have to turn that into a stack to support nested functions.

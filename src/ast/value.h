@@ -12,6 +12,8 @@ class Value : public ASTNode {
       : ASTNode(std::move(location), node_type) {}
   ~Value() override = default;
 
+  const Option<Type>& type() const { return type_; }
+
   Option<Type>& type() { return type_; }
 
  private:
