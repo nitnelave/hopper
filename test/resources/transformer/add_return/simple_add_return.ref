@@ -16,10 +16,10 @@ fun test4() : Void {
   (1 + 2);
   return;
 }
-fun test5() : Int64 {
+fun test5() : Int32 {
   return 3;
 }
-fun test6() : Int64 {
+fun test6() : Int32 {
   if (true) {
     return 3;
   } else {

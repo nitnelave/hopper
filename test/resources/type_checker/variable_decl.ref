@@ -1,0 +1,10 @@
+fun main() : Void {
+  val a : Int32 = 3;
+  val b : Int64 = 3;
+  val c : Int32 = 3;
+  val d : Int16 = 3;
+  val e : Int8 = 3;
+  val f : Int16 = 300;
+  val g : Int32 = 70000;
+  val h : Int64 = 5000000000;
+}
