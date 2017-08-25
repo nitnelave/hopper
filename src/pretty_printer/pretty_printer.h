@@ -6,6 +6,7 @@
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
+#include "ast/extern_variable_declaration.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/if_statement.h"
@@ -28,6 +29,11 @@ class PrettyPrinterVisitor : public ASTVisitor {
     }
   }
 
+  void visit(ExternVariableDeclaration* node) override {
+    out_ << "extern ";
+    visit(static_cast<LocalVariableDeclaration*>(node));
+  }
+
   void visit(LocalVariableDeclaration* node) override {
     out_ << (node->is_mutable() ? "mut" : "val") << ' ';
     out_ << node->id().to_string();
@@ -39,6 +45,8 @@ class PrettyPrinterVisitor : public ASTVisitor {
     }
     out_ << ";";
   }
+
+  void visit(ExternFunctionDeclaration* node) override;
 
   void visit(FunctionDeclaration* node) override;
 

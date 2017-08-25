@@ -46,10 +46,16 @@ void VoidFunctionReturnAdder::visit(ast::FunctionDeclaration* node) {
   CHECK(type.is_resolved()) << "Function return type not resolved: "
                             << node->name();
 
+  // Function declaration without definition.
+  if (node->body().is<NoneType>()) {
+    return;
+  }
+
+  const auto& body = node->body();
   using StatementsBody = ast::FunctionDeclaration::StatementsBody;
-  CHECK(node->body().is<StatementsBody>())
-      << "Function should have a statements body:" << node->name();
-  const auto& statements = node->body().get_unchecked<StatementsBody>();
+  CHECK(body.is<StatementsBody>()) << "Function should have a statements body:"
+                                   << node->name();
+  const auto& statements = body.get_unchecked<StatementsBody>();
   visit(statements.get());
 
   if (has_returned_) {

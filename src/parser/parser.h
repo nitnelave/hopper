@@ -7,6 +7,7 @@
 #include "ast/ast.h"
 #include "ast/base_types.h"
 #include "ast/block_statement.h"
+#include "ast/extern_function_declaration.h"
 #include "ast/function_declaration.h"
 #include "ast/variable_declaration.h"
 #include "error/error.h"
@@ -63,12 +64,17 @@ class Parser {
 
   /// FunctionDeclaration:
   /// fun <ValueId> (<FuncArgsDecl>) [: <Type>] (= <Value>;|<BlockStatement>)
-  ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration();
+  ErrorOrPtr<ast::FunctionDeclaration> parse_function_declaration(
+      ast::CallingConvention calling_convention);
 
   /// FuncArgsDecl:
   /// [<Identifier>: <Type>][, <Identifier>: <Type>]...
   ErrorOr<ast::FunctionDeclaration::ArgumentList>
   parse_function_arguments_declaration();
+
+  ErrorOrPtr<ast::Declaration> parse_extern_declaration();
+
+  ErrorOr<ast::CallingConvention> parse_calling_convention();
 
   /// Value:
   /// <ValueNoOp> [([<Value>[COMMA <Value>]...])]... [<Operator> <Value> ]...

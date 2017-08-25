@@ -1,5 +1,6 @@
-fun test(,) {
+fun test(a: Int32) {
 //       ^
 // ERROR: Expected 'val' or 'mut' to declare a function argument
-  return 1;
+  return a;
 }
+

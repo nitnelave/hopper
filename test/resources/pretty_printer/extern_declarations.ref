@@ -1,0 +1,4 @@
+extern val a : Int32;
+extern mut b : Int32;
+extern "C" fun test() : Int32;
+extern "C" fun printf(val str: Int32) : Int32;

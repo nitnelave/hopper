@@ -167,8 +167,7 @@ ErrorOr<Token, LexError> Lexer::get_next_token() {
       unget_char();
       return read_base(beginning, TokenType::INT, 10);
     case '"':
-      // TODO: string
-      return LexError("String is unimplemented", {beginning, beginning});
+      return read_string(beginning);
     case 'r':
       RETURN_IF_ERROR(get_next_char());
       if (current_char() == '"')
@@ -315,6 +314,31 @@ ErrorOr<Token, LexError> Lexer::read_base(const Location& beginning,
   }
   unget_char();
   return Token{tt, result, {beginning, location()}};
+}
+
+/// Reads until valid double quote.
+ErrorOr<Token, LexError> Lexer::read_string(const Location& beginning) {
+  std::string result = "";
+  bool escaped = false;
+
+  // Skip first char.
+  while (true) {
+    RETURN_IF_ERROR(get_next_char());
+    char c = current_char();
+    if (c == '"' && !escaped) {
+      break;
+    } else if (c == '\\') {
+      escaped = true;
+    } else {
+      if (escaped) {
+        escaped = false;
+        result.append(1, '\\');
+      }
+      result.append(1, c);
+    }
+  }
+
+  return Token(TokenType::STRING, result, {beginning, location()});
 }
 
 MaybeError<LexError> Lexer::get_next_char() { return char_stack_.get_next(); }

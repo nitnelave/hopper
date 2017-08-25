@@ -19,6 +19,16 @@ class FunctionDeclaration : public Declaration {
       std::vector<std::unique_ptr<FunctionArgumentDeclaration>>;
   using ValueBody = std::unique_ptr<Value>;
   using StatementsBody = std::unique_ptr<BlockStatement>;
+
+  /// Function declaration only.
+  FunctionDeclaration(lexer::Range location, Identifier id,
+                      ArgumentList arguments, Option<Type> type)
+      : Declaration(std::move(location), NodeType::FUNCTION_DECLARATION,
+                    std::move(id), std::move(type)),
+        arguments_(std::move(arguments)),
+        body_(none) {}
+
+  /// Function declaration with a block statement.
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type,
                       StatementsBody body)
@@ -27,6 +37,7 @@ class FunctionDeclaration : public Declaration {
         arguments_(std::move(arguments)),
         body_(std::move(body)) {}
 
+  /// Function declaration defined as a Value.
   FunctionDeclaration(lexer::Range location, Identifier id,
                       ArgumentList arguments, Option<Type> type, ValueBody body)
       : Declaration(std::move(location), NodeType::FUNCTION_DECLARATION,
@@ -38,7 +49,7 @@ class FunctionDeclaration : public Declaration {
 
   const ArgumentList& arguments() const { return arguments_; }
 
-  Variant<StatementsBody, ValueBody>& body() { return body_; }
+  Variant<NoneType, StatementsBody, ValueBody>& body() { return body_; }
 
   ~FunctionDeclaration() override = default;
 
@@ -54,7 +65,7 @@ class FunctionDeclaration : public Declaration {
   void accept_impl(ASTVisitor& visitor) override { visitor.visit(this); }
 
   ArgumentList arguments_;
-  Variant<StatementsBody, ValueBody> body_;
+  Variant<NoneType, StatementsBody, ValueBody> body_;
 };
 
 }  // namespace ast
