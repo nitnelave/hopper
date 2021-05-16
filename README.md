@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/nitnelave/hopper.svg?branch=master)](https://travis-ci.org/nitnelave/hopper) [![Coverage Status](https://coveralls.io/repos/github/nitnelave/hopper/badge.svg?branch=master)](https://coveralls.io/github/nitnelave/hopper?branch=master)
 
+DEPRECATED IN FAVOR OF JUST USING D.
+
 GrassHopper is a programming language that aims to do what C++ does, but
 better. In other words, we aim to be to C++ what Kotlin is to Java.
 
