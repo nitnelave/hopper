@@ -1,0 +1,21 @@
+fun toto(val arg1: Int32, val arg2: Int8) : Void {
+  val a : Int32 = 3;
+  if (true) {
+    val b : Int32 = 2;
+    {
+      val d : Int32 = 3;
+      //destroy d//
+    }
+    //destroy b//
+    //destroy a//
+    //destroy arg2//
+    //destroy arg1//
+    return;
+  }
+  val c : Int32 = 1;
+  //destroy c//
+  //destroy a//
+  //destroy arg2//
+  //destroy arg1//
+  return;
+}

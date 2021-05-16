@@ -1,5 +1,5 @@
 fun test() : Bool {
   return 3;
 //^^^^^^^^^
-// ERROR: Invalid return type: the function returns `Bool', but the return value is of type `Int64'
+// ERROR: Invalid return type: the function returns `Bool', but the return value is of type `Int32'
 }

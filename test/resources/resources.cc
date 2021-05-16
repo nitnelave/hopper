@@ -13,6 +13,7 @@
 #include "test_utils/files.h"
 #include "test_utils/lexing.h"
 #include "test_utils/utils.h"
+#include "transform/add_destroy_variable.h"
 #include "transform/add_return.h"
 #include "transform/function_value_body.h"
 #include "typechecker/typechecker.h"
@@ -375,6 +376,15 @@ TEST(ResourcesTest, VoidFunctionReturnAdder) {
           transformer_test<get_transformed_pretty_printed_file<
               name_resolution::NameResolver, typechecker::TypeChecker,
               transform::VoidFunctionReturnAdder>>>("transformer/add_return")));
+}
+
+TEST(ResourcesTest, AddDestroyVariable) {
+  EXPECT_TRUE((test_all_files_in_dir<
+               transformer_test<get_transformed_pretty_printed_file<
+                   name_resolution::NameResolver, typechecker::TypeChecker,
+                   transform::VoidFunctionReturnAdder,
+                   transform::VariableDestructorAdder>>>(
+      "transformer/destroy_variable")));
 }
 
 TEST(ResourcesTest, CodeGenerator) {

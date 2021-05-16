@@ -1,0 +1,13 @@
+fun main() : Void {
+  val a : Int32 = 3;
+  if (true) {
+    val b : Int32 = 2;
+    //destroy b//
+    //destroy a//
+    return;
+  }
+  val c : Int32 = 1;
+  //destroy c//
+  //destroy a//
+  return;
+}

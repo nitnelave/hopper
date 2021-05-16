@@ -1,0 +1,17 @@
+fun main() : Void {
+  val a : Int32 = 3;
+  val b : Int32 = 3;
+  {
+    val c : Int32 = 4;
+    val d : Int32 = 5;
+    {
+      val e : Int32 = 6;
+      //destroy e//
+    }
+    //destroy d//
+    //destroy c//
+  }
+  //destroy b//
+  //destroy a//
+  return;
+}

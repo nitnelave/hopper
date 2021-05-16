@@ -17,7 +17,8 @@ using namespace llvm;  // NOLINT
 void CodeGenerator::visit(ast::BlockStatement* node) {
   auto current_function = current_function_;
   for (auto const& statement : node->statements()) {
-    CHECK(!has_returned_);
+    CHECK(statement->node_type() == ast::NodeType::UNREACHABLE ||
+          !has_returned_);
     statement->accept(*this);
 
     // Restore state of node.
