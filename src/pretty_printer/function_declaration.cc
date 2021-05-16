@@ -1,4 +1,7 @@
 #include "pretty_printer/pretty_printer.h"
+
+#include "ast/extern_function_declaration.h"
+
 namespace ast {
 
 void PrettyPrinterVisitor::visit(FunctionArgumentDeclaration* node) {
@@ -14,6 +17,17 @@ void PrettyPrinterVisitor::visit(FunctionArgumentDeclaration* node) {
   }
 }
 
+void PrettyPrinterVisitor::visit(ExternFunctionDeclaration* node) {
+  out_ << "extern ";
+
+  if (node->calling_convention() == ast::CallingConvention::C) {
+    out_ << "\"C\" ";
+  }
+
+  visit(static_cast<FunctionDeclaration*>(node));
+  out_ << ';';
+}
+
 void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
   out_ << "fun " << node->id().to_string() << '(';
   bool print_comma = false;
@@ -25,14 +39,19 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
   out_ << ')';
   if (node->type().is_ok())
     out_ << " : " << node->type().value_or_die().to_string();
+
+  if (node->body().is<NoneType>()) {
+    return;
+  }
+
   out_ << ' ';
 
-  if (node->body().is<FunctionDeclaration::StatementsBody>()) {
+  const auto& body = node->body();
+  if (body.is<FunctionDeclaration::StatementsBody>()) {
     out_ << "{\n";
     ++indent_;
     for (auto const& statement :
-         node->body()
-             .get_unchecked<FunctionDeclaration::StatementsBody>()
+         body.get_unchecked<FunctionDeclaration::StatementsBody>()
              ->statements()) {
       print_indent();
       statement->accept(*this);
@@ -42,7 +61,7 @@ void PrettyPrinterVisitor::visit(FunctionDeclaration* node) {
     print_indent() << "}";
   } else {
     out_ << "= ";
-    node->body().get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
+    body.get_unchecked<FunctionDeclaration::ValueBody>()->accept(*this);
     out_ << ';';
   }
 }

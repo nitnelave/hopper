@@ -2,6 +2,8 @@
 
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
+#include "ast/extern_function_declaration.h"
+#include "ast/extern_variable_declaration.h"
 #include "ast/function_declaration.h"
 #include "ast/if_statement.h"
 #include "ast/local_variable_declaration.h"
@@ -24,6 +26,11 @@ void ASTVisitor::visit(BinaryOp* node) {
 void ASTVisitor::visit(BuiltinType* /*unused*/) {}
 void ASTVisitor::visit(FunctionArgumentDeclaration* /*unused*/) {}
 void ASTVisitor::visit(FunctionCall* /*unused*/) {}
+
+void ASTVisitor::visit(ExternFunctionDeclaration* node) {
+  visit(static_cast<FunctionDeclaration*>(node));
+}
+
 void ASTVisitor::visit(FunctionDeclaration* node) {
   for (const auto& argument : node->arguments()) {
     visit(argument.get());
@@ -49,6 +56,11 @@ void ASTVisitor::visit(ReturnStatement* node) {
 void ASTVisitor::visit(LocalVariableDeclaration* node) {
   if (node->value().is_ok()) node->value().value_or_die()->accept(*this);
 }
+
+void ASTVisitor::visit(ExternVariableDeclaration* node) {
+  node->LocalVariableDeclaration::accept(*this);
+}
+
 void ASTVisitor::visit(VariableReference* /*unused*/) {}
 
 void ASTVisitor::visit(BlockStatement* node) {

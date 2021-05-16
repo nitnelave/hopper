@@ -6,6 +6,7 @@
 #include "util/option.h"
 
 namespace ast {
+
 class Declaration : public Statement {
  public:
   Declaration(lexer::Range location, NodeType node_type, Identifier id,

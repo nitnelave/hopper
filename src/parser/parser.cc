@@ -1,8 +1,12 @@
 #include "parser/parser.h"
 
+#include <iostream>
+
 #include "ast/binary_operation.h"
 #include "ast/block_statement.h"
 #include "ast/boolean_constant.h"
+#include "ast/extern_function_declaration.h"
+#include "ast/extern_variable_declaration.h"
 #include "ast/function_call.h"
 #include "ast/function_declaration.h"
 #include "ast/if_statement.h"
@@ -320,7 +324,7 @@ Parser::ErrorOrPtr<ast::Statement> Parser::parse_statement() {
   }
 
   if (current_token().type() == TokenType::FUN) {
-    return parse_function_declaration();
+    return parse_function_declaration(ast::CallingConvention::NORMAL);
   }
 
   auto value = parse_value();
@@ -365,7 +369,9 @@ Parser::parse_function_arguments_declaration() {
     auto location = scoped_location();
     if (current_token().type() != TokenType::VAL &&
         current_token().type() != TokenType::MUT) {
-      return ParseError("Expected function argument", location.error_range());
+      return ParseError(
+          "Expected 'val' or 'mut' to declare a function argument",
+          location.error_range());
     }
 
     RETURN_OR_MOVE(
@@ -383,8 +389,8 @@ Parser::parse_function_arguments_declaration() {
   return std::move(arguments);
 }
 
-Parser::ErrorOrPtr<ast::FunctionDeclaration>
-Parser::parse_function_declaration() {
+Parser::ErrorOrPtr<ast::FunctionDeclaration> Parser::parse_function_declaration(
+    ast::CallingConvention calling_convention) {
   auto location = scoped_location();
   EXPECT_TOKEN(TokenType::FUN, "Function declarations must start with `fun'");
   RETURN_OR_MOVE(Identifier fun_name,
@@ -399,7 +405,6 @@ Parser::parse_function_declaration() {
     RETURN_OR_MOVE(type, parse_type());
   }
 
-  auto body_location = scoped_location();
   if (current_token().type() == TokenType::OPEN_BRACE) {
     RETURN_OR_MOVE(auto body, parse_statement_list());
     return std::make_unique<ast::FunctionDeclaration>(
@@ -407,6 +412,7 @@ Parser::parse_function_declaration() {
         std::move(type), std::move(body));
   }
 
+  auto body_location = scoped_location();
   if (current_token().type() == TokenType::ASSIGN) {
     // fun my_fun() = 3;
     RETURN_IF_ERROR(get_token());
@@ -419,11 +425,65 @@ Parser::parse_function_declaration() {
         std::move(type), std::move(value));
   }
 
-  return ParseError("Expected function body", body_location.error_range());
+  if (calling_convention == ast::CallingConvention::NORMAL) {
+    return ParseError("Expected function body", body_location.error_range());
+  }
+
+  return std::make_unique<ast::ExternFunctionDeclaration>(
+      location.range(), std::move(fun_name), std::move(arguments),
+      std::move(type), calling_convention);
+}
+
+Parser::ErrorOrPtr<ast::Declaration> Parser::parse_extern_declaration() {
+  ASSERT_TOKEN(TokenType::EXTERN);
+
+  if (current_token().type() == TokenType::VAL ||
+      current_token().type() == TokenType::MUT) {
+    return parse_variable_declaration<ast::ExternVariableDeclaration>();
+  }
+
+  auto location = scoped_location();
+  RETURN_OR_MOVE(auto calling_convention, parse_calling_convention());
+
+  if (current_token().type() == TokenType::VAL ||
+      current_token().type() == TokenType::MUT) {
+    return ParseError("Extern variable doesn't need a calling convention",
+                      location.range());
+  }
+
+  return parse_function_declaration(calling_convention);
+}
+
+ErrorOr<ast::CallingConvention> Parser::parse_calling_convention() {
+  auto location = scoped_location();
+
+  if (current_token().type() == TokenType::STRING) {
+    auto string_value = current_token().text();
+    RETURN_IF_ERROR(get_token());
+
+    if (string_value == "C") {
+      return ast::CallingConvention::C;
+    }
+    // TODO: would be nice to define special convention with some mapping for
+    // other languages.
+    return ParseError("Expected 'C' as calling convention", location.range());
+  }
+
+  return ast::CallingConvention::C;
 }
 
 Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
   auto location = scoped_location();
+
+  if (current_token().type() == TokenType::EXTERN) {
+    RETURN_OR_MOVE(auto extern_decl, parse_extern_declaration());
+
+    EXPECT_TOKEN(TokenType::SEMICOLON,
+                 "Expected `;' at the end of an extern declaration");
+
+    return std::move(extern_decl);
+  }
+
   if (current_token().type() == TokenType::VAL ||
       current_token().type() == TokenType::MUT) {
     RETURN_OR_MOVE(auto val_decl,
@@ -436,7 +496,7 @@ Parser::ErrorOrPtr<ast::ASTNode> Parser::parse_toplevel_declaration() {
     return std::move(val_decl);
   }
   if (current_token().type() == TokenType::FUN) {
-    return parse_function_declaration();
+    return parse_function_declaration(ast::CallingConvention::NORMAL);
   }
   return ParseError("Expected top-level declaration", location.error_range());
 }
